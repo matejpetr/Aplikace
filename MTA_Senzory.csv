@@ -1,0 +1,37 @@
+Id;Název senzoru;Alias;Znaceni;Request (UPDATE);Response;Keywords - values;;;Request (CONFIG);config1;config2;config3
+0;Digitální teplotní senzor Dallas;DS18B20;DS18B20;?type=UPDATE&id=S00;?type=ds18b20&id=S00&temp=20.5&alarm=OK;temp:float;alarm:String;;?type=CONFIG&id=S00&Res=12;Res;LowAlarm;HighAlarm
+1;Senzor mìøení teploty a relativní vlhkosti DHT11;Keyes KY-015;DHT11;?type=UPDATE&id=S01;?type=dht11&id=S01&humi=49.00&temp=20.00;humi:int;temp:int;;?type=CONFIG&id=S01&Unit=C;Unit;HI;
+2;Hallùv senzor pro detekci magnetického pole (Digitální);Keyes KY-003;Dhall;?type=UPDATE&id=S02;?type=Dhall&id=S02&state=1;state:bool;;;;;;
+3;Hallùv senzor pro detekci magnetického pole (Analogovı);Keyes KY-035;Ahall;?type=UPDATE&id=S03;?type=Ahall&id=S03&val=2000&polarity=SOUTH;val:int ;polarity:string;;?type=CONFIG&id=S03&Res=10&Llimit= 500;Res;Llimit;Hlimit
+4;Modul optické závory;Keyes  KY-010;PInterrupt;?type=UPDATE&id=S04;?type=PInterrupt&id=S04&state=0;state:bool;;;;;;
+5;Infraèervenı senzor pøekáek;FC51;FC51;?type=UPDATE&id=S05;?type=FC51&id=S05&state=1;state:bool;;;;;;
+6;Ultrazvukovı senzor vzdálenosti HC-SR04;HC-SR04;HCSR04;?type=UPDATE&id=S06;?type=HCSR04&id=S06&distance=25;distance:float;;;?type=CONFIG&id=S06&Limit=150;Limit;Delay;
+7;PIR Pohybové èidlo ;HCSR501;HCSR501;?type=UPDATE&id=S07;?type=HCSR501&id=S07&state=1;state:bool;;;;;;
+8;Mikrospínaè ;KW113Z;KW113Z;?type=UPDATE&id=S08;?type=KW113Z&id=S08&state=1;state:bool;;;;;;
+9;BMP280 I2C senzor tlaku a teploty;BMP280;BMP280;?type=UPDATE&id=S09;?type=BPM280&id=S09&temp=15.1&press=3.1;temp:float;press:float;;?type=CONFIG&id=S09&Filter=2;Os_temp;Os_press;Filter
+10;BMP180 I2C senzor tlaku;BMP180;BMP180;?type=UPDATE&id=S10;?type=BPM180&id=S10&press=15.1&altitude=3.1;press:float;altitude:float;;?type=CONFIG&id=S10&Gain=1.1;Gain;;
+11;I2C RGB Modul rozpoznávání svìtla;TCS34725;TCS34725;?type=UPDATE&id=S11;?type=TCS34725&id=S11&R=135&G=120&B=160;R:int;G:int;B:int;?type=CONFIG&id=S11&Gain=4;Itime;Gain;
+12;Modul Infraèerveného pøijímaèe;Keyes KY-022;IRrx;?type=UPDATE&id=S12;?type=Irrx&id=S12&code=0x11223344;code:String;;;;;;
+13;Teplotní senzor s termistorem NTC (Digitální) ;Keyes KY-028;Dntc;?type=UPDATE&id=S13;?type=Dntc&id=S13&state=1;state:bool;;;;;;
+14;Teplotní senzor s termistorem NTC (Analogovı) ;Keyes  KY-013;Antc;?type=UPDATE&id=S14;?type=Antc&id=S14&temp=22.2;temp:float;;;?type=CONFIG&id=S14&Res=12;Res;Filter;
+15;Modul s fotorezistorem ;Keyes KY-018;PHresistance;?type=UPDATE&id=S15;?type=PHresistance&id=S15&intensity=250;intensity:int;;;?type=CONFIG&id=S15&Res=12;Res;Gain;
+16;Joystick ;Keyes KY-023;Joystick;?type=UPDATE&id=S16;?type=Joystick&id=S16&direction=LEFT;direction:string;;;?type=CONFIG&id=S16&Res=10;Res;Threshold;
+17;Modul Hallova senzoru s lineárním vıstupem;Keyes  KY-024;HallLin;?type=UPDATE&id=S17;?type=HallLin&id=S17&voltage=2.1;voltage:float;;;?type=CONFIG&id=S17&Res=10;Res;Unit;
+18;Senzor plynù ;MQ135 ;MQ135;?type=UPDATE&id=S18;?type=MQ135&id=S18&state=1;state:bool;;;;;;
+19;Pùdní vlhkomìr;YL69;DMoisture;?type=UPDATE&id=S19;?type=YL69&id=S19&state=1;state:bool;;;;;;
+20;Kapacitní dotykovı spínaè ;TTP223;TTP223;?type=UPDATE&id=S20;?type=TTP223&id=S20&state=1;state:bool;;;;;;
+21;Infraèervenı senzor vzdálenosti ;GP2Y0A21YK0F;GP2Y0A21YK0F;?type=UPDATE&id=S21;?type=GP2Y0A21YK0F&id=S21&distance=63.2&alarm=LOW;distance:float;alarm:String;;?type=CONFIG&id=S21&Unit=0;Unit;LowAlarm;HighAlarm
+22;Rotaèní enkodér;Keyes KY-040;Encoder;?type=UPDATE&id=S22;?type=Encoder&id=S22&position=125&alarm=LOW;position:int;alarm:String;;?type=CONFIG&id=S22&Direction=normal;Direction;LowAlarm;HighAlarm
+23;Infraèervenı senzor pøekáek;Keyes KY-032 ;HS0038DB;?type=UPDATE&id=S23;?type=HS0038DB&id=S23&state=1;state:bool;;;;;;
+24;Reflexní svìtelná závora TCRT5000;Keyes KY-033;TCRT5000;?type=UPDATE&id=S24;?type=TCRT5000&id=S24&state=1;state:bool;;;;;;
+25;Detektor plamene ;Keyes KY-026;IRflame;?type=UPDATE&id=S25;?type=IRflame&id=S25&state=1;state:bool;;;;;;
+26;Magnetickı snímaè s jazıèkovım kontaktem;Keyes KY-025;REED;?type=UPDATE&id=S26;?type=REED&id=S26&state=1;state:bool;;;;;;
+27;Modul s malım mikrofon;Keyes  KY-038;MicSmall;?type=UPDATE&id=S27;?type=MicSmall&id=S27&volume=42.3;volume:float;;;?type=CONFIG&id=S27&Res=12;Res;MT;
+28;Modul s velkım mikrofon ;Keyes KY-037;MicBig;?type=UPDATE&id=S28;?type=MicBig&id=S28&volume=42.1;volume:float;;;?type=CONFIG&id=S28&Res=12;Res;MT;
+29;Dotykovı senzor (Hallùv senzor);Keyes KY-036;MetalTouch;?type=UPDATE&id=S29;?type=MetalTouch&id=S29&state=1;state:bool;;;;;;
+30;Snímaè tepové frekvence ;Keyes KY-039;Heartbeat;?type=UPDATE&id=S30;?type=Heartbeat&id=S30&bpm=85;bpm:int;;;?type=CONFIG&id=S30&??;;;
+31;Mechanické tlaèítko ;Keyes KY-004;Btn;?type=UPDATE&id=S31;?type=Btn&id=S31&state=1;state:bool;;;;;;
+32;Senzor náklonu;Keyes KY-020;TiltSwitch;?type=UPDATE&id=S32;?type=TiltSwitch&id=S32&state=1;state:bool;;;;;;
+33;Senzor vibrace;Keyes KY-002;Dvibration;?type=UPDATE&id=S33;?type=Dvibration&id=S33&state=1;state:bool;;;;;;
+34;Rtuovı senzor polohy;Keyes KY-017;HGswitch;?type=UPDATE&id=S34;?type=HGswitch&id=S34&state=1;state:bool;;;;;;
+35;Senzor nárazu;Keyes KY-031;Tap ;?type=UPDATE&id=S35;?type=Tap&id=S35&state=1;state:bool;;;;;;

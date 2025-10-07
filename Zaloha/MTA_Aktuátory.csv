@@ -1,0 +1,14 @@
+Id;Reálný název aktuátoru/rodina aktuátorù;Alias (type);Notes;Request;Keywords - configs;;Keywords - values;; 
+A;Micro Servo;SG90;Servo;?type=CONFIG&id=A&angle=90&speed=50;angle:int, speed:int;;;;
+B;Krokový motor;Stepper;28BYJ-48;?type=CONFIG&id=B&angle=90&dir=false&rpm=16;angle:int, dir:bool,  rpm:int;;;;
+C;DC motor;DC;;?type=CONFIG&id=C&speed=50&state=true;speed:int, state:bool;;;;
+D;Two color led ;TwoColor;Keyes KY-011;?type=CONFIG&id=D&color=R&Brig=80;color:char, Brig:int;;;;
+E;Mini two color led;TwoColorMini;Keyes KY-029;?type=CONFIG&id=E&color=G&Brig=80;color:char, Brig:int;;;;
+F;RGB led;RGB;Keyes KY-016;?type=CONFIG&id=F&BrigR=0&BrigG=20&BrigB=100;BrigR:int, BrigG:int, BrigB:int;;;;
+G;SMD RGB led;RGBsmd;Keyes KY-009;?type=CONFIG&id=G&BrigR=0&BrigG=20&BrigB=100;BrigR:int, BrigG:int, BrigB:int;;;;
+H;IR led;IR;Keyes KY-005;?type=CONFIG&id=H&control=false;control:bool;;;;
+I;7 color flash;7color;Keyes KY-034;?type=CONFIG&id=I&control=false;control:bool;;;;
+J;Laser;Laser;Keyes KY-008;?type=CONFIG&id=J&control=false;control:bool;;;;
+K;Bzuèák Pasivní;BuzzP;Keyes KY-006;?type=CONFIG&id=K&freq=200&duration=1000;freq:int,duration:int;;;;
+L;Bzuèák Aktivní;BuzzA;Keyes KY-012;?type=CONFIG&id=L&control=false;control:bool;;;;
+;;;;;;;;;
