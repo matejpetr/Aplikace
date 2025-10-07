@@ -111,9 +111,13 @@ namespace NewGUI
                 if (!sensorIdMap.TryGetValue(sensorLabel, out string sensorId) || string.IsNullOrWhiteSpace(sensorId))
                     sensorId = sensorLabel;
 
+                // >>> NOVĚ: převod na Sxx
+                string formattedId = FormatSensorId(sensorId);
+
                 request = mode.Equals("INIT", StringComparison.OrdinalIgnoreCase)
                           ? $"?type={mode}"
-                          : $"?type={mode}&id={sensorId}";
+                          : $"?type={mode}&id={formattedId}";
+
 
                 label8.Text = request; // náhled
             }
@@ -510,6 +514,30 @@ namespace NewGUI
                 sampleCount++;
             }
         }
+        private static string FormatSensorId(string rawId)
+        {
+            if (string.IsNullOrWhiteSpace(rawId)) return rawId;
+
+            string t = rawId.Trim();
+
+            // Když už je ve tvaru Sxx / sxx, ponech (normalizuj na velké S)
+            if (t.StartsWith("S", StringComparison.OrdinalIgnoreCase))
+                return "S" + t.Substring(1);
+
+            // Zkus čistě číslo
+            if (int.TryParse(t, out int n) && n >= 0)
+                return "S" + n.ToString("D2");
+
+            // Jinak vytáhni číslice z textu (např. "ID-3" -> "S03")
+            var digits = new string(t.Where(char.IsDigit).ToArray());
+            if (int.TryParse(digits, out n) && n >= 0)
+                return "S" + n.ToString("D2");
+
+            // Fallback: prostě předřaď S
+            return "S" + t;
+        }
+
+
 
         private void ParseInitMessage(string data)
         {
