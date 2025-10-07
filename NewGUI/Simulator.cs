@@ -15,7 +15,7 @@ namespace NewGUI
 {
     public partial class Simulator : UserControl
     {
-        // ❌ private SerialPort serialPort;  // už nepoužíváme – místo toho SerialManager
+        
         private Timer simulationTimer;
         private string selectedSensor = "";
         private DataTable excelTable;
