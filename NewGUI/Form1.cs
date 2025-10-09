@@ -217,7 +217,7 @@ namespace NewGUI
 
         private void help_button_Click(object sender, EventArgs e)
         {
-            NahraditObsah(new help());
+            NahraditObsah(new help(this));
         }
 
         private void info_button_Click(object sender, EventArgs e)

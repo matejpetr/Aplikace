@@ -32,7 +32,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.sidebar = new System.Windows.Forms.FlowLayoutPanel();
             this.menu_panel = new System.Windows.Forms.Panel();
-            this.menu_button = new System.Windows.Forms.PictureBox();
             this.home_panel = new System.Windows.Forms.Panel();
             this.home_button = new System.Windows.Forms.Button();
             this.setttings_panel = new System.Windows.Forms.Panel();
@@ -44,8 +43,6 @@
             this.sidebar_timer = new System.Windows.Forms.Timer(this.components);
             this.Main_panel = new System.Windows.Forms.Panel();
             this.sidebar.SuspendLayout();
-            this.menu_panel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.menu_button)).BeginInit();
             this.home_panel.SuspendLayout();
             this.setttings_panel.SuspendLayout();
             this.help_panel.SuspendLayout();
@@ -73,23 +70,10 @@
             // 
             this.menu_panel.BackgroundImage = global::NewGUI.Properties.Resources.MTA_Mini;
             this.menu_panel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.menu_panel.Controls.Add(this.menu_button);
             this.menu_panel.Location = new System.Drawing.Point(3, 3);
             this.menu_panel.Name = "menu_panel";
-            this.menu_panel.Size = new System.Drawing.Size(243, 61);
+            this.menu_panel.Size = new System.Drawing.Size(172, 61);
             this.menu_panel.TabIndex = 0;
-            // 
-            // menu_button
-            // 
-            this.menu_button.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.menu_button.Image = global::NewGUI.Properties.Resources.list;
-            this.menu_button.Location = new System.Drawing.Point(9, 9);
-            this.menu_button.Name = "menu_button";
-            this.menu_button.Size = new System.Drawing.Size(41, 42);
-            this.menu_button.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
-            this.menu_button.TabIndex = 0;
-            this.menu_button.TabStop = false;
-            this.menu_button.Click += new System.EventHandler(this.menu_button_Click);
             // 
             // home_panel
             // 
@@ -219,8 +203,6 @@
             this.Name = "Form1";
             this.Text = "Moravskoslezská technologická akademie";
             this.sidebar.ResumeLayout(false);
-            this.menu_panel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.menu_button)).EndInit();
             this.home_panel.ResumeLayout(false);
             this.setttings_panel.ResumeLayout(false);
             this.help_panel.ResumeLayout(false);
@@ -243,7 +225,6 @@
         private System.Windows.Forms.Panel info_panel;
         private System.Windows.Forms.Button info_button;
         private System.Windows.Forms.Panel Main_panel;
-        private System.Windows.Forms.PictureBox menu_button;
     }
 }
 

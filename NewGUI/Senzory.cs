@@ -248,7 +248,7 @@ namespace NewGUI
             }
         }
 
-        private async void buttonStart_Click(object sender, EventArgs e)
+        private void buttonStart_Click(object sender, EventArgs e)
         {
             UpdateRequestFromUi();
 

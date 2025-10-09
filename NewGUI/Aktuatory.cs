@@ -17,7 +17,6 @@ namespace NewGUI
     public partial class Aktuatory : UserControl
     {
         private Timer comPortWatcherTimer;                 // Kontrola přítomnosti COM zařízení
-        // ❌ private SerialPort serialPort;               // NEpoužíváme – místo toho SerialManager
         private DataTable excelTable;                      // CSV tabulka
         private List<string> lastKnownPorts = new List<string>();
         private string BasePath = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;

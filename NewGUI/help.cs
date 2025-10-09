@@ -11,15 +11,19 @@ using System.Windows.Forms;
 namespace NewGUI
 {
     public partial class help : UserControl
+
     {
-        public help()
+        private Form1 _rodic;
+        public help(Form1 rodic)
         {
             InitializeComponent();
+            _rodic = rodic;
         }
 
-        private void help_Load(object sender, EventArgs e)
-        {
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            _rodic.NahraditObsah(new Documentation(_rodic));
         }
     }
 }
