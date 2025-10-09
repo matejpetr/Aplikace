@@ -28,12 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.Document = new System.Windows.Forms.Panel();
             this.SuspendLayout();
+            // 
+            // Document
+            // 
+            this.Document.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Document.Location = new System.Drawing.Point(0, 0);
+            this.Document.Name = "Document";
+            this.Document.Size = new System.Drawing.Size(666, 450);
+            this.Document.TabIndex = 0;
             // 
             // Documentation
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.Document);
             this.Name = "Documentation";
             this.Size = new System.Drawing.Size(666, 450);
             this.ResumeLayout(false);
@@ -41,5 +51,7 @@
         }
 
         #endregion
+
+        private System.Windows.Forms.Panel Document;
     }
 }

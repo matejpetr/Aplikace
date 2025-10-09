@@ -46,7 +46,6 @@
             this.Simulator_panel.Name = "Simulator_panel";
             this.Simulator_panel.Size = new System.Drawing.Size(220, 444);
             this.Simulator_panel.TabIndex = 3;
-         
             // 
             // Simulator_button
             // 
@@ -71,7 +70,6 @@
             this.Sensor_panel.Name = "Sensor_panel";
             this.Sensor_panel.Size = new System.Drawing.Size(220, 444);
             this.Sensor_panel.TabIndex = 2;
-     
             // 
             // Sensor_button
             // 
@@ -96,6 +94,7 @@
             this.Aktuatory_panel.Name = "Aktuatory_panel";
             this.Aktuatory_panel.Size = new System.Drawing.Size(220, 444);
             this.Aktuatory_panel.TabIndex = 4;
+            this.Aktuatory_panel.Paint += new System.Windows.Forms.PaintEventHandler(this.Aktuatory_panel_Paint);
             // 
             // Aktuatory_button
             // 

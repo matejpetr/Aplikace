@@ -12,7 +12,6 @@ namespace NewGUI
 {
     public partial class Form1 : Form
     {
-        bool SidebarExpand = true;
         // --- Animace pro víc tlačítek ---
         private readonly Dictionary<Button, (int progress, int target)> _wipe =
          new Dictionary<Button, (int progress, int target)>();

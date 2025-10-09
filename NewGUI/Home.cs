@@ -78,6 +78,9 @@ namespace NewGUI
             _rodic.NahraditObsah(new Aktuatory(_rodic));
         }
 
-        
+        private void Aktuatory_panel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }
