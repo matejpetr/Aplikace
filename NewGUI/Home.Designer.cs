@@ -121,7 +121,7 @@
             this.Controls.Add(this.Sensor_panel);
             this.Controls.Add(this.Aktuatory_panel);
             this.Name = "Home";
-            this.Size = new System.Drawing.Size(666, 450);
+            this.Size = new System.Drawing.Size(666, 420);
             this.Simulator_panel.ResumeLayout(false);
             this.Sensor_panel.ResumeLayout(false);
             this.Aktuatory_panel.ResumeLayout(false);

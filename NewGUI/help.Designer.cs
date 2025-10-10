@@ -49,7 +49,7 @@
             this.Document_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Document_button.Location = new System.Drawing.Point(0, 0);
             this.Document_button.Name = "Document_button";
-            this.Document_button.Size = new System.Drawing.Size(244, 165);
+            this.Document_button.Size = new System.Drawing.Size(225, 180);
             this.Document_button.TabIndex = 1;
             this.Document_button.Text = "Dokumentace";
             this.Document_button.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -63,7 +63,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.Aktuatory_panel);
             this.Name = "help";
-            this.Size = new System.Drawing.Size(800, 419);
+            this.Size = new System.Drawing.Size(666, 420);
             this.Aktuatory_panel.ResumeLayout(false);
             this.ResumeLayout(false);
 
