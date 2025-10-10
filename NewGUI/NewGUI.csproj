@@ -168,6 +168,7 @@
     <EmbeddedResource Include="Simulator.resx">
       <DependentUpon>Simulator.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="Komponenty.json" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

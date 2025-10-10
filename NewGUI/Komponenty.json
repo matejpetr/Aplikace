@@ -1,1 +1,38 @@
-﻿
+﻿[
+  {
+    "Id": 0,
+    "Nazev": "Digitální teplotní senzor Dallas",
+    "Alias": "DS18B20",
+    "Znackeni": "Keyes KY-001",
+    "Request_INIT": "?type=INIT&id=S00",
+    "Request_UPDATE": "?type=UPDATE&id=S00",
+    "Request_CONNECT": "?type=CONNECT&id=S00",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S00",
+    "Request_RESET": "?type=RESET&id=S00",
+    "Response": "?type=DS18B20&id=S00&temp=20.5&alarm=OK",
+    "Keywords_values": {
+      "temp": "float",
+      "alarm": "string"
+    },
+    "Request_CONFIG": "?type=CONFIG&id=S00&Res=12",
+    "Config1": "Res",
+    "Config2": "",
+    "Config3": ""
+  },
+  {
+    "Id": 1,
+    "Nazev": "Senzor měření teploty a relativní vlhkosti DHT11",
+    "Alias": "DHT11",
+    "Znackeni": "Keyes KY-015",
+    "Request_UPDATE": "?type=UPDATE&id=S01",
+    "Response": "?type=DHT11&id=S01&hum=48.0&temp=20.0",
+    "Keywords_values": {
+      "hum": "float",
+      "temp": "float"
+    },
+    "Request_CONFIG": "?type=CONFIG&id=S01&Unit=C",
+    "Config1": "Unit",
+    "Config2": "HI",
+    "Config3": "HighAlarm"
+  }
+]

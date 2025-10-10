@@ -38,13 +38,13 @@
             this.Aktuatory_panel.Controls.Add(this.Document_button);
             this.Aktuatory_panel.Location = new System.Drawing.Point(3, 3);
             this.Aktuatory_panel.Name = "Aktuatory_panel";
-            this.Aktuatory_panel.Size = new System.Drawing.Size(244, 444);
+            this.Aktuatory_panel.Size = new System.Drawing.Size(223, 444);
             this.Aktuatory_panel.TabIndex = 5;
             // 
             // Document_button
             // 
             this.Document_button.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(218)))), ((int)(((byte)(215)))));
-            this.Document_button.Font = new System.Drawing.Font("Bahnschrift", 25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.Document_button.Font = new System.Drawing.Font("Bahnschrift", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Document_button.Image = global::NewGUI.Properties.Resources.half_brain_mini3;
             this.Document_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Document_button.Location = new System.Drawing.Point(0, 0);
