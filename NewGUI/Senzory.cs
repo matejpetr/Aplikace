@@ -1,227 +1,210 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO.Ports;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.IO;
+﻿using System;                                                   // Základní typy a události
+using System.Collections.Generic;                               // Kolekce jako List<>, Dictionary<>
+using System.Data;                                              // (aktuálně nepoužito, ale může se hodit pro DataTable)
+using System.Drawing;                                           // Barvy a grafické typy (pro graf/obrázky)
+using System.Linq;                                              // LINQ operace (Where, Select, ToDictionary apod.)
+using System.Text;                                              // StringBuilder a textové utility
+using System.Threading.Tasks;                                   // async/await Task
+using System.Windows.Forms;                                     // WinForms UI
+using System.IO.Ports;                                          // Sériová komunikace (SerialPort)
+using System.Windows.Forms.DataVisualization.Charting;          // Ovládací prvek Chart
+using System.IO;                                                // Práce se soubory a cestami
+using System.Text.Json;                                         // JSON serializace/deserializace
 
-namespace NewGUI
+namespace NewGUI                                                // Namespace projektu
 {
-    public partial class Senzory : UserControl
+    public partial class Senzory : UserControl                  // Uživatelský ovládací prvek Senzory
     {
-        private bool isSendingRequest = false;              // Flag pro řízení posílání požadavků
-        public string request;                              // Text aktuálního požadavku
-        private int sampleCount = 0;                        // Počet načtených vzorků
-        private string lastUsedID = null;                   // ID posledně použitého zařízení
-        private Random rnd = new Random();                  // Generátor náhodných barev
-        private Timer comPortWatcherTimer;
-        private List<string> lastKnownPorts = new List<string>();
-        private readonly Dictionary<string, string> sensorIdMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        // === Throttling příjmu/zobrazování ===
-        private readonly object _rxLock = new object();
-        private string _latestDataFrame;                // poslední přijatá věta; zobrazuje se periodicky
-        private Timer displayTimer;                     // perioda vykreslování (řízena comboBoxTIMER)
-        private System.Threading.CancellationTokenSource _sendCts; // rušení odesílací smyčky
-        public Senzory(Form1 rodic)
+        private bool isSendingRequest = false;                  // Flag: probíhá cyklické odesílání požadavků?
+        public string request;                                  // Poslední sestavený požadavek (řetězec)
+        private int sampleCount = 0;                            // Počet vykreslených vzorků do grafu
+        private string lastUsedID = null;                       // Posledně použitý „ID“ (kvůli resetu grafu při změně)
+        private Random rnd = new Random();                      // Generátor náhodných barev pro série v grafu
+        private Timer comPortWatcherTimer;                      // Timer pro sledování změn dostupných COM portů
+        private List<string> lastKnownPorts = new List<string>(); // Poslední známý seznam COM portů (na porovnání)
+        private readonly Dictionary<string, string> sensorIdMap // Mapa „Znackeni“ -> „Id“ (string)
+            = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly object _rxLock = new object();         // Zámek pro thread-safe přístup k přijatým datům
+        private string _latestDataFrame;                        // Poslední přijatá věta (zobrazíme ji periodicky timerem)
+        private Timer displayTimer;                             // Timer pro throttlované vykreslování přijatých dat
+        private System.Threading.CancellationTokenSource _sendCts; // CTS pro zrušení cyklického odesílání
+
+        private List<Komponenty> SenzoryData;                // Načtená data z Senzory.json (silně typovaná)
+
+        public Senzory(Form1 rodic)                             // Konstruktor ovládacího prvku
         {
-            InitializeComponent();
-            InitializeChart(); // Inicializace grafu
+            InitializeComponent();                              // Inicializace WinForms komponent
+            InitializeChart();                                  // Nastavení výchozího vzhledu grafu
 
-            // Výchozí hodnoty pro comboBoxy
-            comboBoxTIMER.SelectedIndex = 1;
-            // comboBoxMode.SelectedIndex = 0; // ❌ nechceme nic předvyplněné
-            // Timer pro periodické zobrazování přijatých dat (throttle)
-            displayTimer = new Timer();
-            displayTimer.Interval = 100;                // default; přepíše se dle comboBoxTIMER
-            displayTimer.Tick += DisplayTimer_Tick;
-            displayTimer.Start();
+            comboBoxTIMER.SelectedIndex = 1;                    // Výchozí položka v comboboxu pro periodu (např. 100 ms)
 
-            // Když se změní perioda v UI, přenastav i zobrazovací timer
-            comboBoxTIMER.SelectedIndexChanged += (s, e) => ApplyTimerIntervalFromUi();
-            ApplyTimerIntervalFromUi();
+            displayTimer = new Timer();                         // Vytvoření timeru pro vykreslování přijatých dat
+            displayTimer.Interval = 100;                        // Default perioda 100 ms (příp. se přepíše dle UI)
+            displayTimer.Tick += DisplayTimer_Tick;             // Handler pro každé tiknutí timeru
+            displayTimer.Start();                               // Start zobrazovacího timeru
 
-            comPortWatcherTimer = new Timer();
-            comPortWatcherTimer.Interval = 500; // kontrola každých 500 ms
-            comPortWatcherTimer.Tick += ComPortWatcherTimer_Tick;
-            comPortWatcherTimer.Start();
+            comboBoxTIMER.SelectedIndexChanged += (s, e) => ApplyTimerIntervalFromUi(); // Při změně periody v UI
+            ApplyTimerIntervalFromUi();                         // Hned nastav periodu podle aktuální hodnoty UI
 
-            SetUiForConnection(false);
+            comPortWatcherTimer = new Timer();                  // Timer pro sledování dostupných COM portů
+            comPortWatcherTimer.Interval = 500;                 // Kontrola každých 500 ms
+            comPortWatcherTimer.Tick += ComPortWatcherTimer_Tick; // Reakce na tik - aktualizace seznamu portů
+            comPortWatcherTimer.Start();                        // Spusť sledování COM portů
 
-            // jednorázově načti značení ze souboru
-            LoadSensorsFromCsv();
+            SetUiForConnection(false);                          // Inicializuj UI jako „nepřipojeno“
 
-            // nepředvybírat
-            comboBoxSensor.SelectedIndex = -1;
-            comboBoxMode.SelectedIndex = -1;
+            LoadSensorsFromJson();                              // Načti seznam senzorů ze souboru Senzory.json
 
-            // pro jistotu vhodné měřítko obrázku
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            comboBoxSensor.SelectedIndex = -1;                  // Nepředvybírej žádný senzor
+            comboBoxMode.SelectedIndex = -1;                    // Nepředvybírej žádný mód
 
-            // handler na změnu výběru (vykreslí obrázek)
-            comboBoxSensor.SelectedIndexChanged += comboBoxSensor_SelectedIndexChanged;
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;     // Obrázky senzorů hezky „přizpůsobit“
 
-            // změna volby → přepočet requestu + (de)aktivace Start
-            comboBoxSensor.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();
-            comboBoxMode.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();
-
-            // Když se změní perioda v UI, přenastav i zobrazovací timer
-            comboBoxTIMER.SelectedIndexChanged += (s, e) => ApplyTimerIntervalFromUi();
-            ApplyTimerIntervalFromUi();
-
+            comboBoxSensor.SelectedIndexChanged += comboBoxSensor_SelectedIndexChanged; // Po změně senzoru nahraj jeho obrázek
+            comboBoxSensor.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();     // A přepočítej request
+            comboBoxMode.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();       // Změna módu → přepočti request
         }
 
-        // Nastaví výchozí podobu grafu.
-        private void InitializeChart()
+        private void InitializeChart()                          // Nastavení výchozí podoby grafu
         {
-            chart1.Series.Clear();
+            chart1.Series.Clear();                              // Odstraň stávající série
 
-            Series series = new Series("measuring")
+            Series series = new Series("measuring")             // Vytvoř základní sérii pro měření
             {
-                ChartType = SeriesChartType.Line,
-                XValueType = ChartValueType.Int32,
-                YValueType = ChartValueType.Double,
-                IsVisibleInLegend = false
+                ChartType = SeriesChartType.Line,               // Čárový graf
+                XValueType = ChartValueType.Int32,              // X je integer (pořadí vzorku)
+                YValueType = ChartValueType.Double,             // Y je double (měřená hodnota)
+                IsVisibleInLegend = false                       // Nechceme legendu pro tuto sérii
             };
-            chart1.Series.Add(series);
+            chart1.Series.Add(series);                          // Přidej sérii do grafu
 
-            chart1.ChartAreas[0].AxisX.Title = "Počet vzorků";
-            chart1.ChartAreas[0].AxisY.LineWidth = 2;
-            chart1.Series["measuring"].BorderWidth = 2;
-            chart1.Series["measuring"].Color = Color.Black;
+            chart1.ChartAreas[0].AxisX.Title = "Počet vzorků";  // Popisek osy X
+            chart1.ChartAreas[0].AxisY.LineWidth = 2;           // Tloušťka osy Y
+            chart1.Series["measuring"].BorderWidth = 2;         // Tloušťka čáry série
+            chart1.Series["measuring"].Color = Color.Black;     // Barva čáry (základní)
         }
 
-        // Skládání requestu z UI + (de)aktivace Start tlačítka
-        private void UpdateRequestFromUi()
+        private void UpdateRequestFromUi()                      // Poskládá požadavek podle aktuálního výběru v UI
         {
-            bool hasSensor = comboBoxSensor.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxSensor.Text);
-            bool hasMode = comboBoxMode.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxMode.Text);
-            bool connected = SerialManager.Instance.IsOpen;
+            bool hasSensor = comboBoxSensor.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxSensor.Text); // Máme vybraný senzor?
+            bool hasMode = comboBoxMode.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxMode.Text);       // Máme vybraný mód?
+            bool connected = SerialManager.Instance.IsOpen;     // Je sériový port otevřen?
 
-            if (hasSensor && hasMode)
+            if (hasSensor && hasMode)                           // Pokud máme vše potřebné
             {
-                string sensorLabel = comboBoxSensor.Text.Trim();
-                string mode = comboBoxMode.Text.Trim(); // UPDATE/CONFIG/INIT/RESET...
+                string sensorLabel = comboBoxSensor.Text.Trim(); // Značení (label) vybraného senzoru
+                string mode = comboBoxMode.Text.Trim();          // Mód (INIT/UPDATE/CONFIG/RESET…)
 
-                // vezmi id ze sloupce „id“ pro dané „Značení“
-                if (!sensorIdMap.TryGetValue(sensorLabel, out string sensorId) || string.IsNullOrWhiteSpace(sensorId))
-                    sensorId = sensorLabel;
+                if (!sensorIdMap.TryGetValue(sensorLabel, out string sensorId) || string.IsNullOrWhiteSpace(sensorId)) // Najdi ID podle značení
+                    sensorId = sensorLabel;                     // Fallback: použij text přímo
 
-                // >>> NOVĚ: převod na Sxx
-                string formattedId = FormatSensorId(sensorId);
+                string formattedId = FormatSensorId(sensorId);  // Normalizuj ID do tvaru Sxx
 
-                request = mode.Equals("INIT", StringComparison.OrdinalIgnoreCase)
-                          ? $"?type={mode}"
-                          : $"?type={mode}&id={formattedId}";
+                request = mode.Equals("INIT", StringComparison.OrdinalIgnoreCase) // INIT nemá id v dotazu
+                          ? $"?type={mode}"                                       // → pouze ?type=INIT
+                          : $"?type={mode}&id={formattedId}";                     // Jinak připoj i &id=Sxx
 
-
-                label8.Text = request; // náhled
+                label8.Text = request;                           // Zobraz náhled požadavku do labelu
             }
-            else
+            else                                                 // Není vybrán senzor/mód
             {
-                request = null;
-                label8.Text = string.Empty;
+                request = null;                                  // Zahoď aktuální požadavek
+                label8.Text = string.Empty;                      // Vyčisti náhled
             }
 
-            // Start je povolen jen když je připojeno a máme validní volby
-            button1.Enabled = connected && hasSensor && hasMode;
+            button1.Enabled = connected && hasSensor && hasMode; // Tlačítko Start jen pokud je vše připravené
         }
 
-        private void ApplyTimerIntervalFromUi()
+        private void ApplyTimerIntervalFromUi()                 // Přenastaví periodu vykreslovacího timeru dle UI
         {
-            string txt = comboBoxTIMER.Text?.Trim();
-            int delay;
-            if (!int.TryParse(txt, out delay) || delay < 10) delay = 100; // min. 10 ms jako pojistka
+            string txt = comboBoxTIMER.Text?.Trim();            // Text z comboboxu
+            int delay;                                          // Cílová perioda v ms
+            if (!int.TryParse(txt, out delay) || delay < 10)    // Ošetření: minimálně 10 ms, jinak default
+                delay = 100;
 
-            // 1) perioda zobrazování
-            displayTimer.Interval = delay;
-            // 2) perioda zápisu se čte v SendLoopAsync/SendRequest logice – bude stejná
+            displayTimer.Interval = delay;                      // Nastav periodu zobrazovacího timeru
+            // Pozn.: perioda odesílání se čte v SendLoopAsync (bereme stejnou hodnotu z UI)
         }
 
-
-        private void SetUiForConnection(bool isConnected)
+        private void SetUiForConnection(bool isConnected)       // Přepne stavy ovládacích prvků podle připojení
         {
-            comboBoxCOM.Enabled = !isConnected;
+            comboBoxCOM.Enabled = !isConnected;                 // Při připojení zamknout výběr portu
 
-            comboBoxSensor.Enabled = isConnected; // Senzor ID
-            comboBoxMode.Enabled = isConnected;   // Příkaz
-            comboBoxTIMER.Enabled = isConnected;  // Perioda
+            comboBoxSensor.Enabled = isConnected;               // Povolit senzory až po připojení
+            comboBoxMode.Enabled = isConnected;                 // Povolit volbu módu až po připojení
+            comboBoxTIMER.Enabled = isConnected;                // Povolit změny periody až po připojení
 
-            button1.Enabled = false;
+            button1.Enabled = false;                            // Start vypneme (zapne se po splnění podmínek)
 
-            if (ConnectBtn != null)
-                ConnectBtn.Text = isConnected ? "Odpojit" : "Připojit";
+            if (ConnectBtn != null)                             // Ochrana pokud designér generuje jinak
+                ConnectBtn.Text = isConnected ? "Odpojit" : "Připojit"; // Text tlačítka připojení
 
-            badgeConn.Text = isConnected ? "Připojeno" : "Nepřipojeno";
-            badgeConn.BackColor = isConnected ? Color.FromArgb(46, 125, 50) : Color.FromArgb(107, 114, 128);
+            badgeConn.Text = isConnected ? "Připojeno" : "Nepřipojeno"; // Text „badge“ stavu
+            badgeConn.BackColor = isConnected                   // Barva „badge“ dle stavu
+                ? Color.FromArgb(46, 125, 50)
+                : Color.FromArgb(107, 114, 128);
 
-            UpdateRequestFromUi();
+            UpdateRequestFromUi();                              // Po změně stavu přepočti požadavek
         }
 
-        private void ComPortWatcherTimer_Tick(object sender, EventArgs e)
+        private void ComPortWatcherTimer_Tick(object sender, EventArgs e) // Každých 500 ms zkontroluj COM porty
         {
-            var currentPorts = SerialPort.GetPortNames().ToList();
+            var currentPorts = SerialPort.GetPortNames().ToList(); // Získej aktuální seznam COM portů
 
-            if (!currentPorts.SequenceEqual(lastKnownPorts))
+            if (!currentPorts.SequenceEqual(lastKnownPorts))    // Změnil se seznam?
             {
-                string selected = comboBoxCOM.SelectedItem as string;
+                string selected = comboBoxCOM.SelectedItem as string; // Původně vybraný port
 
-                comboBoxCOM.Items.Clear();
-                comboBoxCOM.Items.AddRange(currentPorts.ToArray());
+                comboBoxCOM.Items.Clear();                      // Vyčisti combobox
+                comboBoxCOM.Items.AddRange(currentPorts.ToArray()); // Naplň novými porty
 
-                if (selected != null && currentPorts.Contains(selected))
+                if (selected != null && currentPorts.Contains(selected)) // Pokud původní stále existuje
                 {
-                    comboBoxCOM.SelectedItem = selected;
+                    comboBoxCOM.SelectedItem = selected;        // ponech ho
                 }
-                else if (currentPorts.Count > 0)
+                else if (currentPorts.Count > 0)                // Jinak když nějaké jsou
                 {
-                    comboBoxCOM.SelectedIndex = 0;
+                    comboBoxCOM.SelectedIndex = 0;              // vyber první
                 }
 
-                lastKnownPorts = currentPorts;
+                lastKnownPorts = currentPorts;                  // Ulož „last known“ seznam
             }
         }
 
-        private void ConnectBtn_Click(object sender, EventArgs e)
+        private void ConnectBtn_Click(object sender, EventArgs e) // Handler tlačítka Připojit/Odpojit
         {
-            // Pokud už je otevřeno, bereme to jako "Odpojit"
-            if (SerialManager.Instance.IsOpen)
+            if (SerialManager.Instance.IsOpen)                  // Pokud už je otevřeno → odpojovat
             {
                 try
                 {
-                    StopSendingRequest(); // pro jistotu ukonči cyklus
-                    SerialManager.Instance.DetachReceiver();
-                    SerialManager.Instance.Close();
-                    AppendTextBox("Odpojeno od portu.\r\n");
+                    StopSendingRequest();                       // Ukonči případný odesílací cyklus
+                    SerialManager.Instance.DetachReceiver();    // Odpoj handler pro příjem
+                    SerialManager.Instance.Close();             // Zavři port
+                    AppendTextBox("Odpojeno od portu.\r\n");    // Log do textBoxu
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Chyba při odpojování: {ex.Message}");
+                    MessageBox.Show($"Chyba při odpojování: {ex.Message}"); // Chybová hláška
                 }
                 finally
                 {
-                    SetUiForConnection(false);
-                    UpdateRequestFromUi();
+                    SetUiForConnection(false);                  // UI → stav nepřipojeno
+                    UpdateRequestFromUi();                      // Přepočítej požadavek
                 }
-                return;
+                return;                                         // hotovo
             }
 
-            // Jinak se pokusíme připojit
-            string selectedPort = comboBoxCOM.Text?.Trim();
-            if (string.IsNullOrWhiteSpace(selectedPort))
+            string selectedPort = comboBoxCOM.Text?.Trim();     // Zvolený COM port z UI
+            if (string.IsNullOrWhiteSpace(selectedPort))        // Nic nevybráno?
             {
-                MessageBox.Show("Prosím vyber COM port.");
-                return;
+                MessageBox.Show("Prosím vyber COM port.");      // Upozorni uživatele
+                return;                                         // ukonči
             }
 
             try
             {
-                // Nastav + otevři
-                SerialManager.Instance.ConfigurePort(
+                SerialManager.Instance.ConfigurePort(           // Nastav parametry portu
                     portName: selectedPort,
                     baudRate: 115200,
                     parity: Parity.None,
@@ -231,559 +214,469 @@ namespace NewGUI
                     newLine: "\n"
                 );
 
-                SerialManager.Instance.AttachExclusiveReceiver(SerialPort_DataReceived);
-                SerialManager.Instance.Open();
+                SerialManager.Instance.AttachExclusiveReceiver(SerialPort_DataReceived); // Připoj handler příjmu
+                SerialManager.Instance.Open();                    // Otevři port
 
-                SetUiForConnection(true);
-                AppendTextBox($"Připojeno k {selectedPort}.\r\n");
-                UpdateRequestFromUi();
+                SetUiForConnection(true);                        // UI → stav připojeno
+                AppendTextBox($"Připojeno k {selectedPort}.\r\n"); // Log
+                UpdateRequestFromUi();                           // Přepočítej požadavek
             }
             catch (Exception ex)
             {
-                SetUiForConnection(false);
-                MessageBox.Show($"Chyba při otevírání portu: {ex.Message}");
-                badgeConn.Text = "Chyba";
-                badgeConn.BackColor = Color.FromArgb(211, 47, 47);
-                UpdateRequestFromUi();
+                SetUiForConnection(false);                       // Při chybě vrať UI do nepřipojeno
+                MessageBox.Show($"Chyba při otevírání portu: {ex.Message}"); // Hláška chyby
+                badgeConn.Text = "Chyba";                        // Zobraz „Chyba“
+                badgeConn.BackColor = Color.FromArgb(211, 47, 47); // Červená barva badge
+                UpdateRequestFromUi();                           // Přepočítej požadavek
             }
         }
 
-        private void buttonStart_Click(object sender, EventArgs e)
+        private void buttonStart_Click(object sender, EventArgs e) // Handler tlačítka Start/Stop
         {
-            UpdateRequestFromUi();
+            UpdateRequestFromUi();                                // Ujisti se, že request je aktuální
 
-            string selectedPort = comboBoxCOM.Text?.Trim();
-            string currentID = comboBoxSensor.Text?.Trim();
-            string currentType = comboBoxMode.Text?.Trim();
+            string selectedPort = comboBoxCOM.Text?.Trim();       // Aktuálně zvolený COM port
+            string currentID = comboBoxSensor.Text?.Trim();       // Aktuální značení senzoru
+            string currentType = comboBoxMode.Text?.Trim();       // Aktuální mód
 
-            if (button1.Text == "Spustit")
+            if (button1.Text == "Spustit")                        // Pokud chceme spustit měření
             {
-                if (string.IsNullOrWhiteSpace(selectedPort))
+                if (string.IsNullOrWhiteSpace(selectedPort))      // Kontrola vybraného portu
                 {
                     MessageBox.Show("Prosím vyber COM port.");
                     return;
                 }
 
-                if (!SerialManager.Instance.IsOpen)
+                if (!SerialManager.Instance.IsOpen)               // Port musí být otevřený
                 {
                     MessageBox.Show("Nejprve se připoj k sériovému portu.");
                     return;
                 }
 
-                if (string.IsNullOrWhiteSpace(currentType))
+                if (string.IsNullOrWhiteSpace(currentType))       // Musí být vybrán mód
                 {
                     MessageBox.Show("Prosím vyber typ měření.");
                     return;
                 }
 
-                if (!currentType.Equals("INIT", StringComparison.OrdinalIgnoreCase))
+                if (!currentType.Equals("INIT", StringComparison.OrdinalIgnoreCase)) // INIT nepotřebuje ID
                 {
-                    if (string.IsNullOrWhiteSpace(currentID))
+                    if (string.IsNullOrWhiteSpace(currentID))     // Ostatní módy požadují ID
                     {
                         MessageBox.Show("Prosím zadej nebo vyber ID zařízení.");
                         return;
                     }
                 }
 
-                // Reset grafu při změně ID
-                if (currentID != lastUsedID)
+                if (currentID != lastUsedID)                      // Změnilo se ID od posledně?
                 {
-                    ResetChart();
-                    lastUsedID = currentID;
+                    ResetChart();                                 // Resetuj graf
+                    lastUsedID = currentID;                       // Ulož nové ID
                 }
 
-                // Spuštění komunikace
-                StartSendingRequest();
+                StartSendingRequest();                            // Spusť odesílání (cyklické/ jednorázové dle módu)
 
-                // Zablokování vstupů
-                button1.Text = "Zastavit";
-                comboBoxSensor.Enabled = false;
+                button1.Text = "Zastavit";                        // UI → tlačítko nyní zastaví
+                comboBoxSensor.Enabled = false;                   // Zamkni UI prvky
                 comboBoxMode.Enabled = false;
                 comboBoxCOM.Enabled = false;
                 comboBoxTIMER.Enabled = false;
                 ConnectBtn.Enabled = false;
-                button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(183, 28, 28);
+                button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(183, 28, 28); // Barvy tlačítka
                 button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(153, 0, 0);
                 button1.BackColor = Color.FromArgb(211, 47, 47);
                 button1.FlatAppearance.BorderColor = Color.FromArgb(211, 47, 47);
             }
-            else
+            else                                                   // Pokud chceme zastavit
             {
-                comboBoxSensor.Enabled = true;
+                comboBoxSensor.Enabled = true;                    // Odemkni UI prvky
                 comboBoxMode.Enabled = true;
                 comboBoxCOM.Enabled = true;
                 comboBoxTIMER.Enabled = true;
                 ConnectBtn.Enabled = true;
-                button1.Text = "Spustit";
+                button1.Text = "Spustit";                         // Změň text tlačítka
 
-                StopSendingRequest();                  // ⟵ musí být hned tady
-                textBox2.AppendText("Měření pozastaveno.\r\n");
+                StopSendingRequest();                             // Zastav cyklické odesílání
+                textBox2.AppendText("Měření pozastaveno.\r\n");   // Log
 
-                button1.BackColor = Color.FromArgb(15, 108, 189);
+                button1.BackColor = Color.FromArgb(15, 108, 189); // Obnov barvy tlačítka
                 button1.FlatAppearance.BorderColor = Color.FromArgb(15, 108, 189);
                 button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(17, 94, 163);
                 button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(12, 83, 146);
 
-                UpdateRequestFromUi();
+                UpdateRequestFromUi();                            // Přepočítej požadavek
             }
-
         }
 
-        private void StartSendingRequest()
+        private void StartSendingRequest()                        // Spuštění odesílání požadavku
         {
-            if (request == null)
+            if (request == null)                                  // Není co poslat?
             {
-                AppendTextBox("Požadavek není sestaven.\r\n");
-                return;
+                AppendTextBox("Požadavek není sestaven.\r\n");    // Informuj
+                return;                                           // Ukonči
             }
 
-            // povol zobrazování (throttle timer) – pro jistotu
-            displayTimer?.Start();
+            displayTimer?.Start();                                // Zapni zobrazovací timer (pro jistotu)
 
-            // Nová session CTS – okamžité zrušení při Stop
-            _sendCts?.Cancel();
-            _sendCts?.Dispose();
-            _sendCts = new System.Threading.CancellationTokenSource();
+            _sendCts?.Cancel();                                   // Zruš případné předchozí odesílání
+            _sendCts?.Dispose();                                  // Uvolni zdroje
+            _sendCts = new System.Threading.CancellationTokenSource(); // Nový cancellation token
 
-            // UPDATE = cyklické posílání, ostatní = jednorázově
-            if (request.StartsWith("?type=update", StringComparison.OrdinalIgnoreCase))
+            if (request.StartsWith("?type=update", StringComparison.OrdinalIgnoreCase)) // UPDATE = cyklické
             {
-                isSendingRequest = true;
-                _ = SendLoopAsync(_sendCts.Token); // fire-and-forget smyčka
+                isSendingRequest = true;                          // Nastav flag cyklení
+                _ = SendLoopAsync(_sendCts.Token);                // Spusť smyčku na pozadí (fire-and-forget)
             }
-            else
+            else                                                  // Ostatní módy = jednorázový zápis
             {
                 try
                 {
-                    if (SerialManager.Instance.IsOpen)
-                        SerialManager.Instance.WriteLine(request);
+                    if (SerialManager.Instance.IsOpen)            // Jen když je port otevřený
+                        SerialManager.Instance.WriteLine(request);// Odejdi požadavek
                     else
-                        AppendTextBox("Port není otevřen – požadavek se neodešle.\r\n");
+                        AppendTextBox("Port není otevřen – požadavek se neodešle.\r\n"); // Informuj
                 }
                 catch (Exception ex)
                 {
-                    AppendTextBox($"Chyba při zápisu: {ex.Message}\r\n");
+                    AppendTextBox($"Chyba při zápisu: {ex.Message}\r\n"); // Zachyť chybu zápisu
                 }
-                isSendingRequest = false;
+                isSendingRequest = false;                         // Neprobíhá cyklus
             }
         }
 
-        private async Task SendLoopAsync(System.Threading.CancellationToken ct)
+        private async Task SendLoopAsync(System.Threading.CancellationToken ct) // Smyčka cyklického odesílání
         {
-            while (!ct.IsCancellationRequested && SerialManager.Instance.IsOpen && isSendingRequest)
+            while (!ct.IsCancellationRequested &&                // Dokud není zrušeno
+                   SerialManager.Instance.IsOpen &&               // a port je otevřen
+                   isSendingRequest)                              // a máme cyklus povolen
             {
-                // Perioda z comboBoxTIMER
-                int delay = 100;
-                var txt = comboBoxTIMER?.Text?.Trim();
-                if (!int.TryParse(txt, out delay) || delay < 1) delay = 100;
+                int delay = 100;                                  // Default delay
+                var txt = comboBoxTIMER?.Text?.Trim();            // Načti z UI
+                if (!int.TryParse(txt, out delay) || delay < 1)   // Ošetření chybné hodnoty
+                    delay = 100;
 
                 try
                 {
-                    await Task.Delay(delay, ct);      // zrušitelné čekání
-                    if (ct.IsCancellationRequested) break;
+                    await Task.Delay(delay, ct);                  // Počkej daný interval (zrušitelné)
+                    if (ct.IsCancellationRequested) break;        // Pokud zrušeno, vyskoč
 
-                    SerialManager.Instance.WriteLine(request);
+                    SerialManager.Instance.WriteLine(request);    // Odeslat požadavek
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException)                // Zrušeno čekání
                 {
-                    break; // stop okamžitě
+                    break;                                        // Ukonči smyčku
                 }
-                catch (Exception ex)
+                catch (Exception ex)                              // Jiná chyba
                 {
-                    AppendTextBox($"Chyba při zápisu: {ex.Message}\r\n");
-                    break;
+                    AppendTextBox($"Chyba při zápisu: {ex.Message}\r\n"); // Napiš chybu
+                    break;                                        // Ukonči smyčku
                 }
             }
         }
 
-
-        private void StopSendingRequest()
+        private void StopSendingRequest()                         // Zastavení cyklického odesílání
         {
-            isSendingRequest = false;
+            isSendingRequest = false;                             // Vypni flag
 
-            // 1) Zastav zobrazování hned
-            displayTimer?.Stop();
+            displayTimer?.Stop();                                 // Okamžitě zastav zobrazování
 
-            // 2) Zruš čekající delay/odeslání
-            _sendCts?.Cancel();
+            _sendCts?.Cancel();                                   // Zruš čekající delay/odeslání
 
-            // 3) Zahodit poslední rámec (nic dalšího se nevykreslí)
-            lock (_rxLock) _latestDataFrame = null;
+            lock (_rxLock) _latestDataFrame = null;               // Vymaž poslední přijatý rámec
 
-            // 4) (volitelně) vyprázdni HW buffery
             try
             {
-                // pokud si přidáš metodu do SerialManageru (viz krok 7), můžeš:
-                // SerialManager.Instance.DiscardInOut();
+                // Případně lze doplnit SerialManager.Instance.DiscardInOut(); // Vyprázdnění HW bufferů
             }
-            catch { }
+            catch { }                                             // Tiché ignorování chyb
         }
 
-
-        // Událost spuštěná při příjmu dat ze sériového portu.
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e) // Příjem dat z portu
         {
             try
             {
-                var port = sender as SerialPort;
-                string data = port?.ReadExisting();
-                if (string.IsNullOrEmpty(data)) return;
+                var port = sender as SerialPort;                  // Přetypuj na SerialPort
+                string data = port?.ReadExisting();               // Vytáhni vše dostupné
+                if (string.IsNullOrEmpty(data)) return;           // Nic nepřišlo → konec
 
-                // Ulož poslední rámec thread-safe; zobrazí se při ticku displayTimeru
-                lock (_rxLock)
+                lock (_rxLock)                                    // Zamkni sdílený stav
                 {
-                    _latestDataFrame = data;
+                    _latestDataFrame = data;                      // Ulož poslední přijatá data
                 }
-                // NEvolej ParseAndDisplayData/SendRequest hned – throttlujeme v DisplayTimer_Tick
+                // Neparsujeme hned – jen uložíme a zobrazíme na DisplayTimer_Tick (throttle)
             }
             catch
             {
-                // ignoruj šum
+                // Schlapni případný šum/chyby bez blokace UI
             }
-
         }
 
-
-        // Zpracuje přijatá data a zobrazí je v grafu a textovém výstupu.
-        private void ParseAndDisplayData(string data)
+        private void ParseAndDisplayData(string data)             // Parsování a vykreslení rámce typu ?type=...
         {
-            data = data.Trim();
-            if (data.StartsWith("?"))
-                data = data.Substring(1);
+            data = data.Trim();                                   // Ořízni whitespace
+            if (data.StartsWith("?"))                             // Pokud začíná „?“
+                data = data.Substring(1);                         // Odstraň ho
 
-            var parameters = data.Split('&')
+            var parameters = data.Split('&')                      // Rozděl na páry key=value
                                  .Select(part => part.Split('='))
                                  .Where(pair => pair.Length == 2)
-                                 .ToDictionary(pair => pair[0], pair => pair[1]);
+                                 .ToDictionary(pair => pair[0], pair => pair[1]); // Do slovníku
 
-            var dataForGraph = parameters
+            var dataForGraph = parameters                         // Nech si jen hodnoty pro graf (bez type/id)
                                  .Where(kvp => kvp.Key != "type" && kvp.Key != "id")
                                  .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            List<string> valueTexts = new List<string>();
+            List<string> valueTexts = new List<string>();         // Sklad pro logovací řádky
 
-            foreach (var kvp in dataForGraph)
+            foreach (var kvp in dataForGraph)                     // Pro každou proměnnou
             {
-                string variableName = kvp.Key;
-                string stringValue = kvp.Value;
+                string variableName = kvp.Key;                    // Jméno proměnné
+                string stringValue = kvp.Value;                   // Hodnota jako string
 
-                if (double.TryParse(stringValue, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double numericValue))
+                if (double.TryParse(stringValue,                  // Zkus číslo (InvariantCulture)
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out double numericValue))
                 {
-                    this.Invoke(new Action(() =>
+                    this.Invoke(new Action(() =>                  // Na UI vlákně:
                     {
-                        if (!chart1.Series.IsUniqueName(variableName))
+                        if (!chart1.Series.IsUniqueName(variableName)) // Série už existuje?
                         {
-                            // Série již existuje
+                            // Pokud existuje, nepřidáváme novou
                         }
                         else
                         {
-                            Series newSeries = new Series(variableName)
+                            Series newSeries = new Series(variableName) // Vytvoř novou sérii pro proměnnou
                             {
-                                ChartType = SeriesChartType.Line,
-                                BorderWidth = 2,
-                                Color = Color.FromArgb(rnd.Next(256), rnd.Next(256), rnd.Next(256))
+                                ChartType = SeriesChartType.Line,       // Čárový graf
+                                BorderWidth = 2,                        // Tloušťka čáry
+                                Color = Color.FromArgb(                 // Náhodná barva
+                                    rnd.Next(256), rnd.Next(256), rnd.Next(256))
                             };
-                            chart1.Series.Add(newSeries);
+                            chart1.Series.Add(newSeries);               // Přidej sérii do grafu
                         }
 
-                        if (chart1.Series[variableName].Points.Count > 50)
+                        if (chart1.Series[variableName].Points.Count > 50) // Udržuj max ~50 bodů
                         {
-                            chart1.Series[variableName].Points.RemoveAt(0);
+                            chart1.Series[variableName].Points.RemoveAt(0); // Odeber nejstarší
                         }
 
-                        chart1.Series[variableName].Points.AddXY(sampleCount, numericValue);
+                        chart1.Series[variableName].Points.AddXY(sampleCount, numericValue); // Přidej nový bod
 
-                        chart1.ChartAreas[0].AxisX.Minimum = Math.Max(0, sampleCount - 10);
-                        chart1.ChartAreas[0].AxisX.Maximum = sampleCount;
-                        chart1.ChartAreas[0].RecalculateAxesScale();
+                        chart1.ChartAreas[0].AxisX.Minimum = Math.Max(0, sampleCount - 10);   // Posun okna X
+                        chart1.ChartAreas[0].AxisX.Maximum = sampleCount;                     // Max X = aktuální vzorek
+                        chart1.ChartAreas[0].RecalculateAxesScale();                          // Rekalibruj osy
 
-                        chart1.ChartAreas[0].AxisY.Title = dataForGraph.Count > 1 ? "Values" : variableName.ToUpper();
+                        chart1.ChartAreas[0].AxisY.Title = dataForGraph.Count > 1             // Popisek osy Y
+                            ? "Values"
+                            : variableName.ToUpper();
                     }));
 
-                    valueTexts.Add($"{variableName} = {numericValue}");
+                    valueTexts.Add($"{variableName} = {numericValue}"); // Připrav text pro log
                 }
                 else
                 {
-                    valueTexts.Add($"{variableName}: {stringValue}");
+                    valueTexts.Add($"{variableName}: {stringValue}");   // Nelze parsovat číslo → vypiš jako text
                 }
             }
 
-            if (valueTexts.Count > 0)
+            if (valueTexts.Count > 0)                                   // Máme co logovat?
             {
-                AppendTextBox(string.Join(", ", valueTexts) + "\r\n");
-                sampleCount++;
+                AppendTextBox(string.Join(", ", valueTexts) + "\r\n");  // Vypiš do textBoxu
+                sampleCount++;                                          // Zvyšte čítač vzorků
             }
         }
-        private static string FormatSensorId(string rawId)
+
+        private static string FormatSensorId(string rawId)        // Normalizace ID do tvaru Sxx
         {
-            if (string.IsNullOrWhiteSpace(rawId)) return rawId;
+            if (string.IsNullOrWhiteSpace(rawId)) return rawId;  // Prázdné → vrať jak je
 
-            string t = rawId.Trim();
+            string t = rawId.Trim();                              // Ořízni
 
-            // Když už je ve tvaru Sxx / sxx, ponech (normalizuj na velké S)
-            if (t.StartsWith("S", StringComparison.OrdinalIgnoreCase))
-                return "S" + t.Substring(1);
+            if (t.StartsWith("S", StringComparison.OrdinalIgnoreCase)) // Pokud už začíná S/s
+                return "S" + t.Substring(1);                     // Normalizuj velké „S“
 
-            // Zkus čistě číslo
-            if (int.TryParse(t, out int n) && n >= 0)
-                return "S" + n.ToString("D2");
+            if (int.TryParse(t, out int n) && n >= 0)            // Pokud je to čisté číslo
+                return "S" + n.ToString("D2");                   // Naformátuj Sxx
 
-            // Jinak vytáhni číslice z textu (např. "ID-3" -> "S03")
-            var digits = new string(t.Where(char.IsDigit).ToArray());
-            if (int.TryParse(digits, out n) && n >= 0)
-                return "S" + n.ToString("D2");
+            var digits = new string(t.Where(char.IsDigit).ToArray()); // Vytáhni číslice z textu
+            if (int.TryParse(digits, out n) && n >= 0)           // Zkus převést
+                return "S" + n.ToString("D2");                   // Naformátuj
 
-            // Fallback: prostě předřaď S
-            return "S" + t;
+            return "S" + t;                                      // Fallback: prostě předřaď „S“
         }
 
-
-
-        private void ParseInitMessage(string data)
+        private void ParseInitMessage(string data)                // Parsování speciální INIT odpovědi (typ: id1:typ1,id2:typ2,…)
         {
-            string rawData = data.Trim();
+            string rawData = data.Trim();                         // Ořízni
 
-            if (rawData.StartsWith("?"))
+            if (rawData.StartsWith("?"))                          // Pokud začíná „?“
             {
-                rawData = rawData.Substring(1); // odstraní '?'
+                rawData = rawData.Substring(1);                   // Odstraň „?“
             }
 
-            string[] sensorEntries = rawData.Split(',');
+            string[] sensorEntries = rawData.Split(',');          // Rozděl na položky dle čárky
 
-            StringBuilder result = new StringBuilder();
+            StringBuilder result = new StringBuilder();           // StringBuilder pro multiřádkový výstup
 
-            foreach (string entry in sensorEntries)
+            foreach (string entry in sensorEntries)               // Pro každou položku „id:typ“
             {
-                string[] parts = entry.Split(':');
-                if (parts.Length == 2)
+                string[] parts = entry.Split(':');                // Rozděl na id a typ
+                if (parts.Length == 2)                            // Očekáváme přesně 2 části
                 {
-                    string id = parts[0];
-                    string type = parts[1];
-                    result.AppendLine($"{type} ({id})");
+                    string id = parts[0];                         // id
+                    string type = parts[1];                       // typ
+                    result.AppendLine($"{type} ({id})");          // Přidej řádek „typ (id)“
                 }
             }
 
-            AktivBox.Text = result.ToString();
+            AktivBox.Text = result.ToString();                    // Zapiš do textBoxu AktivBox
         }
 
-        /// Vlákna-bezpečný zápis do textového pole.
-        private void AppendTextBox(string text)
+        private void AppendTextBox(string text)                   // Thread-safe append do textBox2
         {
-            if (textBox2.InvokeRequired)
+            if (textBox2.InvokeRequired)                          // Jsme mimo UI vlákno?
             {
-                textBox2.Invoke(new Action(() =>
+                textBox2.Invoke(new Action(() =>                  // Přepošli na UI vlákno
                 {
-                    textBox2.AppendText(text);
+                    textBox2.AppendText(text);                    // Přidej text
                 }));
             }
-            else
+            else                                                  // Jsme na UI vlákně
             {
-                textBox2.AppendText(text);
+                textBox2.AppendText(text);                        // Přidej text přímo
             }
         }
 
-        /// Resetuje graf pro nové ID.
-        private void ResetChart()
+        private void ResetChart()                                 // Reset grafu (při změně ID)
         {
-            sampleCount = 0;
-            chart1.Series.Clear();
-            InitializeChart();
+            sampleCount = 0;                                      // Nuluj počitadlo
+            chart1.Series.Clear();                                // Odeber všechny série
+            InitializeChart();                                    // Vytvoř výchozí sérii znovu
         }
 
-        /// Ukončení – uzavření portu (pokud tahle událost používáš).
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) // Při zavírání formuláře
         {
-            SerialManager.Instance.Close();
+            SerialManager.Instance.Close();                       // Zavři sériový port
         }
 
-        private void LoadSensorsFromCsv()
+        private void LoadSensorsFromJson()                                        // Metoda bez vstupů – načte JSON a naplní UI + mapu
+        {                                                                         // Začátek bloku metody
+            try                                                                   // Try-catch: kdyby cokoliv spadlo (soubor, JSON), zobrazíme hlášku
+            {                                                                     // Začátek try
+                                                                                  // JSON musí být vedle .exe (Properties: Content + Copy if newer)
+                string jsonPath = Path.Combine(Application.StartupPath,           // Poskládáme absolutní cestu...
+                                                "Senzory.json");                   // ...k souboru Senzory.json ve stejné složce jako .exe
+
+                if (!File.Exists(jsonPath))                                       // Ověříme, že soubor opravdu existuje
+                {                                                                 // Pokud neexistuje:
+                    MessageBox.Show("Soubor Senzory.json nebyl nalezen v "        // ...ukaž informaci uživateli
+                                     + Application.StartupPath + ".");            // ...a doplň, kde jsme hledali
+                    return;                                                        // A ukonči metodu (není co načítat)
+                }                                                                 // Konec if
+
+                string jsonText = File.ReadAllText(jsonPath);                     // Načti celý obsah souboru jako text (string)
+
+                var data = JsonSerializer.Deserialize<List<Komponenty>>(          //Převeď JSON text na List<Komponenty>
+                    jsonText,                                                     //Vstup: načtený JSON řetězec
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true } //Nastavení: názvy vlastností nerozlišuj podle velikosti písmen
+                );                                                                //Konec volání Deserialize
+
+                if (data == null || data.Count == 0)                              //Ověření: máme nějaká data?
+                {                                                                 //Pokud ne:
+                    MessageBox.Show("Senzory.json je prázdný nebo ve špatném formátu."); //...informuj uživatele
+                    return;                                                       // ...a skonči
+                }                                                                 // Konec if
+
+                SenzoryData = data;                                            // Ulož načtený seznam do pole třídy (budeme s tím dál pracovat)
+
+                sensorIdMap.Clear();                                              // Vyčisti mapu „Znackeni → Id“ (aby tam nezůstaly staré hodnoty)
+                comboBoxSensor.BeginUpdate();                                     // Optimalizace vykreslování při hromadném plnění comboboxu
+                comboBoxSensor.Items.Clear();                                     // Vyprázdni položky comboboxu
+
+                foreach (var k in SenzoryData)                                 // Projdi všechny prvky z JSONu (každý „senzor“)
+                {                                                                 // Začátek foreach
+                    string label = (k.Znaceni ?? string.Empty).Trim();           // Vytáhni text „Znackeni“ (název/štítek do UI), ošetři null a ořízni
+                    if (string.IsNullOrWhiteSpace(label))                         // Když je prázdný/whitespace,
+                        continue;                                                 // ...tuhle položku přeskoč
+
+                    if (!sensorIdMap.ContainsKey(label))                          // Je to nový label? (ještě není v mapě)
+                        comboBoxSensor.Items.Add(label);                          // ...tak ho přidej do comboboxu (aby šel vybrat)
+
+                    sensorIdMap[label] = k.Id.ToString();                         // Do mapy ulož dvojici Label → Id (Id převedeme na string)
+                                                                                  // POZN: Pokud máš v modelu Id už jako "Sxx" string, napiš prostě: sensorIdMap[label] = k.Id;
+                }                                                                 // Konec foreach
+
+                comboBoxSensor.EndUpdate();                                       // Ukonči hromadnou aktualizaci (UI jednorázově překreslí změny)
+                comboBoxSensor.SelectedIndex = -1;                                // Nic nepředvybírej (uživatel si vybere sám)
+                UpdateRequestFromUi();                                            // Přepočítej náhled požadavku (label8, tlačítko Start apod.)
+            }                                                                     // Konec try
+            catch (Exception ex)                                                  // Zachytíme libovolnou výjimku (soubor, parsování…)
+            {                                                                     // Začátek catch
+                MessageBox.Show("Chyba při načítání Senzory.json: " + ex.Message);// Ukaž chybovou hlášku s důvodem
+            }                                                                     // Konec catch
+        }                                                                         // Konec metody
+
+
+        private void DisplayTimer_Tick(object sender, EventArgs e) // Každé tiknutí → zobraz poslední rámec (pokud je)
         {
-            try
+            string snapshot = null;                               // Lokální kopie přijatých dat
+            lock (_rxLock)                                        // Zamkni sdílený stav
             {
-                string baseDir = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
-                string csvPath = Path.Combine(baseDir, "MTA_Senzory.csv");
-
-                if (!File.Exists(csvPath))
+                if (!string.IsNullOrEmpty(_latestDataFrame))      // Máme něco?
                 {
-                    MessageBox.Show($"Soubor nebyl nalezen: {csvPath}");
-                    return;
-                }
-
-                string[] lines;
-                try
-                {
-                    lines = File.ReadAllLines(csvPath, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-                }
-                catch
-                {
-                    lines = File.ReadAllLines(csvPath, Encoding.Default);
-                }
-
-                if (lines.Length == 0)
-                {
-                    MessageBox.Show("Soubor je prázdný.");
-                    return;
-                }
-
-                char sep = lines[0].Contains(";") ? ';' : ',';
-
-                string[] headers = SplitCsvLine(lines[0], sep);
-                int idxLabel = -1;
-                int idxId = -1;
-
-                for (int i = 0; i < headers.Length; i++)
-                {
-                    var h = headers[i].Trim();
-                    if (idxLabel < 0 && h.Equals("Znaceni", StringComparison.OrdinalIgnoreCase)) idxLabel = i;
-                    if (idxId < 0 && h.Equals("id", StringComparison.OrdinalIgnoreCase)) idxId = i;
-                }
-
-                if (idxLabel < 0)
-                {
-                    MessageBox.Show("V prvním řádku nebyl nalezen sloupec „Značení“.");
-                    return;
-                }
-                if (idxId < 0)
-                {
-                    MessageBox.Show("V prvním řádku nebyl nalezen sloupec „id“.");
-                    return;
-                }
-
-                sensorIdMap.Clear();
-                var labelList = new List<string>();
-
-                for (int r = 1; r < lines.Length; r++)
-                {
-                    if (string.IsNullOrWhiteSpace(lines[r])) break;
-
-                    string[] cells = SplitCsvLine(lines[r], sep);
-                    if (cells.Length <= Math.Max(idxLabel, idxId)) break;
-
-                    string label = cells[idxLabel]?.Trim();
-                    string idVal = cells[idxId]?.Trim();
-
-                    if (string.IsNullOrWhiteSpace(label)) break; // stop na prázdném značení
-                    if (string.IsNullOrWhiteSpace(idVal)) continue; // bez id přeskoč
-
-                    if (!sensorIdMap.ContainsKey(label)) labelList.Add(label);
-                    sensorIdMap[label] = idVal;
-                }
-
-                comboBoxSensor.BeginUpdate();
-                comboBoxSensor.Items.Clear();
-                foreach (var label in labelList)
-                    comboBoxSensor.Items.Add(label);
-                comboBoxSensor.EndUpdate();
-
-                comboBoxSensor.SelectedIndex = -1; // nic nepředvybírat
-                UpdateRequestFromUi();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Chyba při načítání CSV: {ex.Message}");
-            }
-        }
-
-        // jednodušší parser: zvládá uvozovky a oddělovač ; nebo ,
-        private static string[] SplitCsvLine(string line, char separator)
-        {
-            var list = new List<string>();
-            if (line == null) return Array.Empty<string>();
-
-            var sb = new StringBuilder();
-            bool inQuotes = false;
-
-            for (int i = 0; i < line.Length; i++)
-            {
-                char c = line[i];
-
-                if (c == '\"')
-                {
-                    if (inQuotes && i + 1 < line.Length && line[i + 1] == '\"')
-                    {
-                        sb.Append('\"');
-                        i++;
-                    }
-                    else
-                    {
-                        inQuotes = !inQuotes;
-                    }
-                }
-                else if (c == separator && !inQuotes)
-                {
-                    list.Add(sb.ToString());
-                    sb.Clear();
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
-            list.Add(sb.ToString());
-
-            return list.ToArray();
-        }
-        private void DisplayTimer_Tick(object sender, EventArgs e)
-        {
-            string snapshot = null;
-            lock (_rxLock)
-            {
-                if (!string.IsNullOrEmpty(_latestDataFrame))
-                {
-                    snapshot = _latestDataFrame;
-                    _latestDataFrame = null; // zobraz jen poslední známý rámec
+                    snapshot = _latestDataFrame;                  // Vezmi data
+                    _latestDataFrame = null;                      // A vynuluj (zobrazujeme jen nejnovější)
                 }
             }
 
-            if (string.IsNullOrEmpty(snapshot)) return;
+            if (string.IsNullOrEmpty(snapshot)) return;           // Pokud nic, nemáme co dělat
 
-            // Jsme na UI vlákně (Timer.Tick) – můžeme volat rovnou
-            if (snapshot.StartsWith("?type="))
-                ParseAndDisplayData(snapshot);
-            else
-                ParseInitMessage(snapshot);
+            if (snapshot.StartsWith("?type="))                    // Pokud je to standardní „?type=...“ rámec
+                ParseAndDisplayData(snapshot);                    // Parsuj + vykresli do grafu/logu
+            else                                                  // Jinak je to nejspíš INIT seznam
+                ParseInitMessage(snapshot);                       // Zpracuj INIT
         }
 
-
-        private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e)
+        private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e) // Při změně senzoru načti jeho obrázek
         {
             try
             {
-                string label = comboBoxSensor.SelectedItem as string;
-                if (string.IsNullOrWhiteSpace(label)) return;
+                string label = comboBoxSensor.SelectedItem as string; // Vybraný label (Znackeni)
+                if (string.IsNullOrWhiteSpace(label)) return;     // Bez labelu → konec
 
-                string baseDir = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
-                string sensorsDir = Path.Combine(baseDir, "Senzory");
+                string baseDir = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName; // Základní složka projektu
+                string sensorsDir = Path.Combine(baseDir, "Senzory"); // Složka s obrázky senzorů
 
-                string[] exts = new[] { ".png", ".jpg", ".jpeg", ".bmp", ".gif" };
+                string[] exts = new[] { ".png", ".jpg", ".jpeg", ".bmp", ".gif" }; // Povolené přípony
 
-                string foundPath = null;
-                foreach (var ext in exts)
+                string foundPath = null;                          // Sem uložíme první nalezený obrázek
+                foreach (var ext in exts)                         // Zkus všechny přípony
                 {
-                    string p = Path.Combine(sensorsDir, label + ext);
-                    if (File.Exists(p))
+                    string p = Path.Combine(sensorsDir, label + ext); // Kandidátní cesta
+                    if (File.Exists(p))                           // Existuje?
                     {
-                        foundPath = p;
-                        break;
+                        foundPath = p;                            // Ulož cestu
+                        break;                                    // A konči hledání
                     }
                 }
 
-                if (foundPath == null)
+                if (foundPath == null)                            // Nenašli jsme obrázek?
                 {
-                    pictureBox1.Image = null;
-                    AppendTextBox($"Nenalezen obrázek pro „{label}“ ve složce {sensorsDir}.\r\n");
-                    return;
+                    pictureBox1.Image = null;                     // Vymaž případný starý obrázek
+                    AppendTextBox($"Nenalezen obrázek pro „{label}“ ve složce {sensorsDir}.\r\n"); // Logni info
+                    return;                                       // A skonči
                 }
 
-                using (var fs = new FileStream(foundPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var fs = new FileStream(foundPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) // Otevři soubor
                 {
-                    var img = Image.FromStream(fs);
-                    pictureBox1.Image = (Image)img.Clone();
+                    var img = Image.FromStream(fs);               // Načti obrázek ze streamu
+                    pictureBox1.Image = (Image)img.Clone();       // Naklonuj (aby šel později uvolnit soubor)
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex)                                  // Při chybě
             {
-                MessageBox.Show($"Chyba při načítání obrázku: {ex.Message}");
+                MessageBox.Show($"Chyba při načítání obrázku: {ex.Message}"); // Zobraz chybovou hlášku
             }
         }
     }

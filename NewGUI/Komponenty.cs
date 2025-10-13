@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NewGUI
+{
+    public class Komponenty
+    {
+        public int Id { get; set; }
+        public string Nazev { get; set; }
+        public string Alias { get; set; }
+        public string Znaceni { get; set; }
+        public string Request_INIT { get; set; }
+        public string Request_UPDATE { get; set; }
+        public string Request_CONNECT { get; set; }
+        public string Request_DISCONNECT { get; set; }
+        public string Request_RESET { get; set; }
+        public string Response { get; set; }
+        public Dictionary<string, string> Keywords_values { get; set; }
+        public string Request_CONFIG { get; set; }
+        public string Config1 { get; set; }
+        public string Config2 { get; set; }
+        public string Config3 { get; set; }
+    }
+}
