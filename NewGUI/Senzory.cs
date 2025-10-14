@@ -622,81 +622,100 @@ namespace NewGUI                                                // Namespace pro
             }
         }
 
-        private void ParseAndDisplayData(string data)             // Parsování a vykreslení rámce typu ?type=...
+        private void ParseAndDisplayData(string data)
         {
-            data = data.Trim();                                   // Ořízni whitespace
-            if (data.StartsWith("?"))                             // Pokud začíná „?“
-                data = data.Substring(1);                         // Odstraň ho
+            data = data.Trim();
+            if (data.StartsWith("?"))
+                data = data.Substring(1);
 
-            var parameters = data.Split('&')                      // Rozděl na páry key=value
+            // Rozpad na key=value
+            var parameters = data.Split('&')
                                  .Select(part => part.Split('='))
                                  .Where(pair => pair.Length == 2)
-                                 .ToDictionary(pair => pair[0], pair => pair[1]); // Do slovníku
+                                 .ToDictionary(pair => pair[0], pair => pair[1]);
 
-            var dataForGraph = parameters                         // Nech si jen hodnoty pro graf (bez type/id)
-                                 .Where(kvp => kvp.Key != "type" && kvp.Key != "id")
-                                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            // Klíče, které do grafu nepatří
+            var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    { "type", "id", "pin", "app", "version", "dbversion", "api" };
 
-            List<string> valueTexts = new List<string>();         // Sklad pro logovací řádky
+            // Jen kandidáti na graf
+            var dataForGraph = parameters
+                .Where(kvp => !skipKeys.Contains(kvp.Key))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            foreach (var kvp in dataForGraph)                     // Pro každou proměnnou
+            List<string> valueTexts = new List<string>();
+
+            foreach (var kvp in dataForGraph)
             {
-                string variableName = kvp.Key;                    // Jméno proměnné
-                string stringValue = kvp.Value;                   // Hodnota jako string
+                string variableName = kvp.Key;
+                string raw = kvp.Value ?? string.Empty;
 
-                if (double.TryParse(stringValue,                  // Zkus číslo (InvariantCulture)
+                // 1) normalizace: desetinná čárka -> tečka (pokud už tam není tečka)
+                string normalized = raw;
+                if (normalized.IndexOf(',') >= 0 && normalized.IndexOf('.') < 0)
+                    normalized = normalized.Replace(',', '.');
+
+                // 2) vytáhni PRVNÍ číslo z textu (podporuje i exponent)
+                var m = System.Text.RegularExpressions.Regex.Match(
+                            normalized, @"[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?");
+
+                // ↓↓↓ DŮLEŽITÉ: inicializace předem
+                double numericValue = 0.0;
+
+                bool hasNumber = m.Success && double.TryParse(
+                    m.Value,
                     System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture,
-                    out double numericValue))
+                    out numericValue);
+
+
+                if (hasNumber)
                 {
-                    this.Invoke(new Action(() =>                  // Na UI vlákně:
+                    // UI thread – DisplayTimer_Tick nás volá na UI, Invoke není nutný,
+                    // ale nechávám ho pro případ, že bys volal i z jiných vláken.
+                    this.Invoke(new Action(() =>
                     {
-                        if (!chart1.Series.IsUniqueName(variableName)) // Série už existuje?
+                        // vytvoř sérii, pokud ještě neexistuje
+                        if (chart1.Series.IsUniqueName(variableName))
                         {
-                            // Pokud existuje, nepřidáváme novou
-                        }
-                        else
-                        {
-                            Series newSeries = new Series(variableName) // Vytvoř novou sérii pro proměnnou
+                            var s = new Series(variableName)
                             {
-                                ChartType = SeriesChartType.Line,       // Čárový graf
-                                BorderWidth = 2,                        // Tloušťka čáry
-                                Color = Color.FromArgb(                 // Náhodná barva
-                                    rnd.Next(256), rnd.Next(256), rnd.Next(256))
+                                ChartType = SeriesChartType.Line,
+                                BorderWidth = 2,
+                                Color = Color.FromArgb(rnd.Next(256), rnd.Next(256), rnd.Next(256))
                             };
-                            chart1.Series.Add(newSeries);               // Přidej sérii do grafu
+                            chart1.Series.Add(s);
                         }
 
-                        if (chart1.Series[variableName].Points.Count > 50) // Udržuj max ~50 bodů
-                        {
-                            chart1.Series[variableName].Points.RemoveAt(0); // Odeber nejstarší
-                        }
+                        // udrž max ~50 bodů
+                        var series = chart1.Series[variableName];
+                        if (series.Points.Count > 50)
+                            series.Points.RemoveAt(0);
 
-                        chart1.Series[variableName].Points.AddXY(sampleCount, numericValue); // Přidej nový bod
+                        series.Points.AddXY(sampleCount, numericValue);
 
-                        chart1.ChartAreas[0].AxisX.Minimum = Math.Max(0, sampleCount - 10);   // Posun okna X
-                        chart1.ChartAreas[0].AxisX.Maximum = sampleCount;                     // Max X = aktuální vzorek
-                        chart1.ChartAreas[0].RecalculateAxesScale();                          // Rekalibruj osy
-
-                        chart1.ChartAreas[0].AxisY.Title = dataForGraph.Count > 1             // Popisek osy Y
-                            ? "Values"
-                            : variableName.ToUpper();
+                        chart1.ChartAreas[0].AxisX.Minimum = Math.Max(0, sampleCount - 10);
+                        chart1.ChartAreas[0].AxisX.Maximum = sampleCount;
+                        chart1.ChartAreas[0].RecalculateAxesScale();
+                        chart1.ChartAreas[0].AxisY.Title = dataForGraph.Count > 1 ? "Values" : variableName.ToUpper();
                     }));
 
-                    valueTexts.Add($"{variableName} = {numericValue}"); // Připrav text pro log
+                    valueTexts.Add($"{variableName} = {numericValue}");
                 }
                 else
                 {
-                    valueTexts.Add($"{variableName}: {stringValue}");   // Nelze parsovat číslo → vypiš jako text
+                    // nedá se převést -> jen zaloguj text
+                    valueTexts.Add($"{variableName}: {raw}");
                 }
             }
 
-            if (valueTexts.Count > 0)                                   // Máme co logovat?
+            if (valueTexts.Count > 0)
             {
-                AppendTextBox(string.Join(", ", valueTexts) + "\r\n");  // Vypiš do textBoxu
-                sampleCount++;                                          // Zvyšte čítač vzorků
+                AppendTextBox(string.Join(", ", valueTexts) + "\r\n");
+                sampleCount++; // posun X pro další sadu hodnot
             }
         }
+
 
         private static string FormatSensorId(string rawId)        // Normalizace ID do tvaru Sxx
         {
