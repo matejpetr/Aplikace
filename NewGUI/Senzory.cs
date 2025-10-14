@@ -625,20 +625,17 @@ namespace NewGUI                                                // Namespace pro
         private void ParseAndDisplayData(string data)
         {
             data = data.Trim();
-            if (data.StartsWith("?"))
-                data = data.Substring(1);
+            data = data.TrimStart('\uFEFF'); // kdyby se BOM dostal až sem
+            if (data.StartsWith("?")) data = data.Substring(1);
 
-            // Rozpad na key=value
             var parameters = data.Split('&')
                                  .Select(part => part.Split('='))
                                  .Where(pair => pair.Length == 2)
                                  .ToDictionary(pair => pair[0], pair => pair[1]);
 
-            // Klíče, které do grafu nepatří
             var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    { "type", "id", "pin", "app", "version", "dbversion", "api" };
+            { "type", "id", "pin", "app", "version", "dbversion", "api" };
 
-            // Jen kandidáti na graf
             var dataForGraph = parameters
                 .Where(kvp => !skipKeys.Contains(kvp.Key))
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -650,32 +647,27 @@ namespace NewGUI                                                // Namespace pro
                 string variableName = kvp.Key;
                 string raw = kvp.Value ?? string.Empty;
 
-                // 1) normalizace: desetinná čárka -> tečka (pokud už tam není tečka)
                 string normalized = raw;
                 if (normalized.IndexOf(',') >= 0 && normalized.IndexOf('.') < 0)
                     normalized = normalized.Replace(',', '.');
 
-                // 2) vytáhni PRVNÍ číslo z textu (podporuje i exponent)
                 var m = System.Text.RegularExpressions.Regex.Match(
                             normalized, @"[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?");
 
-                // ↓↓↓ DŮLEŽITÉ: inicializace předem
-                double numericValue = 0.0;
-
+                double numericValue = 0.0; // inicializace pro CS0165
                 bool hasNumber = m.Success && double.TryParse(
                     m.Value,
                     System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture,
                     out numericValue);
 
-
                 if (hasNumber)
                 {
-                    // UI thread – DisplayTimer_Tick nás volá na UI, Invoke není nutný,
-                    // ale nechávám ho pro případ, že bys volal i z jiných vláken.
+                    // krátký debug – uvidíš v textBox2, co se opravdu vykreslilo
+                    AppendTextBox($"[GRAPH] {variableName} -> {numericValue}\r\n");
+
                     this.Invoke(new Action(() =>
                     {
-                        // vytvoř sérii, pokud ještě neexistuje
                         if (chart1.Series.IsUniqueName(variableName))
                         {
                             var s = new Series(variableName)
@@ -687,34 +679,34 @@ namespace NewGUI                                                // Namespace pro
                             chart1.Series.Add(s);
                         }
 
-                        // udrž max ~50 bodů
                         var series = chart1.Series[variableName];
-                        if (series.Points.Count > 50)
-                            series.Points.RemoveAt(0);
+                        if (series.Points.Count > 50) series.Points.RemoveAt(0);
 
                         series.Points.AddXY(sampleCount, numericValue);
+
+                        if (chart1.ChartAreas.Count == 0)
+                            chart1.ChartAreas.Add(new ChartArea()); // pojistka
 
                         chart1.ChartAreas[0].AxisX.Minimum = Math.Max(0, sampleCount - 10);
                         chart1.ChartAreas[0].AxisX.Maximum = sampleCount;
                         chart1.ChartAreas[0].RecalculateAxesScale();
                         chart1.ChartAreas[0].AxisY.Title = dataForGraph.Count > 1 ? "Values" : variableName.ToUpper();
                     }));
-
-                    valueTexts.Add($"{variableName} = {numericValue}");
                 }
                 else
                 {
-                    // nedá se převést -> jen zaloguj text
                     valueTexts.Add($"{variableName}: {raw}");
                 }
             }
 
             if (valueTexts.Count > 0)
-            {
                 AppendTextBox(string.Join(", ", valueTexts) + "\r\n");
-                sampleCount++; // posun X pro další sadu hodnot
-            }
+
+            // posun X po každém rámci (i když byl jen jeden klíč)
+            sampleCount++;
+            chart1.Invalidate();
         }
+
 
 
         private static string FormatSensorId(string rawId)        // Normalizace ID do tvaru Sxx
@@ -858,33 +850,40 @@ namespace NewGUI                                                // Namespace pro
                 _rxBuffer.Clear();
             }
 
-            // Normalizuj konce řádků a rozděl
+            // Normalizace EOL
             chunk = chunk.Replace("\r", "");
             var lines = chunk.Split('\n');
 
             foreach (var raw in lines)
             {
-                var line = raw?.Trim();
+                if (string.IsNullOrEmpty(raw)) continue;
+
+                // Odstranit BOM a neviditelné kontrolní znaky na začátku řádku
+                var line = raw.Trim();
+                line = line.TrimStart('\uFEFF'); // <— DŮLEŽITÉ (BOM)
+                line = new string(line.Where(ch => !char.IsControl(ch) || ch == '?' || ch == '=' || ch == '&' || ch == '.' || ch == ',' || ch == '-' || char.IsLetterOrDigit(ch)).ToArray());
+
                 if (string.IsNullOrEmpty(line)) continue;
 
-                // 1) standardní rámec "?type=..."
                 if (line.StartsWith("?type=", StringComparison.OrdinalIgnoreCase))
                 {
                     ParseAndDisplayData(line);
                     continue;
                 }
 
-                // 2) vypadá jako seznam INIT (např. "S01:DS18B20,S02:DHT11")
                 if (LooksLikeInitList(line))
                 {
                     ParseInitMessage(line);
                     continue;
                 }
 
-                // 3) cokoliv ostatní – syrově zalogovat (např. echo/ok/stav)
                 AppendTextBox(line + "\r\n");
             }
+
+            // jistota překreslení grafu po přidání bodů
+            chart1.Invalidate();
         }
+
 
 
         private static bool LooksLikeInitList(string s)
