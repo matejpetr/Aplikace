@@ -6,7 +6,7 @@
     "Notes": "Servo",
     "Request": "?type=CONFIG&id=A00&angle=90&speed=50",
     "Request_CONFIG": "?type=CONFIG&id=A00&angle=90&speed=50",
-    {
+    "Keywords_configs": {
       "angle": "int",
       "speed": "int"
     },

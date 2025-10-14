@@ -27,21 +27,21 @@ namespace NewGUI
                 title: "Aktuátory",
                 normal: Properties.Resources.half_brain_mini3,
                 hover:  Properties.Resources.half_brain_mini4,   // můžeš dát přebarvenou verzi
-                detail: "Ovládání aktivních prvků přes seriovou komunikaci",
+                detail: "Aplikace pro konfiguraci a řízení aktuátorů s možností nastavení provozních parametrů a provedení resetu.",
                 onActivate: (_, __) => _rodic.NahraditObsah(new Aktuatory(_rodic)));
 
             AddTile(Sensor_panel,
                 title: "Senzory",
                 normal: Properties.Resources.half_brain_mini3,
                 hover:  Properties.Resources.half_brain_mini4,
-                detail: "Měření pomocí senzorů přes seriovou komunikaci",
+                detail: "Aplikace pro čtení a vizualizaci dat z měřicí desky s možností konfigurace senzorů a volby měřicích vstupů.",
                 onActivate: (_, __) => _rodic.NahraditObsah(new Senzory(_rodic)));
 
             AddTile(Simulator_panel,
                 title: "Simulator",
                 normal: Properties.Resources.half_brain_mini3,
                 hover:  Properties.Resources.half_brain_mini4,
-                detail: "Virtuální prostředí pro testování senzorů a aktuátorů.",
+                detail: "Virtuální prostředí pro simulaci senzorů",
                 onActivate: (_, __) => _rodic.NahraditObsah(new Simulator(_rodic)));
         }
 
