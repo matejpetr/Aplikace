@@ -416,7 +416,7 @@ namespace NewGUI                                                // Namespace pro
                     lastUsedID = currentID;
                 }
 
-                _lastSentMode = currentType; // zapamatujeme si, co posíláme
+                
 
                 // === ONE-SHOT PRO CONNECT/DISCONNECT ===
                 bool isConnMode = currentType.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
@@ -435,7 +435,8 @@ namespace NewGUI                                                // Namespace pro
 
                         SerialManager.Instance.WriteLine(request);
                         AppendTextBox($"Odesláno: {request}\r\n"); // okamžitý log odeslání
-
+                        _lastSentMode = null;     // <-- přidej tohle
+                        return;
                         // UI zůstane odemčené, tlačítko se NEpřepne na „Zastavit“
                         // odpověď ze seriovky se zobrazí syrově – viz úprava DisplayTimer_Tick níže
                     }
@@ -804,27 +805,42 @@ namespace NewGUI                                                // Namespace pro
                     _latestDataFrame = null;
                 }
             }
-
             if (string.IsNullOrEmpty(snapshot)) return;
 
-            // Pokud to vypadá na standardní rámec, parsuj
+            // 1) Standardní rámec začínající "?type=" → parsuj do grafu/logu
             if (snapshot.StartsWith("?type=", StringComparison.OrdinalIgnoreCase))
             {
                 ParseAndDisplayData(snapshot);
                 return;
             }
 
-            // Pro CONNECT/DISCONNECT vypiš syrově do textBox2
+            // 2) Pozůstatek po CONNECT/DISCONNECT → jen jednou syrově vypiš a smaž „flag“
             if (string.Equals(_lastSentMode, "CONNECT", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(_lastSentMode, "DISCONNECT", StringComparison.OrdinalIgnoreCase))
             {
                 AppendTextBox(snapshot.EndsWith("\r\n") ? snapshot : snapshot + "\r\n");
+                _lastSentMode = null; // <-- jen jednorázově
                 return;
             }
 
-            // fallback – původně jsi to bral jako INIT seznam
-            ParseInitMessage(snapshot);
+            // 3) Vypadá to jako INIT-seznam (např. "S01:DS18B20,S02:DHT11,...")?
+            if (LooksLikeInitList(snapshot))
+            {
+                ParseInitMessage(snapshot);
+                return;
+            }
+
+            // 4) Fallback: všechno ostatní syrově loguj (ať UPDATE nikdy „nezmizí“)
+            AppendTextBox(snapshot.EndsWith("\r\n") ? snapshot : snapshot + "\r\n");
         }
+
+        private static bool LooksLikeInitList(string s)
+            {
+                if (string.IsNullOrWhiteSpace(s)) return false;
+                if (s.StartsWith("?")) return false;
+                // hodně jednoduchý heuristický check pro "id:type,id:type"
+                return s.Contains(":") && s.Contains(",");
+            }
 
 
         private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e) // Při změně senzoru načti jeho obrázek
