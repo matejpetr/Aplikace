@@ -49,6 +49,12 @@
             this.label3 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.PIN1 = new System.Windows.Forms.Label();
+            this.PIN2 = new System.Windows.Forms.Label();
+            this.PIN3 = new System.Windows.Forms.Label();
+            this.textPIN1 = new System.Windows.Forms.TextBox();
+            this.textPIN2 = new System.Windows.Forms.TextBox();
+            this.textPIN3 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -59,7 +65,7 @@
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold);
             this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(30, 121);
+            this.button1.Location = new System.Drawing.Point(28, 121);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(120, 40);
             this.button1.TabIndex = 1;
@@ -72,10 +78,10 @@
             this.comboBoxSensor.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.comboBoxSensor.FormattingEnabled = true;
             this.comboBoxSensor.IntegralHeight = false;
-            this.comboBoxSensor.Location = new System.Drawing.Point(249, 115);
+            this.comboBoxSensor.Location = new System.Drawing.Point(249, 123);
             this.comboBoxSensor.MaxDropDownItems = 10;
             this.comboBoxSensor.Name = "comboBoxSensor";
-            this.comboBoxSensor.Size = new System.Drawing.Size(129, 35);
+            this.comboBoxSensor.Size = new System.Drawing.Size(129, 29);
             this.comboBoxSensor.TabIndex = 3;
             // 
             // comboBoxMode
@@ -88,28 +94,30 @@
             "UPDATE",
             "CONFIG",
             "INIT",
-            "RESET"});
-            this.comboBoxMode.Location = new System.Drawing.Point(249, 155);
+            "RESET",
+            "CONNECT",
+            "DISCONNECT"});
+            this.comboBoxMode.Location = new System.Drawing.Point(249, 169);
             this.comboBoxMode.MaxDropDownItems = 5;
             this.comboBoxMode.Name = "comboBoxMode";
-            this.comboBoxMode.Size = new System.Drawing.Size(129, 35);
+            this.comboBoxMode.Size = new System.Drawing.Size(129, 29);
             this.comboBoxMode.TabIndex = 4;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(181, 115);
+            this.label1.Location = new System.Drawing.Point(181, 123);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(72, 27);
+            this.label1.Size = new System.Drawing.Size(58, 21);
             this.label1.TabIndex = 5;
             this.label1.Text = "Senzor";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(180, 155);
+            this.label2.Location = new System.Drawing.Point(181, 169);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(64, 27);
+            this.label2.Size = new System.Drawing.Size(53, 21);
             this.label2.TabIndex = 6;
             this.label2.Text = "Režim";
             // 
@@ -119,7 +127,7 @@
             this.label4.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.label4.Location = new System.Drawing.Point(400, 16);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(196, 46);
+            this.label4.Size = new System.Drawing.Size(154, 36);
             this.label4.TabIndex = 8;
             this.label4.Text = "Přijatá data";
             // 
@@ -152,7 +160,7 @@
             legend1.IsTextAutoFit = false;
             legend1.Name = "Legend1";
             this.chart1.Legends.Add(legend1);
-            this.chart1.Location = new System.Drawing.Point(0, 239);
+            this.chart1.Location = new System.Drawing.Point(0, 254);
             this.chart1.Margin = new System.Windows.Forms.Padding(12);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.None;
@@ -169,19 +177,20 @@
             series1.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
             series1.Name = "Series1";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(441, 211);
+            this.chart1.Size = new System.Drawing.Size(441, 196);
             this.chart1.TabIndex = 9;
             this.chart1.Text = "chart1";
+            this.chart1.Click += new System.EventHandler(this.chart1_Click);
             // 
             // textBox2
             // 
             this.textBox2.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.textBox2.Location = new System.Drawing.Point(406, 55);
+            this.textBox2.Location = new System.Drawing.Point(406, 75);
             this.textBox2.Multiline = true;
             this.textBox2.Name = "textBox2";
             this.textBox2.ReadOnly = true;
             this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox2.Size = new System.Drawing.Size(257, 140);
+            this.textBox2.Size = new System.Drawing.Size(257, 120);
             this.textBox2.TabIndex = 10;
             // 
             // comboBoxCOM
@@ -193,15 +202,15 @@
             this.comboBoxCOM.Location = new System.Drawing.Point(249, 75);
             this.comboBoxCOM.MaxDropDownItems = 5;
             this.comboBoxCOM.Name = "comboBoxCOM";
-            this.comboBoxCOM.Size = new System.Drawing.Size(129, 35);
+            this.comboBoxCOM.Size = new System.Drawing.Size(129, 29);
             this.comboBoxCOM.TabIndex = 11;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(180, 195);
+            this.label5.Location = new System.Drawing.Point(181, 219);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(78, 27);
+            this.label5.Size = new System.Drawing.Size(62, 21);
             this.label5.TabIndex = 6;
             this.label5.Text = "Perioda";
             // 
@@ -210,7 +219,7 @@
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(181, 75);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(48, 27);
+            this.label6.Size = new System.Drawing.Size(38, 21);
             this.label6.TabIndex = 12;
             this.label6.Text = "Port";
             // 
@@ -226,10 +235,10 @@
             "250",
             "500",
             "1000"});
-            this.comboBoxTIMER.Location = new System.Drawing.Point(249, 195);
+            this.comboBoxTIMER.Location = new System.Drawing.Point(249, 219);
             this.comboBoxTIMER.MaxDropDownItems = 5;
             this.comboBoxTIMER.Name = "comboBoxTIMER";
-            this.comboBoxTIMER.Size = new System.Drawing.Size(129, 35);
+            this.comboBoxTIMER.Size = new System.Drawing.Size(129, 29);
             this.comboBoxTIMER.TabIndex = 3;
             // 
             // label7
@@ -238,7 +247,7 @@
             this.label7.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.label7.Location = new System.Drawing.Point(446, 345);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(245, 27);
+            this.label7.Size = new System.Drawing.Size(195, 21);
             this.label7.TabIndex = 8;
             this.label7.Text = "Seznam aktivních senzorů";
             // 
@@ -259,7 +268,7 @@
             this.ConnectBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.ConnectBtn.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold);
             this.ConnectBtn.ForeColor = System.Drawing.Color.White;
-            this.ConnectBtn.Location = new System.Drawing.Point(30, 75);
+            this.ConnectBtn.Location = new System.Drawing.Point(28, 75);
             this.ConnectBtn.Name = "ConnectBtn";
             this.ConnectBtn.Size = new System.Drawing.Size(120, 40);
             this.ConnectBtn.TabIndex = 1;
@@ -276,7 +285,7 @@
             this.badgeConn.Location = new System.Drawing.Point(165, 20);
             this.badgeConn.Name = "badgeConn";
             this.badgeConn.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
-            this.badgeConn.Size = new System.Drawing.Size(146, 35);
+            this.badgeConn.Size = new System.Drawing.Size(123, 29);
             this.badgeConn.TabIndex = 13;
             this.badgeConn.Text = "Nepřipojeno";
             // 
@@ -286,7 +295,7 @@
             this.label3.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.label3.Location = new System.Drawing.Point(24, 16);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(158, 46);
+            this.label3.Size = new System.Drawing.Size(124, 36);
             this.label3.TabIndex = 14;
             this.label3.Text = "Připojení";
             // 
@@ -305,15 +314,75 @@
             this.label8.ForeColor = System.Drawing.SystemColors.AppWorkspace;
             this.label8.Location = new System.Drawing.Point(450, 436);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(38, 16);
+            this.label8.Size = new System.Drawing.Size(32, 14);
             this.label8.TabIndex = 16;
             this.label8.Text = "label8";
             this.label8.UseMnemonic = false;
             // 
+            // PIN1
+            // 
+            this.PIN1.AutoSize = true;
+            this.PIN1.Location = new System.Drawing.Point(27, 169);
+            this.PIN1.Name = "PIN1";
+            this.PIN1.Size = new System.Drawing.Size(44, 21);
+            this.PIN1.TabIndex = 18;
+            this.PIN1.Text = "PIN1:";
+            this.PIN1.Visible = false;
+            // 
+            // PIN2
+            // 
+            this.PIN2.AutoSize = true;
+            this.PIN2.Location = new System.Drawing.Point(27, 196);
+            this.PIN2.Name = "PIN2";
+            this.PIN2.Size = new System.Drawing.Size(47, 21);
+            this.PIN2.TabIndex = 18;
+            this.PIN2.Text = "PIN2:";
+            this.PIN2.Visible = false;
+            // 
+            // PIN3
+            // 
+            this.PIN3.AutoSize = true;
+            this.PIN3.Location = new System.Drawing.Point(27, 222);
+            this.PIN3.Name = "PIN3";
+            this.PIN3.Size = new System.Drawing.Size(47, 21);
+            this.PIN3.TabIndex = 18;
+            this.PIN3.Text = "PIN3:";
+            this.PIN3.Visible = false;
+            // 
+            // textPIN1
+            // 
+            this.textPIN1.Location = new System.Drawing.Point(113, 169);
+            this.textPIN1.Name = "textPIN1";
+            this.textPIN1.Size = new System.Drawing.Size(35, 29);
+            this.textPIN1.TabIndex = 19;
+            this.textPIN1.Visible = false;
+            // 
+            // textPIN2
+            // 
+            this.textPIN2.Location = new System.Drawing.Point(113, 196);
+            this.textPIN2.Name = "textPIN2";
+            this.textPIN2.Size = new System.Drawing.Size(35, 29);
+            this.textPIN2.TabIndex = 19;
+            this.textPIN2.Visible = false;
+            // 
+            // textPIN3
+            // 
+            this.textPIN3.Location = new System.Drawing.Point(113, 222);
+            this.textPIN3.Name = "textPIN3";
+            this.textPIN3.Size = new System.Drawing.Size(35, 29);
+            this.textPIN3.TabIndex = 19;
+            this.textPIN3.Visible = false;
+            // 
             // Senzory
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 27F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.textPIN3);
+            this.Controls.Add(this.textPIN2);
+            this.Controls.Add(this.textPIN1);
+            this.Controls.Add(this.PIN3);
+            this.Controls.Add(this.PIN2);
+            this.Controls.Add(this.PIN1);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label3);
@@ -363,5 +432,11 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label PIN1;
+        private System.Windows.Forms.Label PIN2;
+        private System.Windows.Forms.Label PIN3;
+        private System.Windows.Forms.TextBox textPIN1;
+        private System.Windows.Forms.TextBox textPIN2;
+        private System.Windows.Forms.TextBox textPIN3;
     }
 }

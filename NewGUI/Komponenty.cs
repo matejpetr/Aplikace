@@ -18,6 +18,8 @@ namespace NewGUI
         public string Request_DISCONNECT { get; set; }
         public string Request_RESET { get; set; }
         public string Response { get; set; }
+        public string PIN1 { get; set; }   // např. "Trig" nebo "Data pin"
+        public string PIN2 { get; set; }   // např. "Echo" (může být null/"" pokud není druhý pin)
         public Dictionary<string, string> Keywords_values { get; set; }
         public string Request_CONFIG { get; set; }
         public string Config1 { get; set; }

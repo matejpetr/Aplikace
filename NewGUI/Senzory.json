@@ -4,37 +4,41 @@
     "Nazev": "Digitální teplotní senzor Dallas",
     "Alias": "DS18B20",
     "Znaceni": "DS18B20",
-    "Request_INIT": "?type=INIT&id=S00",
+
     "Request_UPDATE": "?type=UPDATE&id=S00",
-    "Request_CONNECT": "?type=CONNECT&id=S00",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S00",
+    "Request_CONNECT": "?type=CONNECT&id=S00&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S00&pin=PIN",
     "Request_RESET": "?type=RESET&id=S00",
     "Response": "?type=DS18B20&id=S00&temp=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "temp": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S00&Res=12",
-    "Config1": "Res",
-    "Config2": "LowAlarm",
-    "Config3": "HighAlarm"
+    "Config1": "Res:int",
+    "Config2": "LowAlarm:string",
+    "Config3": "HighAlarm:string"
   },
   {
     "Id": 1,
     "Nazev": "Senzor měření teploty a relativní vlhkosti DHT11",
     "Alias": "Keyes KY-015",
     "Znaceni": "DHT11",
-    "Request_INIT": "?type=INIT&id=S01",
+
     "Request_UPDATE": "?type=UPDATE&id=S01",
-    "Request_CONNECT": "?type=CONNECT&id=S01",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S01",
+    "Request_CONNECT": "?type=CONNECT&id=S01&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S01&pin=PIN",
     "Request_RESET": "?type=RESET&id=S01",
     "Response": "?type=DHT11&id=S01&humi=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "humi": "int"
     },
     "Request_CONFIG": "?type=CONFIG&id=S01&Unit=C",
-    "Config1": "Unit",
-    "Config2": "HI",
+    "Config1": "Unit:char",
+    "Config2": "HI:bool",
     "Config3": ""
   },
   {
@@ -42,12 +46,14 @@
     "Nazev": "Hallův senzor pro detekci magnetického pole (Digitální)",
     "Alias": "Keyes KY-003",
     "Znaceni": "Dhall",
-    "Request_INIT": "?type=INIT&id=S02",
+
     "Request_UPDATE": "?type=UPDATE&id=S02",
-    "Request_CONNECT": "?type=CONNECT&id=S02",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S02",
+    "Request_CONNECT": "?type=CONNECT&id=S02&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S02&pin=PIN",
     "Request_RESET": "?type=RESET&id=S02",
     "Response": "?type=Dhall&id=S02&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -61,31 +67,35 @@
     "Nazev": "Hallův senzor pro detekci magnetického pole (Analogový)",
     "Alias": "Keyes KY-035",
     "Znaceni": "Ahall",
-    "Request_INIT": "?type=INIT&id=S03",
+
     "Request_UPDATE": "?type=UPDATE&id=S03",
-    "Request_CONNECT": "?type=CONNECT&id=S03",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S03",
+    "Request_CONNECT": "?type=CONNECT&id=S03&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S03&pin=PIN",
     "Request_RESET": "?type=RESET&id=S03",
     "Response": "?type=Ahall&id=S03&val=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "val": "int"
     },
     "Request_CONFIG": "?type=CONFIG&id=S03&Res=10&Llimit= 500",
-    "Config1": "Res",
-    "Config2": "Llimit",
-    "Config3": "Hlimit"
+    "Config1": "Res:int",
+    "Config2": "Llimit:int",
+    "Config3": "Hlimit:int"
   },
   {
     "Id": 4,
     "Nazev": "Modul optické závory",
     "Alias": "Keyes  KY-010",
     "Znaceni": "PInterrupt",
-    "Request_INIT": "?type=INIT&id=S04",
+
     "Request_UPDATE": "?type=UPDATE&id=S04",
-    "Request_CONNECT": "?type=CONNECT&id=S04",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S04",
+    "Request_CONNECT": "?type=CONNECT&id=S04&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S04&pin=PIN",
     "Request_RESET": "?type=RESET&id=S04",
     "Response": "?type=PInterrupt&id=S04&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -99,12 +109,14 @@
     "Nazev": "Infračervený senzor překážek",
     "Alias": "FC51",
     "Znaceni": "FC51",
-    "Request_INIT": "?type=INIT&id=S05",
+
     "Request_UPDATE": "?type=UPDATE&id=S05",
-    "Request_CONNECT": "?type=CONNECT&id=S05",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S05",
+    "Request_CONNECT": "?type=CONNECT&id=S05&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S05&pin=PIN",
     "Request_RESET": "?type=RESET&id=S05",
     "Response": "?type=FC51&id=S05&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -118,18 +130,20 @@
     "Nazev": "Ultrazvukový senzor vzdálenosti HC-SR04",
     "Alias": "HC-SR04",
     "Znaceni": "HCSR04",
-    "Request_INIT": "?type=INIT&id=S06",
+
     "Request_UPDATE": "?type=UPDATE&id=S06",
-    "Request_CONNECT": "?type=CONNECT&id=S06",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S06",
+    "Request_CONNECT": "?type=CONNECT&id=S06&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S06&pin=PIN",
     "Request_RESET": "?type=RESET&id=S06",
     "Response": "?type=HCSR04&id=S06&distance=",
+    "PIN1": "Trigger",
+    "PIN2": "Echo",
     "Keywords_values": {
       "distance": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S06&Limit=150",
-    "Config1": "Limit",
-    "Config2": "Delay",
+    "Config1": "Limit:int",
+    "Config2": "Delay:int",
     "Config3": ""
   },
   {
@@ -137,12 +151,14 @@
     "Nazev": "PIR Pohybové čidlo",
     "Alias": "HCSR501",
     "Znaceni": "HCSR501",
-    "Request_INIT": "?type=INIT&id=S07",
+
     "Request_UPDATE": "?type=UPDATE&id=S07",
-    "Request_CONNECT": "?type=CONNECT&id=S07",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S07",
+    "Request_CONNECT": "?type=CONNECT&id=S07&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S07&pin=PIN",
     "Request_RESET": "?type=RESET&id=S07",
     "Response": "?type=HCSR501&id=S07&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -156,12 +172,14 @@
     "Nazev": "Mikrospínač",
     "Alias": "KW113Z",
     "Znaceni": "KW113Z",
-    "Request_INIT": "?type=INIT&id=S08",
+
     "Request_UPDATE": "?type=UPDATE&id=S08",
-    "Request_CONNECT": "?type=CONNECT&id=S08",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S08",
+    "Request_CONNECT": "?type=CONNECT&id=S08&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S08&pin=PIN",
     "Request_RESET": "?type=RESET&id=S08",
     "Response": "?type=KW113Z&id=S08&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -175,36 +193,40 @@
     "Nazev": "BMP280 I2C senzor tlaku a teploty",
     "Alias": "BMP280",
     "Znaceni": "BMP280",
-    "Request_INIT": "?type=INIT&id=S09",
+
     "Request_UPDATE": "?type=UPDATE&id=S09",
-    "Request_CONNECT": "?type=CONNECT&id=S09",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S09",
+    "Request_CONNECT": "?type=CONNECT&id=S09&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S09&pin=PIN",
     "Request_RESET": "?type=RESET&id=S09",
     "Response": "?type=BMP280&id=S09&temp=",
+    "PIN1": "SDA",
+    "PIN2": "SCL",
     "Keywords_values": {
       "temp": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S09&Filter=2",
-    "Config1": "Os_temp",
-    "Config2": "Os_press",
-    "Config3": "Filter"
+    "Config1": "Os_temp:int",
+    "Config2": "Os_press:int",
+    "Config3": "Filter:int"
   },
   {
     "Id": 10,
     "Nazev": "BMP180 I2C senzor tlaku",
     "Alias": "BMP180",
     "Znaceni": "BMP180",
-    "Request_INIT": "?type=INIT&id=S10",
+
     "Request_UPDATE": "?type=UPDATE&id=S10",
-    "Request_CONNECT": "?type=CONNECT&id=S10",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S10",
+    "Request_CONNECT": "?type=CONNECT&id=S10&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S10&pin=PIN",
     "Request_RESET": "?type=RESET&id=S10",
     "Response": "?type=BMP180&id=S10&press=",
+    "PIN1": "SDA",
+    "PIN2": "SCL",
     "Keywords_values": {
       "press": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S10&Gain=1.1",
-    "Config1": "Gain",
+    "Config1": "Gain:float",
     "Config2": "",
     "Config3": ""
   },
@@ -213,18 +235,20 @@
     "Nazev": "I2C RGB Modul rozpoznávání světla",
     "Alias": "TCS34725",
     "Znaceni": "TCS34725",
-    "Request_INIT": "?type=INIT&id=S11",
+
     "Request_UPDATE": "?type=UPDATE&id=S11",
-    "Request_CONNECT": "?type=CONNECT&id=S11",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S11",
+    "Request_CONNECT": "?type=CONNECT&id=S11&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S11&pin=PIN",
     "Request_RESET": "?type=RESET&id=S11",
     "Response": "?type=TCS34725&id=S11&R=",
+    "PIN1": "SDA",
+    "PIN2": "SCL",
     "Keywords_values": {
       "R": "int"
     },
     "Request_CONFIG": "?type=CONFIG&id=S11&Gain=4",
-    "Config1": "Itime",
-    "Config2": "Gain",
+    "Config1": "Itime:int",
+    "Config2": "Gain:int",
     "Config3": ""
   },
   {
@@ -232,12 +256,14 @@
     "Nazev": "Modul Infračerveného přijímače",
     "Alias": "Keyes KY-022",
     "Znaceni": "IRrx",
-    "Request_INIT": "?type=INIT&id=S12",
+
     "Request_UPDATE": "?type=UPDATE&id=S12",
-    "Request_CONNECT": "?type=CONNECT&id=S12",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S12",
+    "Request_CONNECT": "?type=CONNECT&id=S12&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S12&pin=PIN",
     "Request_RESET": "?type=RESET&id=S12",
     "Response": "?type=IRrx&id=S12&code=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "code": "string"
     },
@@ -251,12 +277,14 @@
     "Nazev": "Teplotní senzor s termistorem NTC (Digitální)",
     "Alias": "Keyes KY-028",
     "Znaceni": "Dntc",
-    "Request_INIT": "?type=INIT&id=S13",
+
     "Request_UPDATE": "?type=UPDATE&id=S13",
-    "Request_CONNECT": "?type=CONNECT&id=S13",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S13",
+    "Request_CONNECT": "?type=CONNECT&id=S13&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S13&pin=PIN",
     "Request_RESET": "?type=RESET&id=S13",
     "Response": "?type=Dntc&id=S13&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -270,18 +298,20 @@
     "Nazev": "Teplotní senzor s termistorem NTC (Analogový)",
     "Alias": "Keyes  KY-013",
     "Znaceni": "Antc",
-    "Request_INIT": "?type=INIT&id=S14",
+
     "Request_UPDATE": "?type=UPDATE&id=S14",
-    "Request_CONNECT": "?type=CONNECT&id=S14",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S14",
+    "Request_CONNECT": "?type=CONNECT&id=S14&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S14&pin=PIN",
     "Request_RESET": "?type=RESET&id=S14",
     "Response": "?type=Antc&id=S14&temp=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "temp": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S14&Res=12",
-    "Config1": "Res",
-    "Config2": "Filter",
+    "Config1": "Res:int",
+    "Config2": "Filter:int",
     "Config3": ""
   },
   {
@@ -289,18 +319,20 @@
     "Nazev": "Modul s fotorezistorem",
     "Alias": "Keyes KY-018",
     "Znaceni": "PHresistance",
-    "Request_INIT": "?type=INIT&id=S15",
+
     "Request_UPDATE": "?type=UPDATE&id=S15",
-    "Request_CONNECT": "?type=CONNECT&id=S15",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S15",
+    "Request_CONNECT": "?type=CONNECT&id=S15&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S15&pin=PIN",
     "Request_RESET": "?type=RESET&id=S15",
     "Response": "?type=PHresistance&id=S15&intensity=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "intensity": "int"
     },
     "Request_CONFIG": "?type=CONFIG&id=S15&Res=12",
-    "Config1": "Res",
-    "Config2": "Gain",
+    "Config1": "Res:int",
+    "Config2": "Gain:float",
     "Config3": ""
   },
   {
@@ -308,18 +340,20 @@
     "Nazev": "Joystick",
     "Alias": "Keyes KY-023",
     "Znaceni": "Joystick",
-    "Request_INIT": "?type=INIT&id=S16",
+
     "Request_UPDATE": "?type=UPDATE&id=S16",
-    "Request_CONNECT": "?type=CONNECT&id=S16",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S16",
+    "Request_CONNECT": "?type=CONNECT&id=S16&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S16&pin=PIN",
     "Request_RESET": "?type=RESET&id=S16",
     "Response": "?type=Joystick&id=S16&direction=",
+    "PIN1": "WRx",
+    "PIN2": "WRy",
     "Keywords_values": {
       "direction": "string"
     },
     "Request_CONFIG": "?type=CONFIG&id=S16&Res=10",
-    "Config1": "Res",
-    "Config2": "Threshold",
+    "Config1": "Res:int",
+    "Config2": "Threshold:int",
     "Config3": ""
   },
   {
@@ -327,18 +361,20 @@
     "Nazev": "Modul Hallova senzoru s lineárním výstupem",
     "Alias": "Keyes  KY-024",
     "Znaceni": "HallLin",
-    "Request_INIT": "?type=INIT&id=S17",
+
     "Request_UPDATE": "?type=UPDATE&id=S17",
-    "Request_CONNECT": "?type=CONNECT&id=S17",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S17",
+    "Request_CONNECT": "?type=CONNECT&id=S17&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S17&pin=PIN",
     "Request_RESET": "?type=RESET&id=S17",
     "Response": "?type=HallLin&id=S17&voltage=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "voltage": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S17&Res=10",
-    "Config1": "Res",
-    "Config2": "Unit",
+    "Config1": "Res:int",
+    "Config2": "Unit:String",
     "Config3": ""
   },
   {
@@ -346,12 +382,14 @@
     "Nazev": "Senzor plynů",
     "Alias": "MQ135",
     "Znaceni": "MQ135",
-    "Request_INIT": "?type=INIT&id=S18",
+
     "Request_UPDATE": "?type=UPDATE&id=S18",
-    "Request_CONNECT": "?type=CONNECT&id=S18",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S18",
+    "Request_CONNECT": "?type=CONNECT&id=S18&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S18&pin=PIN",
     "Request_RESET": "?type=RESET&id=S18",
     "Response": "?type=MQ135&id=S18&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -365,12 +403,14 @@
     "Nazev": "Půdní vlhkoměr",
     "Alias": "YL69",
     "Znaceni": "DMoisture",
-    "Request_INIT": "?type=INIT&id=S19",
+
     "Request_UPDATE": "?type=UPDATE&id=S19",
-    "Request_CONNECT": "?type=CONNECT&id=S19",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S19",
+    "Request_CONNECT": "?type=CONNECT&id=S19&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S19&pin=PIN",
     "Request_RESET": "?type=RESET&id=S19",
     "Response": "?type=DMoisture&id=S19&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -384,12 +424,14 @@
     "Nazev": "Kapacitní dotykový spínač",
     "Alias": "TTP223",
     "Znaceni": "TTP223",
-    "Request_INIT": "?type=INIT&id=S20",
+
     "Request_UPDATE": "?type=UPDATE&id=S20",
-    "Request_CONNECT": "?type=CONNECT&id=S20",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S20",
+    "Request_CONNECT": "?type=CONNECT&id=S20&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S20&pin=PIN",
     "Request_RESET": "?type=RESET&id=S20",
     "Response": "?type=TTP223&id=S20&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -403,50 +445,56 @@
     "Nazev": "Infračervený senzor vzdálenosti",
     "Alias": "GP2Y0A21YK0F",
     "Znaceni": "GP2Y0A21YK0F",
-    "Request_INIT": "?type=INIT&id=S21",
+
     "Request_UPDATE": "?type=UPDATE&id=S21",
-    "Request_CONNECT": "?type=CONNECT&id=S21",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S21",
+    "Request_CONNECT": "?type=CONNECT&id=S21&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S21&pin=PIN",
     "Request_RESET": "?type=RESET&id=S21",
     "Response": "?type=GP2Y0A21YK0F&id=S21&distance=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "distance": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S21&Unit=0",
-    "Config1": "Unit",
-    "Config2": "LowAlarm",
-    "Config3": "HighAlarm"
+    "Config1": "Unit:int",
+    "Config2": "LowAlarm:string",
+    "Config3": "HighAlarm:string"
   },
   {
     "Id": 22,
     "Nazev": "Rotační enkodér",
     "Alias": "Keyes KY-040",
     "Znaceni": "Encoder",
-    "Request_INIT": "?type=INIT&id=S22",
+
     "Request_UPDATE": "?type=UPDATE&id=S22",
-    "Request_CONNECT": "?type=CONNECT&id=S22",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S22",
+    "Request_CONNECT": "?type=CONNECT&id=S22&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S22&pin=PIN",
     "Request_RESET": "?type=RESET&id=S22",
     "Response": "?type=Encoder&id=S22&position=",
+    "PIN1": "DT",
+    "PIN2": "CLK",
     "Keywords_values": {
       "position": "int"
     },
     "Request_CONFIG": "?type=CONFIG&id=S22&Direction=normal",
-    "Config1": "Direction",
-    "Config2": "LowAlarm",
-    "Config3": "HighAlarm"
+    "Config1": "Direction:string",
+    "Config2": "LowAlarm:string",
+    "Config3": "HighAlarm:string"
   },
   {
     "Id": 23,
     "Nazev": "Infračervený senzor překážek",
     "Alias": "Keyes KY-032",
     "Znaceni": "HS0038DB",
-    "Request_INIT": "?type=INIT&id=S23",
+
     "Request_UPDATE": "?type=UPDATE&id=S23",
-    "Request_CONNECT": "?type=CONNECT&id=S23",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S23",
+    "Request_CONNECT": "?type=CONNECT&id=S23&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S23&pin=PIN",
     "Request_RESET": "?type=RESET&id=S23",
     "Response": "?type=HS0038DB&id=S23&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -460,12 +508,14 @@
     "Nazev": "Reflexní světelná závora TCRT5000",
     "Alias": "Keyes KY-033",
     "Znaceni": "TCRT5000",
-    "Request_INIT": "?type=INIT&id=S24",
+
     "Request_UPDATE": "?type=UPDATE&id=S24",
-    "Request_CONNECT": "?type=CONNECT&id=S24",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S24",
+    "Request_CONNECT": "?type=CONNECT&id=S24&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S24&pin=PIN",
     "Request_RESET": "?type=RESET&id=S24",
     "Response": "?type=TCRT5000&id=S24&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -479,12 +529,14 @@
     "Nazev": "Detektor plamene",
     "Alias": "Keyes KY-026",
     "Znaceni": "IRflame",
-    "Request_INIT": "?type=INIT&id=S25",
+
     "Request_UPDATE": "?type=UPDATE&id=S25",
-    "Request_CONNECT": "?type=CONNECT&id=S25",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S25",
+    "Request_CONNECT": "?type=CONNECT&id=S25&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S25&pin=PIN",
     "Request_RESET": "?type=RESET&id=S25",
     "Response": "?type=IRflame&id=S25&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -498,12 +550,14 @@
     "Nazev": "Magnetický snímač s jazýčkovým kontaktem",
     "Alias": "Keyes KY-025",
     "Znaceni": "REED",
-    "Request_INIT": "?type=INIT&id=S26",
+
     "Request_UPDATE": "?type=UPDATE&id=S26",
-    "Request_CONNECT": "?type=CONNECT&id=S26",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S26",
+    "Request_CONNECT": "?type=CONNECT&id=S26&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S26&pin=PIN",
     "Request_RESET": "?type=RESET&id=S26",
     "Response": "?type=REED&id=S26&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -517,18 +571,20 @@
     "Nazev": "Modul s malým mikrofon",
     "Alias": "Keyes  KY-038",
     "Znaceni": "MicSmall",
-    "Request_INIT": "?type=INIT&id=S27",
+
     "Request_UPDATE": "?type=UPDATE&id=S27",
-    "Request_CONNECT": "?type=CONNECT&id=S27",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S27",
+    "Request_CONNECT": "?type=CONNECT&id=S27&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S27&pin=PIN",
     "Request_RESET": "?type=RESET&id=S27",
     "Response": "?type=MicSmall&id=S27&volume=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "volume": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S27&Res=12",
-    "Config1": "Res",
-    "Config2": "MT",
+    "Config1": "Res:int",
+    "Config2": "MT:int",
     "Config3": ""
   },
   {
@@ -536,18 +592,20 @@
     "Nazev": "Modul s velkým mikrofon",
     "Alias": "Keyes KY-037",
     "Znaceni": "MicBig",
-    "Request_INIT": "?type=INIT&id=S28",
+
     "Request_UPDATE": "?type=UPDATE&id=S28",
-    "Request_CONNECT": "?type=CONNECT&id=S28",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S28",
+    "Request_CONNECT": "?type=CONNECT&id=S28&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S28&pin=PIN",
     "Request_RESET": "?type=RESET&id=S28",
     "Response": "?type=MicBig&id=S28&volume=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "volume": "float"
     },
     "Request_CONFIG": "?type=CONFIG&id=S28&Res=12",
-    "Config1": "Res",
-    "Config2": "MT",
+    "Config1": "Res:int",
+    "Config2": "MT:int",
     "Config3": ""
   },
   {
@@ -555,12 +613,14 @@
     "Nazev": "Dotykový senzor (Hallův senzor)",
     "Alias": "Keyes KY-036",
     "Znaceni": "MetalTouch",
-    "Request_INIT": "?type=INIT&id=S29",
+
     "Request_UPDATE": "?type=UPDATE&id=S29",
-    "Request_CONNECT": "?type=CONNECT&id=S29",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S29",
+    "Request_CONNECT": "?type=CONNECT&id=S29&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S29&pin=PIN",
     "Request_RESET": "?type=RESET&id=S29",
     "Response": "?type=MetalTouch&id=S29&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -574,12 +634,14 @@
     "Nazev": "Snímač tepové frekvence",
     "Alias": "Keyes KY-039",
     "Znaceni": "Heartbeat",
-    "Request_INIT": "?type=INIT&id=S30",
+
     "Request_UPDATE": "?type=UPDATE&id=S30",
-    "Request_CONNECT": "?type=CONNECT&id=S30",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S30",
+    "Request_CONNECT": "?type=CONNECT&id=S30&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S30&pin=PIN",
     "Request_RESET": "?type=RESET&id=S30",
     "Response": "?type=Heartbeat&id=S30&bpm=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "bpm": "int"
     },
@@ -593,12 +655,14 @@
     "Nazev": "Mechanické tlačítko",
     "Alias": "Keyes KY-004",
     "Znaceni": "Btn",
-    "Request_INIT": "?type=INIT&id=S31",
+
     "Request_UPDATE": "?type=UPDATE&id=S31",
-    "Request_CONNECT": "?type=CONNECT&id=S31",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S31",
+    "Request_CONNECT": "?type=CONNECT&id=S31&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S31&pin=PIN",
     "Request_RESET": "?type=RESET&id=S31",
     "Response": "?type=Btn&id=S31&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -612,12 +676,14 @@
     "Nazev": "Senzor náklonu",
     "Alias": "Keyes KY-020",
     "Znaceni": "TiltSwitch",
-    "Request_INIT": "?type=INIT&id=S32",
+
     "Request_UPDATE": "?type=UPDATE&id=S32",
-    "Request_CONNECT": "?type=CONNECT&id=S32",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S32",
+    "Request_CONNECT": "?type=CONNECT&id=S32&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S32&pin=PIN",
     "Request_RESET": "?type=RESET&id=S32",
     "Response": "?type=TiltSwitch&id=S32&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -631,12 +697,14 @@
     "Nazev": "Senzor vibrace",
     "Alias": "Keyes KY-002",
     "Znaceni": "Dvibration",
-    "Request_INIT": "?type=INIT&id=S33",
+
     "Request_UPDATE": "?type=UPDATE&id=S33",
-    "Request_CONNECT": "?type=CONNECT&id=S33",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S33",
+    "Request_CONNECT": "?type=CONNECT&id=S33&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S33&pin=PIN",
     "Request_RESET": "?type=RESET&id=S33",
     "Response": "?type=Dvibration&id=S33&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -650,12 +718,14 @@
     "Nazev": "Rtuťový senzor polohy",
     "Alias": "Keyes KY-017",
     "Znaceni": "HGswitch",
-    "Request_INIT": "?type=INIT&id=S34",
+
     "Request_UPDATE": "?type=UPDATE&id=S34",
-    "Request_CONNECT": "?type=CONNECT&id=S34",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S34",
+    "Request_CONNECT": "?type=CONNECT&id=S34&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S34&pin=PIN",
     "Request_RESET": "?type=RESET&id=S34",
     "Response": "?type=HGswitch&id=S34&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },
@@ -669,12 +739,14 @@
     "Nazev": "Senzor nárazu",
     "Alias": "Keyes KY-031",
     "Znaceni": "Tap",
-    "Request_INIT": "?type=INIT&id=S35",
+
     "Request_UPDATE": "?type=UPDATE&id=S35",
-    "Request_CONNECT": "?type=CONNECT&id=S35",
-    "Request_DISCONNECT": "?type=DISCONNECT&id=S35",
+    "Request_CONNECT": "?type=CONNECT&id=S35&pin=PIN",
+    "Request_DISCONNECT": "?type=DISCONNECT&id=S35&pin=PIN",
     "Request_RESET": "?type=RESET&id=S35",
     "Response": "?type=Tap&id=S35&state=",
+    "PIN1": "Pin",
+    "PIN2": "",
     "Keywords_values": {
       "state": "bool"
     },

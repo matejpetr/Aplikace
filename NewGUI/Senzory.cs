@@ -64,6 +64,11 @@ namespace NewGUI                                                // Namespace pro
             comboBoxSensor.SelectedIndexChanged += comboBoxSensor_SelectedIndexChanged; // Po změně senzoru nahraj jeho obrázek
             comboBoxSensor.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();     // A přepočítej request
             comboBoxMode.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();       // Změna módu → přepočti request
+
+            // když uživatel dopíše piny, hned se přepočítá request a povolí Start
+            textPIN1.TextChanged += (s, e) => UpdateRequestFromUi();
+            textPIN2.TextChanged += (s, e) => UpdateRequestFromUi();
+
         }
 
         private void InitializeChart()                          // Nastavení výchozí podoby grafu
@@ -85,36 +90,175 @@ namespace NewGUI                                                // Namespace pro
             chart1.Series["measuring"].Color = Color.Black;     // Barva čáry (základní)
         }
 
-        private void UpdateRequestFromUi()                      // Poskládá požadavek podle aktuálního výběru v UI
+        // Najde vybranou položku z načtených SenzoryData podle zobrazeného Znaceni
+        private Komponenty FindSelectedComponent()
         {
-            bool hasSensor = comboBoxSensor.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxSensor.Text); // Máme vybraný senzor?
-            bool hasMode = comboBoxMode.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxMode.Text);       // Máme vybraný mód?
-            bool connected = SerialManager.Instance.IsOpen;     // Je sériový port otevřen?
-
-            if (hasSensor && hasMode)                           // Pokud máme vše potřebné
-            {
-                string sensorLabel = comboBoxSensor.Text.Trim(); // Značení (label) vybraného senzoru
-                string mode = comboBoxMode.Text.Trim();          // Mód (INIT/UPDATE/CONFIG/RESET…)
-
-                if (!sensorIdMap.TryGetValue(sensorLabel, out string sensorId) || string.IsNullOrWhiteSpace(sensorId)) // Najdi ID podle značení
-                    sensorId = sensorLabel;                     // Fallback: použij text přímo
-
-                string formattedId = FormatSensorId(sensorId);  // Normalizuj ID do tvaru Sxx
-
-                request = mode.Equals("INIT", StringComparison.OrdinalIgnoreCase) // INIT nemá id v dotazu
-                          ? $"?type={mode}"                                       // → pouze ?type=INIT
-                          : $"?type={mode}&id={formattedId}";                     // Jinak připoj i &id=Sxx
-
-                label8.Text = request;                           // Zobraz náhled požadavku do labelu
-            }
-            else                                                 // Není vybrán senzor/mód
-            {
-                request = null;                                  // Zahoď aktuální požadavek
-                label8.Text = string.Empty;                      // Vyčisti náhled
-            }
-
-            button1.Enabled = connected && hasSensor && hasMode; // Tlačítko Start jen pokud je vše připravené
+            var label = comboBoxSensor.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(label) || SenzoryData == null) return null;
+            return SenzoryData.FirstOrDefault(k =>
+                string.Equals(k.Znaceni?.Trim(), label, StringComparison.OrdinalIgnoreCase));
         }
+
+        // Podle módu a dat z JSONu ukáže/skrývá pin vstupy + nastaví popisky
+        private void UpdatePinInputsUi()
+        {
+            // default: schovat
+            PIN1.Visible = PIN2.Visible = false;
+            textPIN1.Visible = textPIN2.Visible = false;
+
+            // piny ukazujeme jen pro CONNECT/DISCONNECT
+            string mode = comboBoxMode.Text?.Trim();
+            bool isConnMode = mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
+                           || mode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
+            if (!isConnMode) return;
+
+            var item = FindSelectedComponent();
+            if (item == null) return;
+
+            // PIN1
+            if (!string.IsNullOrWhiteSpace(item.PIN1))
+            {
+                PIN1.Text = item.PIN1;
+                PIN1.Visible = true;
+                textPIN1.Visible = true;
+            }
+
+            // PIN2 → pokud má text, ukaž i druhý
+            if (!string.IsNullOrWhiteSpace(item.PIN2))
+            {
+                PIN2.Text = item.PIN2;
+                PIN2.Visible = true;
+                textPIN2.Visible = true;
+
+                // pojistka: kdyby JSON neměl PIN1 a měl PIN2, ukaž alespoň oba
+                if (!PIN1.Visible)
+                {
+                    PIN1.Text = "PIN1";
+                    PIN1.Visible = true;
+                    textPIN1.Visible = true;
+                }
+            }
+        }
+
+        // vyčistí mezery a (volitelně) vyextrahuje číslice - "D2" -> "2", "GPIO 14" -> "14"
+        private static string NormalizePinInput(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return null;
+            input = input.Trim();
+
+            var digits = new string(input.Where(char.IsDigit).ToArray());
+            return string.IsNullOrEmpty(digits) ? input : digits;
+
+            // pokud chceš zachovat přesně co uživatel zadal (třeba "D2"), vrať jen: return input.Trim();
+        }
+
+        // Vrátí text pro &pin=... podle JSONu a vyplněných textboxů
+        // 1 pin  -> "\"13\""             // (včetně uvozovek)
+        // 2 piny -> "\"5\",\"18\""
+        private string BuildPinExpr()
+        {
+            var item = FindSelectedComponent();
+            if (item == null) return null;
+
+            var p1 = NormalizePinInput(textPIN1.Text);
+            var hasSecond = !string.IsNullOrWhiteSpace(item.PIN2);
+            var p2 = NormalizePinInput(textPIN2.Text);
+
+            if (hasSecond)
+            {
+                if (string.IsNullOrWhiteSpace(p1) || string.IsNullOrWhiteSpace(p2))
+                    return null; // chybí některý pin
+                return $"\"{p1}\",\"{p2}\"";
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(p1))
+                    return null; // chybí pin
+                return $"{p1}";
+            }
+        }
+
+
+        private void UpdateRequestFromUi()
+        {
+            bool hasSensor = comboBoxSensor.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxSensor.Text);
+            bool hasMode = comboBoxMode.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxMode.Text);
+            bool connected = SerialManager.Instance.IsOpen;
+
+            // vždy nejdřív uprav UI pinů podle módu/JSONu
+            UpdatePinInputsUi();
+
+            if (hasSensor && hasMode)
+            {
+                string sensorLabel = comboBoxSensor.Text.Trim(); // "DS18B20"...
+                string mode = comboBoxMode.Text.Trim();   // INIT/UPDATE/CONFIG/RESET/CONNECT/DISCONNECT...
+
+                if (!sensorIdMap.TryGetValue(sensorLabel, out string sensorId) || string.IsNullOrWhiteSpace(sensorId))
+                    sensorId = sensorLabel;
+
+                string formattedId = FormatSensorId(sensorId);   // Sxx
+
+                bool isConnMode = mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
+                               || mode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
+
+                if (mode.Equals("INIT", StringComparison.OrdinalIgnoreCase))
+                {
+                    request = $"?type={mode}&app=APP_NAME&version=APP_VERSION&dbversion=DB_VERSION&api=API_VERSION";
+                }
+                else if (isConnMode)
+                {
+                    // připrav výraz pro pin
+                    string pinExpr = BuildPinExpr(); // vrátí "\"13\"" nebo "\"5\",\"18\"" nebo null
+
+                    // pokud ještě nemám vyplněné piny, zobraz aspoň náhled bez nich
+                    if (string.IsNullOrWhiteSpace(pinExpr))
+                    {
+                        request = $"?type={mode}&id={formattedId}&pin="; // Start tlačítko stejně níže nepovolíme
+                    }
+                    else
+                    {
+                        // a) pokud používáš šablonu s 'PIN', nahradíme
+                        string baseReq = $"?type={mode}&id={formattedId}&pin=PIN";
+                        request = baseReq.Replace("PIN", pinExpr);
+
+                        // b) kdybys nechtěl šablonu, tak prostě:
+                        // request = $"?type={mode}&id={formattedId}&pin={pinExpr}";
+                    }
+                }
+                else
+                {
+                    request = $"?type={mode}&id={formattedId}";
+                }
+
+                label8.Text = request;
+            }
+            else
+            {
+                request = null;
+                label8.Text = string.Empty;
+            }
+
+            // --- povolení Start tlačítka ---
+            bool ready = connected && hasSensor && hasMode;
+
+            // CONNECT/DISCONNECT navíc vyžadují vyplněné piny podle JSONu
+            string m = comboBoxMode.Text?.Trim() ?? "";
+            bool isConn = m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) || m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
+            if (isConn)
+            {
+                var item = FindSelectedComponent();
+                if (item != null)
+                {
+                    bool needTwo = !string.IsNullOrWhiteSpace(item.PIN2);
+                    bool p1ok = !string.IsNullOrWhiteSpace(NormalizePinInput(textPIN1.Text));
+                    bool p2ok = !needTwo || !string.IsNullOrWhiteSpace(NormalizePinInput(textPIN2.Text));
+                    ready = ready && p1ok && p2ok;
+                }
+            }
+
+            button1.Enabled = ready;
+        }
+
 
         private void ApplyTimerIntervalFromUi()                 // Přenastaví periodu vykreslovacího timeru dle UI
         {
@@ -678,6 +822,11 @@ namespace NewGUI                                                // Namespace pro
             {
                 MessageBox.Show($"Chyba při načítání obrázku: {ex.Message}"); // Zobraz chybovou hlášku
             }
+        }
+
+        private void chart1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

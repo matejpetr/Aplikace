@@ -11,21 +11,25 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NewGUI
 {
     public partial class Aktuatory : UserControl
     {
-        private Timer comPortWatcherTimer;                 // Kontrola přítomnosti COM zařízení
-        private DataTable excelTable;                      // CSV tabulka
+        private Timer comPortWatcherTimer;                         // Kontrola přítomnosti COM zařízení
         private List<string> lastKnownPorts = new List<string>();
         private string BasePath = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
-        private Timer delayedSendTimer;                    // Timer pro jednorázové zpožděné odeslání
+        private Timer delayedSendTimer;                            // Timer pro jednorázové zpožděné odeslání
+
+        // --- NOVĚ: JSON datový model místo CSV DataTable ---
+        private List<AktuatorItem> aktuatoryData;                  // Načtené položky z Aktuátory.json
 
         public Aktuatory(Form1 rodic)
         {
             InitializeComponent();
-            LoadCsvData();
+            LoadJsonData();                                        // ⟵ místo LoadCsvData()
 
             // Kontrola COM portů
             comPortWatcherTimer = new Timer();
@@ -55,6 +59,7 @@ namespace NewGUI
             SetControlButtonsEnabled(false);
         }
 
+        // ---------- COM PORT WATCHER ----------
         private void ComPortWatcherTimer_Tick(object sender, EventArgs e)
         {
             var currentPorts = SerialPort.GetPortNames().ToList();
@@ -76,85 +81,69 @@ namespace NewGUI
             }
         }
 
-        private void LoadCsvData()
+        // ---------- NOVĚ: NAČTENÍ JSON MÍSTO CSV ----------
+        private void LoadJsonData()
         {
             try
             {
-                string csvPath = Path.Combine(BasePath, "MTA_Aktuátory.csv");
-                string PicPath = Path.Combine(BasePath, "Aktuátory");
-                if (!File.Exists(csvPath))
+                string jsonPath = Path.Combine(BasePath, "Aktuatory.json"); // název souboru podle tvého zadání
+                if (!File.Exists(jsonPath))
                 {
-                    MessageBox.Show($"Soubor MTA_Aktuátory.csv nebyl nalezen ve složce projektu: {BasePath}");
+                    MessageBox.Show($"Soubor Aktuátory.json nebyl nalezen ve složce projektu: {BasePath}");
                     return;
                 }
 
-                excelTable = new DataTable();
-                AktBox.Items.Clear();
-                int count = 0;
-
-                try
-                {
-                    using (var reader = new StreamReader(csvPath, Encoding.Default))
+                var jsonText = File.ReadAllText(jsonPath);
+                // Case-insensitive a podpora alternativních názvů polí (viz model AktuatorItem níže)
+                aktuatoryData = JsonSerializer.Deserialize<List<AktuatorItem>>(
+                    jsonText,
+                    new JsonSerializerOptions
                     {
-                        bool headerRead = false;
-                        string[] headers = null;
-
-                        while (!reader.EndOfStream)
-                        {
-                            string line = reader.ReadLine()?.TrimEnd('\r', '\n');
-                            if (string.IsNullOrWhiteSpace(line)) continue;
-
-                            // auto detekce oddělovače
-                            string[] values;
-                            if (line.Contains(';')) values = line.Split(';');
-                            else if (line.Contains('\t')) values = line.Split('\t');
-                            else values = line.Split(',');
-
-                            if (!headerRead)
-                            {
-                                headers = values.Select(h => h.Trim().Trim('"')).ToArray();
-                                foreach (var header in headers)
-                                    excelTable.Columns.Add(header);
-                                headerRead = true;
-                                continue;
-                            }
-
-                            if (values.Length < headers.Length)
-                                Array.Resize(ref values, headers.Length);
-
-                            excelTable.Rows.Add(values);
-
-                            // Alias: preferuj "Alias (type)", případně "Značení"
-                            int aliasIdx = Array.FindIndex(headers, h =>
-                                h.Equals("Alias (type)", StringComparison.OrdinalIgnoreCase) ||
-                                h.Equals("Značení", StringComparison.OrdinalIgnoreCase));
-
-                            if (aliasIdx >= 0)
-                            {
-                                string alias = values[aliasIdx]?.Trim().Trim('"');
-                                if (!string.IsNullOrWhiteSpace(alias))
-                                {
-                                    AktBox.Items.Add(alias);
-                                    count++;
-                                    pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-                                    AktBox.SelectedIndexChanged += AktBox_UpdateImage;
-                                    AktBox.TextChanged += AktBox_UpdateImage;
-                                }
-                            }
-                        }
+                        PropertyNameCaseInsensitive = true
                     }
-                }
-                catch (IOException)
+                ) ?? new List<AktuatorItem>();
+
+                // Naplnění boxu aliasů stejně jako dřív, ale z JSONu
+                AktBox.Items.Clear();
+
+                // Budeme zobrazovat „Alias (type)“ pokud je, jinak Alias, jinak Znackeni
+                foreach (var a in aktuatoryData)
                 {
-                    throw new ApplicationException("Soubor MTA_Aktuátory.csv je otevřený v jiném programu. Zavřete ho a zkuste to znovu.");
+                    var display = GetDisplayAlias(a);
+                    if (!string.IsNullOrWhiteSpace(display))
+                        AktBox.Items.Add(display);
                 }
+
+                // Obrázky jako dřív
+                pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+                AktBox.SelectedIndexChanged -= AktBox_UpdateImage;
+                AktBox.TextChanged -= AktBox_UpdateImage;
+                AktBox.SelectedIndexChanged += AktBox_UpdateImage;
+                AktBox.TextChanged += AktBox_UpdateImage;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Chyba při načítání CSV: {ex.Message}");
+                MessageBox.Show($"Chyba při načítání JSON: {ex.Message}");
             }
         }
 
+        // Získá „zobrazovací alias“ – priorita: Alias (type) → Alias → Znackeni
+        private static string GetDisplayAlias(AktuatorItem a)
+        {
+            var s = (a.Alias_type ?? a.Alias ?? a.Znackeni ?? string.Empty).Trim();
+            return s;
+        }
+
+        // Najde položku v JSONu podle jména zvoleného v AktBox (porovnává display alias)
+        private AktuatorItem FindByDisplayAlias(string display)
+        {
+            if (string.IsNullOrWhiteSpace(display) || aktuatoryData == null) return null;
+
+            return aktuatoryData.FirstOrDefault(a =>
+                string.Equals(GetDisplayAlias(a), display, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // ---------- OBRÁZEK PODLE VÝBĚRU ----------
         private void AktBox_UpdateImage(object sender, EventArgs e)
         {
             var path = Path.Combine(BasePath, "Aktuátory", $"{AktBox.Text}.png");
@@ -186,6 +175,7 @@ namespace NewGUI
             SerialManager.Instance.Close();
         }
 
+        // ---------- PŘIPOJENÍ/ODPOJENÍ ----------
         private void btnConnect_Click(object sender, EventArgs e)
         {
             if (!SerialManager.Instance.IsOpen)
@@ -198,7 +188,6 @@ namespace NewGUI
 
                 try
                 {
-                    // Nastavení a otevření sdíleného seriáku
                     SerialManager.Instance.ConfigurePort(
                         portName: ComBox.SelectedItem.ToString(),
                         baudRate: 115200,
@@ -209,7 +198,7 @@ namespace NewGUI
                         newLine: "\n"
                     );
 
-                    // V Aktuátorech RX nepotřebujeme – pokud ano, můžeš připojit:
+                    // V Aktuátorech RX nepotřebujeme – případně:
                     // SerialManager.Instance.AttachExclusiveReceiver(Aktuatory_DataReceived);
 
                     SerialManager.Instance.Open();
@@ -231,9 +220,7 @@ namespace NewGUI
             {
                 try
                 {
-                    // zruš i případné odložené odeslání
-                    if (delayedSendTimer.Enabled) delayedSendTimer.Stop();
-
+                    if (delayedSendTimer.Enabled) delayedSendTimer.Stop(); // zruš odložené odeslání
                     SerialManager.Instance.Close();
                 }
                 finally
@@ -247,6 +234,7 @@ namespace NewGUI
             }
         }
 
+        // ---------- UI pro CONFIG parametry ----------
         private void ShowTextBoxesForRequest(string request)
         {
             // Reset všech textboxů a labelů
@@ -293,6 +281,7 @@ namespace NewGUI
             }
         }
 
+        // ---------- Dosazení hodnot z textboxů do requestu ----------
         private string UpdateRequestWithTextBoxValues(string originalRequest)
         {
             var pattern = @"(?<key>[^&=?]+)=(?<value>[^&]*)";
@@ -319,6 +308,7 @@ namespace NewGUI
             return basePart + typeAndId + (newParams.Any() ? "&" + string.Join("&", newParams) : "");
         }
 
+        // ---------- START / STOP ----------
         private void btnStart_Click(object sender, EventArgs e)
         {
             if (btnStart.Text == "Spustit")
@@ -373,18 +363,22 @@ namespace NewGUI
                     return;
                 }
 
-                var row = excelTable.AsEnumerable()
-                                    .FirstOrDefault(r => r.Table.Columns.Contains("Alias (type)")
-                                                        ? r.Field<string>("Alias (type)") == selectedAlias
-                                                        : (r.Table.Columns.Contains("Alias") && r.Field<string>("Alias") == selectedAlias));
-
-                if (row == null)
+                var item = FindByDisplayAlias(selectedAlias);
+                if (item == null)
                 {
-                    MessageBox.Show("Alias nebyl nalezen v CSV.");
+                    MessageBox.Show("Alias nebyl nalezen v JSONu.");
                     return;
                 }
 
-                string requestOriginal = row.Field<string>("Request");
+                // Původně se bral sloupec "Request" z CSV; teď z JSONu vlastnost Request
+                string requestOriginal = item.Request;
+                if (string.IsNullOrWhiteSpace(requestOriginal))
+                {
+                    MessageBox.Show("V JSONu chybí Request pro vybraný aktuátor.");
+                    return;
+                }
+
+                // Přepiš typ podle vybraného módu
                 string requestFinal = Regex.Replace(requestOriginal, @"type=[^&]+", $"type={selectedMod}");
                 requestFinal = UpdateRequestWithTextBoxValues(requestFinal);
 
@@ -423,6 +417,7 @@ namespace NewGUI
             }
         }
 
+        // ---------- ODLOŽENÉ ODESLÁNÍ ----------
         private void DelayedSendTimer_Tick(object sender, EventArgs e)
         {
             delayedSendTimer.Stop(); // jednorázové odeslání
@@ -436,15 +431,14 @@ namespace NewGUI
             if (string.IsNullOrEmpty(selectedAlias) || string.IsNullOrEmpty(selectedMod))
                 return;
 
-            var row = excelTable.AsEnumerable()
-                                .FirstOrDefault(r => r.Table.Columns.Contains("Alias (type)")
-                                                   ? r.Field<string>("Alias (type)") == selectedAlias
-                                                   : (r.Table.Columns.Contains("Alias") && r.Field<string>("Alias") == selectedAlias));
-
-            if (row == null)
+            var item = FindByDisplayAlias(selectedAlias);
+            if (item == null)
                 return;
 
-            string request = row.Field<string>("Request");
+            string request = item.Request;
+            if (string.IsNullOrWhiteSpace(request))
+                return;
+
             request = Regex.Replace(request, @"type=[^&]+", $"type={selectedMod}");
             request = UpdateRequestWithTextBoxValues(request);
 
@@ -494,20 +488,16 @@ namespace NewGUI
 
         private void AktBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (AktBox.SelectedItem == null || excelTable == null)
+            if (AktBox.SelectedItem == null || aktuatoryData == null)
                 return;
 
             string selectedAlias = AktBox.SelectedItem.ToString();
 
-            var row = excelTable.AsEnumerable()
-                                .FirstOrDefault(r => r.Table.Columns.Contains("Alias (type)")
-                                                   ? r.Field<string>("Alias (type)") == selectedAlias
-                                                   : (r.Table.Columns.Contains("Alias") && r.Field<string>("Alias") == selectedAlias));
+            var item = FindByDisplayAlias(selectedAlias);
+            if (item == null) return;
 
-            if (row == null) return;
-
-            string request = row.Field<string>("Request");
-            if (ModBox.Text == "CONFIG")
+            string request = item.Request;
+            if (!string.IsNullOrWhiteSpace(request) && ModBox.Text == "CONFIG")
             {
                 ShowTextBoxesForRequest(request);
             }
@@ -528,5 +518,20 @@ namespace NewGUI
         private void badgeConn_Click(object sender, EventArgs e) { }
         private void label5_Click(object sender, EventArgs e) { }
         private void pictureBox1_Click(object sender, EventArgs e) { }
+
+        // ====== Datový model pro JSON ======
+        private class AktuatorItem
+        {
+            public int Id { get; set; }
+
+            // Preferovaný zobrazovaný název (pokud v JSONu existuje)
+            [JsonPropertyName("Alias (type)")]
+            public string Alias_type { get; set; }    // např. "Relé (RELAY)"
+
+            public string Alias { get; set; }         // alternativa: "Alias"
+            public string Znackeni { get; set; }      // alternativa: "Znackeni" (pokud se používá stejně jako u senzorů)
+
+            public string Request { get; set; }       // např. "?type=UPDATE&id=RELAY&state=&time="
+        }
     }
 }
