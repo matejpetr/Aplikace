@@ -29,6 +29,7 @@ namespace NewGUI                                                // Namespace pro
         private string _latestDataFrame;                        // Poslední přijatá věta (zobrazíme ji periodicky timerem)
         private Timer displayTimer;                             // Timer pro throttlované vykreslování přijatých dat
         private System.Threading.CancellationTokenSource _sendCts; // CTS pro zrušení cyklického odesílání
+        private readonly StringBuilder _rxBuffer = new StringBuilder();
 
         private List<Komponenty> SenzoryData;                // Načtená data z Senzory.json (silně typovaná)
         private string _lastSentMode = null;
@@ -63,7 +64,29 @@ namespace NewGUI                                                // Namespace pro
 
             comboBoxSensor.SelectedIndexChanged += comboBoxSensor_SelectedIndexChanged; // Po změně senzoru nahraj jeho obrázek
             comboBoxSensor.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();     // A přepočítej request
-            comboBoxMode.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();       // Změna módu → přepočti request
+            comboBoxMode.SelectedIndexChanged += (s, e) =>
+            {
+                var m = comboBoxMode.Text?.Trim() ?? "";
+                bool toConn = m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
+                           || m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
+
+                if (toConn && isSendingRequest)       // běží UPDATE?
+                {
+                    StopSendingRequest();             // okamžitě zastav smyčku
+                                                      // odemkni UI a vrať tlačítko do "Spustit"
+                    comboBoxSensor.Enabled = true;
+                    comboBoxMode.Enabled = true;
+                    comboBoxCOM.Enabled = true;
+                    comboBoxTIMER.Enabled = true;
+                    ConnectBtn.Enabled = true;
+                    button1.Text = "Spustit";
+                    button1.BackColor = Color.FromArgb(15, 108, 189);
+                    button1.FlatAppearance.BorderColor = Color.FromArgb(15, 108, 189);
+                    button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(17, 94, 163);
+                    button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(12, 83, 146);
+                }
+            };
+            // Změna módu → přepočti request
 
             // když uživatel dopíše piny, hned se přepočítá request a povolí Start
             textPIN1.TextChanged += (s, e) => UpdateRequestFromUi();
@@ -385,6 +408,31 @@ namespace NewGUI                                                // Namespace pro
 
             if (button1.Text == "Spustit")
             {
+                // Pokud jdu spustit CONNECT/DISCONNECT a ještě běží cyklus (Zastavit),
+                // nejdřív cyklus ukončit a UI vrátit do "Spustit".
+                var intendedMode = comboBoxMode.Text?.Trim() ?? "";
+                bool wantsConn = intendedMode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
+                              || intendedMode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
+
+                if (wantsConn && button1.Text == "Zastavit")
+                {
+                    // simuluj ruční STOP
+                    comboBoxSensor.Enabled = true;
+                    comboBoxMode.Enabled = true;
+                    comboBoxCOM.Enabled = true;
+                    comboBoxTIMER.Enabled = true;
+                    ConnectBtn.Enabled = true;
+                    button1.Text = "Spustit";
+
+                    StopSendingRequest();
+                    textBox2.AppendText("Měření pozastaveno (přepnutí na CONNECT/DISCONNECT).\r\n");
+
+                    button1.BackColor = Color.FromArgb(15, 108, 189);
+                    button1.FlatAppearance.BorderColor = Color.FromArgb(15, 108, 189);
+                    button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(17, 94, 163);
+                    button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(12, 83, 146);
+                }
+
                 if (string.IsNullOrWhiteSpace(selectedPort))
                 {
                     MessageBox.Show("Prosím vyber COM port.");
@@ -448,6 +496,7 @@ namespace NewGUI                                                // Namespace pro
                 }
 
                 // === OSTATNÍ MÓDY (původní chování) ===
+                _lastSentMode = null; // nový režim → nechceme „lepivý“ CONNECT/DISCONNECT stav
                 StartSendingRequest();
 
                 // zamknout UI a přepnout tlačítko na „Zastavit“ jen pro režimy, které to dávají smysl
@@ -571,19 +620,19 @@ namespace NewGUI                                                // Namespace pro
         {
             try
             {
-                var port = sender as SerialPort;                  // Přetypuj na SerialPort
-                string data = port?.ReadExisting();               // Vytáhni vše dostupné
-                if (string.IsNullOrEmpty(data)) return;           // Nic nepřišlo → konec
+                var port = sender as SerialPort;
+                string data = port?.ReadExisting();
+                if (string.IsNullOrEmpty(data)) return;
 
-                lock (_rxLock)                                    // Zamkni sdílený stav
+                // Hromadíme do bufferu – může přijít víc rámců najednou, nebo jen půl
+                lock (_rxLock)
                 {
-                    _latestDataFrame = data;                      // Ulož poslední přijatá data
+                    _rxBuffer.Append(data);
                 }
-                // Neparsujeme hned – jen uložíme a zobrazíme na DisplayTimer_Tick (throttle)
             }
             catch
             {
-                // Schlapni případný šum/chyby bez blokace UI
+                // ticho
             }
         }
 
@@ -796,43 +845,42 @@ namespace NewGUI                                                // Namespace pro
 
         private void DisplayTimer_Tick(object sender, EventArgs e)
         {
-            string snapshot = null;
+            string chunk;
             lock (_rxLock)
             {
-                if (!string.IsNullOrEmpty(_latestDataFrame))
+                if (_rxBuffer.Length == 0) return;
+                chunk = _rxBuffer.ToString();
+                _rxBuffer.Clear();
+            }
+
+            // Normalizuj konce řádků a rozděl
+            chunk = chunk.Replace("\r", "");
+            var lines = chunk.Split('\n');
+
+            foreach (var raw in lines)
+            {
+                var line = raw?.Trim();
+                if (string.IsNullOrEmpty(line)) continue;
+
+                // 1) standardní rámec "?type=..."
+                if (line.StartsWith("?type=", StringComparison.OrdinalIgnoreCase))
                 {
-                    snapshot = _latestDataFrame;
-                    _latestDataFrame = null;
+                    ParseAndDisplayData(line);
+                    continue;
                 }
-            }
-            if (string.IsNullOrEmpty(snapshot)) return;
 
-            // 1) Standardní rámec začínající "?type=" → parsuj do grafu/logu
-            if (snapshot.StartsWith("?type=", StringComparison.OrdinalIgnoreCase))
-            {
-                ParseAndDisplayData(snapshot);
-                return;
-            }
+                // 2) vypadá jako seznam INIT (např. "S01:DS18B20,S02:DHT11")
+                if (LooksLikeInitList(line))
+                {
+                    ParseInitMessage(line);
+                    continue;
+                }
 
-            // 2) Pozůstatek po CONNECT/DISCONNECT → jen jednou syrově vypiš a smaž „flag“
-            if (string.Equals(_lastSentMode, "CONNECT", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(_lastSentMode, "DISCONNECT", StringComparison.OrdinalIgnoreCase))
-            {
-                AppendTextBox(snapshot.EndsWith("\r\n") ? snapshot : snapshot + "\r\n");
-                _lastSentMode = null; // <-- jen jednorázově
-                return;
+                // 3) cokoliv ostatní – syrově zalogovat (např. echo/ok/stav)
+                AppendTextBox(line + "\r\n");
             }
-
-            // 3) Vypadá to jako INIT-seznam (např. "S01:DS18B20,S02:DHT11,...")?
-            if (LooksLikeInitList(snapshot))
-            {
-                ParseInitMessage(snapshot);
-                return;
-            }
-
-            // 4) Fallback: všechno ostatní syrově loguj (ať UPDATE nikdy „nezmizí“)
-            AppendTextBox(snapshot.EndsWith("\r\n") ? snapshot : snapshot + "\r\n");
         }
+
 
         private static bool LooksLikeInitList(string s)
             {
