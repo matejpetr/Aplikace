@@ -865,7 +865,7 @@ namespace NewGUI                                                // Namespace pro
 
                 if (string.IsNullOrEmpty(line)) continue;
 
-                if (line.StartsWith("?type=", StringComparison.OrdinalIgnoreCase))
+                if (line.StartsWith("?id=", StringComparison.OrdinalIgnoreCase))
                 {
                     ParseAndDisplayData(line);
                     continue;
