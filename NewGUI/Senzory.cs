@@ -168,7 +168,7 @@ namespace NewGUI                                                // Namespace pro
             {
                 if (string.IsNullOrWhiteSpace(p1) || string.IsNullOrWhiteSpace(p2))
                     return null; // chybí některý pin
-                return $"\"{p1}\",\"{p2}\"";
+                return $"{p1},{p2}";
             }
             else
             {
