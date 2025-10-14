@@ -460,7 +460,6 @@ namespace NewGUI                                                // Namespace pro
 
                 if (isConnMode)
                 {
-                    // pouze jednorázově odešli požadavek
                     try
                     {
                         if (request == null)
@@ -469,18 +468,17 @@ namespace NewGUI                                                // Namespace pro
                             return;
                         }
 
+                        displayTimer?.Start();                 // ✅ přidej: zajistí zpracování odpovědi
                         SerialManager.Instance.WriteLine(request);
-                        AppendTextBox($"Odesláno: {request}\r\n"); // okamžitý log odeslání
-                        _lastSentMode = null;     // <-- přidej tohle
+                        AppendTextBox($"Odesláno: {request}\r\n");
+                        _lastSentMode = null;
                         return;
-                        // UI zůstane odemčené, tlačítko se NEpřepne na „Zastavit“
-                        // odpověď ze seriovky se zobrazí syrově – viz úprava DisplayTimer_Tick níže
                     }
                     catch (Exception ex)
                     {
                         MessageBox.Show($"Chyba při odesílání: {ex.Message}");
                     }
-                    return; // konec pro CONNECT/DISCONNECT
+                    return;
                 }
 
                 // === OSTATNÍ MÓDY (původní chování) ===
