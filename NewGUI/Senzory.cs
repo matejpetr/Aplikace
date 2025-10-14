@@ -861,13 +861,48 @@ namespace NewGUI                                                // Namespace pro
                 // Odstranit BOM a neviditelné kontrolní znaky na začátku řádku
                 var line = raw.Trim();
                 line = line.TrimStart('\uFEFF'); // <— DŮLEŽITÉ (BOM)
-                line = new string(line.Where(ch => !char.IsControl(ch) || ch == '?' || ch == '=' || ch == '&' || ch == '.' || ch == ',' || ch == '-' || char.IsLetterOrDigit(ch)).ToArray());
+                line = new string(line.Where(ch =>
+                    !char.IsControl(ch) || ch == '?' || ch == '=' || ch == '&' ||
+                    ch == '.' || ch == ',' || ch == '-' || char.IsLetterOrDigit(ch)
+                ).ToArray());
 
                 if (string.IsNullOrEmpty(line)) continue;
 
+                // --- jen rámce se začátkem "?id=" — dále filtrujeme, aby do grafu šly jen datové hodnoty ---
                 if (line.StartsWith("?id=", StringComparison.OrdinalIgnoreCase))
                 {
-                    ParseAndDisplayData(line);
+                    // klíče, které do grafu nepatří (meta nebo servisní)
+                    var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "type", "id", "pin", "app", "version", "dbversion", "api", "status" };
+
+                    // najdi, zda má věta nějaký "datový" číselný parametr (mimo skipKeys)
+                    bool hasNumericData = System.Text.RegularExpressions.Regex
+                        .Matches(line, @"[?&]([A-Za-z_][A-Za-z0-9_]*)=([^&]+)")
+                        .Cast<System.Text.RegularExpressions.Match>()
+                        .Select(m => new { Key = m.Groups[1].Value, Val = m.Groups[2].Value })
+                        .Any(k =>
+                        {
+                            if (skipKeys.Contains(k.Key)) return false;
+
+                            var v = k.Val?.Trim();
+                            if (string.IsNullOrEmpty(v)) return false;
+
+                            // normalize "25,3" -> "25.3"
+                            if (v.IndexOf(',') >= 0 && v.IndexOf('.') < 0)
+                                v = v.Replace(',', '.');
+
+                            return double.TryParse(
+                                v,
+                                System.Globalization.NumberStyles.Any,
+                                System.Globalization.CultureInfo.InvariantCulture,
+                                out _);
+                        });
+
+                    if (hasNumericData)
+                        ParseAndDisplayData(line);   // do grafu jen když je v řádku "datové" číslo
+                    else
+                        AppendTextBox(line + "\r\n"); // jinak jen zaloguj (CONNECT/DISCONNECT apod.)
+
                     continue;
                 }
 
@@ -883,6 +918,7 @@ namespace NewGUI                                                // Namespace pro
             // jistota překreslení grafu po přidání bodů
             chart1.Invalidate();
         }
+
 
 
 
