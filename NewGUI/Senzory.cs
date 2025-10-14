@@ -64,28 +64,8 @@ namespace NewGUI                                                // Namespace pro
 
             comboBoxSensor.SelectedIndexChanged += comboBoxSensor_SelectedIndexChanged; // Po změně senzoru nahraj jeho obrázek
             comboBoxSensor.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();     // A přepočítej request
-            comboBoxMode.SelectedIndexChanged += (s, e) =>
-            {
-                var m = comboBoxMode.Text?.Trim() ?? "";
-                bool toConn = m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
-                           || m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
+            comboBoxMode.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();
 
-                if (toConn && isSendingRequest)       // běží UPDATE?
-                {
-                    StopSendingRequest();             // okamžitě zastav smyčku
-                                                      // odemkni UI a vrať tlačítko do "Spustit"
-                    comboBoxSensor.Enabled = true;
-                    comboBoxMode.Enabled = true;
-                    comboBoxCOM.Enabled = true;
-                    comboBoxTIMER.Enabled = true;
-                    ConnectBtn.Enabled = true;
-                    button1.Text = "Spustit";
-                    button1.BackColor = Color.FromArgb(15, 108, 189);
-                    button1.FlatAppearance.BorderColor = Color.FromArgb(15, 108, 189);
-                    button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(17, 94, 163);
-                    button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(12, 83, 146);
-                }
-            };
             // Změna módu → přepočti request
 
             // když uživatel dopíše piny, hned se přepočítá request a povolí Start
@@ -123,22 +103,30 @@ namespace NewGUI                                                // Namespace pro
         }
 
         // Podle módu a dat z JSONu ukáže/skrývá pin vstupy + nastaví popisky
+        // Podle módu a dat z JSONu ukáže/skrývá pin vstupy + nastaví popisky
         private void UpdatePinInputsUi()
         {
-            // default: schovat
+            // 1) VŽDY nejdřív všechno schovat (a volitelně vyčistit)
             PIN1.Visible = PIN2.Visible = false;
             textPIN1.Visible = textPIN2.Visible = false;
+            // případně chceš i mazat texty:
+            // textPIN1.Clear();
+            // textPIN2.Clear();
+            // a popisky třeba do defaultu:
+            // PIN1.Text = "PIN1";
+            // PIN2.Text = "PIN2";
 
-            // piny ukazujeme jen pro CONNECT/DISCONNECT
+            // 2) Piny ukazujeme jen pro CONNECT/DISCONNECT
             string mode = comboBoxMode.Text?.Trim();
             bool isConnMode = mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
                            || mode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
-            if (!isConnMode) return;
+            if (!isConnMode) return; // jsme v jiném módu → zůstanou skryté
 
+            // 3) Najdi položku z JSONu
             var item = FindSelectedComponent();
-            if (item == null) return;
+            if (item == null) return; // fallback necháme skrytý (nebo si můžeš zobrazit aspoň PIN1)
 
-            // PIN1
+            // 4) Zobraz podle JSONu
             if (!string.IsNullOrWhiteSpace(item.PIN1))
             {
                 PIN1.Text = item.PIN1;
@@ -146,14 +134,13 @@ namespace NewGUI                                                // Namespace pro
                 textPIN1.Visible = true;
             }
 
-            // PIN2 → pokud má text, ukaž i druhý
             if (!string.IsNullOrWhiteSpace(item.PIN2))
             {
                 PIN2.Text = item.PIN2;
                 PIN2.Visible = true;
                 textPIN2.Visible = true;
 
-                // pojistka: kdyby JSON neměl PIN1 a měl PIN2, ukaž alespoň oba
+                // kdyby náhodou chyběl PIN1 v JSONu, ale je PIN2, ukaž aspoň PIN1 jako placeholder
                 if (!PIN1.Visible)
                 {
                     PIN1.Text = "PIN1";
@@ -162,6 +149,7 @@ namespace NewGUI                                                // Namespace pro
                 }
             }
         }
+
 
         // vyčistí mezery a (volitelně) vyextrahuje číslice - "D2" -> "2", "GPIO 14" -> "14"
         private static string NormalizePinInput(string input)
