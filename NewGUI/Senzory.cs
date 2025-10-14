@@ -31,7 +31,7 @@ namespace NewGUI                                                // Namespace pro
         private System.Threading.CancellationTokenSource _sendCts; // CTS pro zrušení cyklického odesílání
 
         private List<Komponenty> SenzoryData;                // Načtená data z Senzory.json (silně typovaná)
-
+        private string _lastSentMode = null;
         public Senzory(Form1 rodic)                             // Konstruktor ovládacího prvku
         {
             InitializeComponent();                              // Inicializace WinForms komponent
@@ -375,82 +375,113 @@ namespace NewGUI                                                // Namespace pro
             }
         }
 
-        private void buttonStart_Click(object sender, EventArgs e) // Handler tlačítka Start/Stop
+        private void buttonStart_Click(object sender, EventArgs e)
         {
-            UpdateRequestFromUi();                                // Ujisti se, že request je aktuální
+            UpdateRequestFromUi();
 
-            string selectedPort = comboBoxCOM.Text?.Trim();       // Aktuálně zvolený COM port
-            string currentID = comboBoxSensor.Text?.Trim();       // Aktuální značení senzoru
-            string currentType = comboBoxMode.Text?.Trim();       // Aktuální mód
+            string selectedPort = comboBoxCOM.Text?.Trim();
+            string currentID = comboBoxSensor.Text?.Trim();
+            string currentType = comboBoxMode.Text?.Trim();
 
-            if (button1.Text == "Spustit")                        // Pokud chceme spustit měření
+            if (button1.Text == "Spustit")
             {
-                if (string.IsNullOrWhiteSpace(selectedPort))      // Kontrola vybraného portu
+                if (string.IsNullOrWhiteSpace(selectedPort))
                 {
                     MessageBox.Show("Prosím vyber COM port.");
                     return;
                 }
-
-                if (!SerialManager.Instance.IsOpen)               // Port musí být otevřený
+                if (!SerialManager.Instance.IsOpen)
                 {
                     MessageBox.Show("Nejprve se připoj k sériovému portu.");
                     return;
                 }
-
-                if (string.IsNullOrWhiteSpace(currentType))       // Musí být vybrán mód
+                if (string.IsNullOrWhiteSpace(currentType))
                 {
                     MessageBox.Show("Prosím vyber typ měření.");
                     return;
                 }
-
-                if (!currentType.Equals("INIT", StringComparison.OrdinalIgnoreCase)) // INIT nepotřebuje ID
+                if (!currentType.Equals("INIT", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.IsNullOrWhiteSpace(currentID))     // Ostatní módy požadují ID
+                    if (string.IsNullOrWhiteSpace(currentID))
                     {
                         MessageBox.Show("Prosím zadej nebo vyber ID zařízení.");
                         return;
                     }
                 }
 
-                if (currentID != lastUsedID)                      // Změnilo se ID od posledně?
+                // Reset grafu při změně ID (jako dřív)
+                if (currentID != lastUsedID)
                 {
-                    ResetChart();                                 // Resetuj graf
-                    lastUsedID = currentID;                       // Ulož nové ID
+                    ResetChart();
+                    lastUsedID = currentID;
                 }
 
-                StartSendingRequest();                            // Spusť odesílání (cyklické/ jednorázové dle módu)
+                _lastSentMode = currentType; // zapamatujeme si, co posíláme
 
-                button1.Text = "Zastavit";                        // UI → tlačítko nyní zastaví
-                comboBoxSensor.Enabled = false;                   // Zamkni UI prvky
+                // === ONE-SHOT PRO CONNECT/DISCONNECT ===
+                bool isConnMode = currentType.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
+                               || currentType.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
+
+                if (isConnMode)
+                {
+                    // pouze jednorázově odešli požadavek
+                    try
+                    {
+                        if (request == null)
+                        {
+                            AppendTextBox("Požadavek není sestaven.\r\n");
+                            return;
+                        }
+
+                        SerialManager.Instance.WriteLine(request);
+                        AppendTextBox($"Odesláno: {request}\r\n"); // okamžitý log odeslání
+
+                        // UI zůstane odemčené, tlačítko se NEpřepne na „Zastavit“
+                        // odpověď ze seriovky se zobrazí syrově – viz úprava DisplayTimer_Tick níže
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Chyba při odesílání: {ex.Message}");
+                    }
+                    return; // konec pro CONNECT/DISCONNECT
+                }
+
+                // === OSTATNÍ MÓDY (původní chování) ===
+                StartSendingRequest();
+
+                // zamknout UI a přepnout tlačítko na „Zastavit“ jen pro režimy, které to dávají smysl
+                button1.Text = "Zastavit";
+                comboBoxSensor.Enabled = false;
                 comboBoxMode.Enabled = false;
                 comboBoxCOM.Enabled = false;
                 comboBoxTIMER.Enabled = false;
                 ConnectBtn.Enabled = false;
-                button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(183, 28, 28); // Barvy tlačítka
+                button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(183, 28, 28);
                 button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(153, 0, 0);
                 button1.BackColor = Color.FromArgb(211, 47, 47);
                 button1.FlatAppearance.BorderColor = Color.FromArgb(211, 47, 47);
             }
-            else                                                   // Pokud chceme zastavit
+            else
             {
-                comboBoxSensor.Enabled = true;                    // Odemkni UI prvky
+                comboBoxSensor.Enabled = true;
                 comboBoxMode.Enabled = true;
                 comboBoxCOM.Enabled = true;
                 comboBoxTIMER.Enabled = true;
                 ConnectBtn.Enabled = true;
-                button1.Text = "Spustit";                         // Změň text tlačítka
+                button1.Text = "Spustit";
 
-                StopSendingRequest();                             // Zastav cyklické odesílání
-                textBox2.AppendText("Měření pozastaveno.\r\n");   // Log
+                StopSendingRequest();
+                textBox2.AppendText("Měření pozastaveno.\r\n");
 
-                button1.BackColor = Color.FromArgb(15, 108, 189); // Obnov barvy tlačítka
+                button1.BackColor = Color.FromArgb(15, 108, 189);
                 button1.FlatAppearance.BorderColor = Color.FromArgb(15, 108, 189);
                 button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(17, 94, 163);
                 button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(12, 83, 146);
 
-                UpdateRequestFromUi();                            // Přepočítej požadavek
+                UpdateRequestFromUi();
             }
         }
+
 
         private void StartSendingRequest()                        // Spuštění odesílání požadavku
         {
@@ -762,25 +793,39 @@ namespace NewGUI                                                // Namespace pro
         }                                                                         // Konec metody
 
 
-        private void DisplayTimer_Tick(object sender, EventArgs e) // Každé tiknutí → zobraz poslední rámec (pokud je)
+        private void DisplayTimer_Tick(object sender, EventArgs e)
         {
-            string snapshot = null;                               // Lokální kopie přijatých dat
-            lock (_rxLock)                                        // Zamkni sdílený stav
+            string snapshot = null;
+            lock (_rxLock)
             {
-                if (!string.IsNullOrEmpty(_latestDataFrame))      // Máme něco?
+                if (!string.IsNullOrEmpty(_latestDataFrame))
                 {
-                    snapshot = _latestDataFrame;                  // Vezmi data
-                    _latestDataFrame = null;                      // A vynuluj (zobrazujeme jen nejnovější)
+                    snapshot = _latestDataFrame;
+                    _latestDataFrame = null;
                 }
             }
 
-            if (string.IsNullOrEmpty(snapshot)) return;           // Pokud nic, nemáme co dělat
+            if (string.IsNullOrEmpty(snapshot)) return;
 
-            if (snapshot.StartsWith("?type="))                    // Pokud je to standardní „?type=...“ rámec
-                ParseAndDisplayData(snapshot);                    // Parsuj + vykresli do grafu/logu
-            else                                                  // Jinak je to nejspíš INIT seznam
-                ParseInitMessage(snapshot);                       // Zpracuj INIT
+            // Pokud to vypadá na standardní rámec, parsuj
+            if (snapshot.StartsWith("?type=", StringComparison.OrdinalIgnoreCase))
+            {
+                ParseAndDisplayData(snapshot);
+                return;
+            }
+
+            // Pro CONNECT/DISCONNECT vypiš syrově do textBox2
+            if (string.Equals(_lastSentMode, "CONNECT", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(_lastSentMode, "DISCONNECT", StringComparison.OrdinalIgnoreCase))
+            {
+                AppendTextBox(snapshot.EndsWith("\r\n") ? snapshot : snapshot + "\r\n");
+                return;
+            }
+
+            // fallback – původně jsi to bral jako INIT seznam
+            ParseInitMessage(snapshot);
         }
+
 
         private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e) // Při změně senzoru načti jeho obrázek
         {
