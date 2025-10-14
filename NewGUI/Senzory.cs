@@ -634,7 +634,7 @@ namespace NewGUI                                                // Namespace pro
                                  .ToDictionary(pair => pair[0], pair => pair[1]);
 
             var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "type", "id", "pin", "app", "version", "dbversion", "api" };
+            { "type", "id", "pin", "app", "version", "dbversion", "api", "status", "code" };
 
             var dataForGraph = parameters
                 .Where(kvp => !skipKeys.Contains(kvp.Key))
@@ -842,6 +842,8 @@ namespace NewGUI                                                // Namespace pro
 
         private void DisplayTimer_Tick(object sender, EventArgs e)
         {
+            
+
             string chunk;
             lock (_rxLock)
             {
@@ -868,40 +870,21 @@ namespace NewGUI                                                // Namespace pro
 
                 if (string.IsNullOrEmpty(line)) continue;
 
-                // --- jen rámce se začátkem "?id=" — dále filtrujeme, aby do grafu šly jen datové hodnoty ---
+                // --- rámce se začátkem "?id=" ---
                 if (line.StartsWith("?id=", StringComparison.OrdinalIgnoreCase))
                 {
-                    // klíče, které do grafu nepatří (meta nebo servisní)
-                    var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "type", "id", "pin", "app", "version", "dbversion", "api", "status" };
-
-                    // najdi, zda má věta nějaký "datový" číselný parametr (mimo skipKeys)
-                    bool hasNumericData = System.Text.RegularExpressions.Regex
-                        .Matches(line, @"[?&]([A-Za-z_][A-Za-z0-9_]*)=([^&]+)")
+                    // Pokud věta obsahuje "status" nebo "code", jen logovat – nekreslit
+                    bool isStatusOrCode = System.Text.RegularExpressions.Regex
+                        .Matches(line, @"[?&]([A-Za-z_][A-Za-z0-9_]*)=")
                         .Cast<System.Text.RegularExpressions.Match>()
-                        .Select(m => new { Key = m.Groups[1].Value, Val = m.Groups[2].Value })
-                        .Any(k =>
-                        {
-                            if (skipKeys.Contains(k.Key)) return false;
+                        .Select(m => m.Groups[1].Value)
+                        .Any(k => k.Equals("status", StringComparison.OrdinalIgnoreCase) ||
+                                  k.Equals("code", StringComparison.OrdinalIgnoreCase));
 
-                            var v = k.Val?.Trim();
-                            if (string.IsNullOrEmpty(v)) return false;
-
-                            // normalize "25,3" -> "25.3"
-                            if (v.IndexOf(',') >= 0 && v.IndexOf('.') < 0)
-                                v = v.Replace(',', '.');
-
-                            return double.TryParse(
-                                v,
-                                System.Globalization.NumberStyles.Any,
-                                System.Globalization.CultureInfo.InvariantCulture,
-                                out _);
-                        });
-
-                    if (hasNumericData)
-                        ParseAndDisplayData(line);   // do grafu jen když je v řádku "datové" číslo
+                    if (isStatusOrCode)
+                        AppendTextBox(line + "\r\n");
                     else
-                        AppendTextBox(line + "\r\n"); // jinak jen zaloguj (CONNECT/DISCONNECT apod.)
+                        ParseAndDisplayData(line);
 
                     continue;
                 }
