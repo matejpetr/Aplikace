@@ -634,7 +634,8 @@ namespace NewGUI                                                // Namespace pro
                                  .ToDictionary(pair => pair[0], pair => pair[1]);
 
             var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "type", "id", "pin", "app", "version", "dbversion", "api", "status", "code" };
+            {"type", "id", "pin", "app", "version", "dbversion", "api", "status", "code" };
+
 
             var dataForGraph = parameters
                 .Where(kvp => !skipKeys.Contains(kvp.Key))
@@ -842,8 +843,6 @@ namespace NewGUI                                                // Namespace pro
 
         private void DisplayTimer_Tick(object sender, EventArgs e)
         {
-            
-
             string chunk;
             lock (_rxLock)
             {
@@ -863,29 +862,13 @@ namespace NewGUI                                                // Namespace pro
                 // Odstranit BOM a neviditelné kontrolní znaky na začátku řádku
                 var line = raw.Trim();
                 line = line.TrimStart('\uFEFF'); // <— DŮLEŽITÉ (BOM)
-                line = new string(line.Where(ch =>
-                    !char.IsControl(ch) || ch == '?' || ch == '=' || ch == '&' ||
-                    ch == '.' || ch == ',' || ch == '-' || char.IsLetterOrDigit(ch)
-                ).ToArray());
+                line = new string(line.Where(ch => !char.IsControl(ch) || ch == '?' || ch == '=' || ch == '&' || ch == '.' || ch == ',' || ch == '-' || char.IsLetterOrDigit(ch)).ToArray());
 
                 if (string.IsNullOrEmpty(line)) continue;
 
-                // --- rámce se začátkem "?id=" ---
                 if (line.StartsWith("?id=", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Pokud věta obsahuje "status" nebo "code", jen logovat – nekreslit
-                    bool isStatusOrCode = System.Text.RegularExpressions.Regex
-                        .Matches(line, @"[?&]([A-Za-z_][A-Za-z0-9_]*)=")
-                        .Cast<System.Text.RegularExpressions.Match>()
-                        .Select(m => m.Groups[1].Value)
-                        .Any(k => k.Equals("status", StringComparison.OrdinalIgnoreCase) ||
-                                  k.Equals("code", StringComparison.OrdinalIgnoreCase));
-
-                    if (isStatusOrCode)
-                        AppendTextBox(line + "\r\n");
-                    else
-                        ParseAndDisplayData(line);
-
+                    ParseAndDisplayData(line);
                     continue;
                 }
 
@@ -901,7 +884,6 @@ namespace NewGUI                                                // Namespace pro
             // jistota překreslení grafu po přidání bodů
             chart1.Invalidate();
         }
-
 
 
 
