@@ -287,7 +287,7 @@
             this.pictureBox1.Size = new System.Drawing.Size(140, 140);
             this.pictureBox1.TabIndex = 8;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+
             // 
             // checkBox1
             // 
@@ -315,7 +315,6 @@
             this.label5.Size = new System.Drawing.Size(124, 36);
             this.label5.TabIndex = 11;
             this.label5.Text = "Připojení";
-            this.label5.Click += new System.EventHandler(this.label5_Click);
             // 
             // label6
             // 
@@ -341,7 +340,7 @@
             this.badgeConn.Size = new System.Drawing.Size(123, 29);
             this.badgeConn.TabIndex = 12;
             this.badgeConn.Text = "Nepřipojeno";
-            this.badgeConn.Click += new System.EventHandler(this.badgeConn_Click);
+
             // 
             // Aktuatory
             // 

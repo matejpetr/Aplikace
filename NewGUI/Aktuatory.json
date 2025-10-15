@@ -4,8 +4,7 @@
     "Nazev": "Micro Servo",
     "Alias": "SG90",
     "Notes": "Servo",
-    "Request": "?type=CONFIG&id=A00&angle=90&speed=50",
-    "Request_CONFIG": "?type=CONFIG&id=A00&angle=90&speed=50",
+    "Request_CONFIG": "?type=CONFIG&id=A00&angle=&speed=",
     "Keywords_configs": {
       "angle": "int",
       "speed": "int"
@@ -17,7 +16,7 @@
     "Nazev": "Krokový motor",
     "Alias": "Stepper",
     "Notes": "28BYJ-48",
-    "Request": "?type=CONFIG&id=A01&angle=90&dir=false&rpm=16",
+    "Request_CONFIG": "?type=CONFIG&id=A01&angle=&dir=&rpm=",
     "Keywords_configs": {
       "angle": "int",
       "dir": "bool",
@@ -30,7 +29,7 @@
     "Nazev": "DC motor",
     "Alias": "DC",
     "Notes": "",
-    "Request": "?type=CONFIG&id=A02&speed=50&state=true",
+    "Request_CONFIG": "?type=CONFIG&id=A02&speed=&state=",
     "Keywords_configs": {
       "speed": "int",
       "state": "bool"
@@ -42,7 +41,7 @@
     "Nazev": "Two color led ",
     "Alias": "TwoColor",
     "Notes": "Keyes KY-011",
-    "Request": "?type=CONFIG&id=A03&color=R&Brig=80",
+    "Request_CONFIG": "?type=CONFIG&id=A03&color=R&Brig=",
     "Keywords_configs": {
       "color": "char",
       "Brig": "int"
@@ -54,7 +53,7 @@
     "Nazev": "Mini two color led",
     "Alias": "TwoColorMini",
     "Notes": "Keyes KY-029",
-    "Request": "?type=CONFIG&id=A04&color=G&Brig=80",
+    "Request_CONFIG": "?type=CONFIG&id=A04&color=G&Brig=",
     "Keywords_configs": {
       "color": "char",
       "Brig": "int"
@@ -66,7 +65,7 @@
     "Nazev": "RGB led",
     "Alias": "RGB",
     "Notes": "Keyes KY-016",
-    "Request": "?type=CONFIG&id=A05&BrigR=0&BrigG=20&BrigB=100",
+    "Request_CONFIG": "?type=CONFIG&id=A05&BrigR=&BrigG=&BrigB=",
     "Keywords_configs": {
       "BrigR": "int",
       "BrigG": "int",
@@ -79,7 +78,7 @@
     "Nazev": "SMD RGB led",
     "Alias": "RGBsmd",
     "Notes": "Keyes KY-009",
-    "Request": "?type=CONFIG&id=A06&BrigR=0&BrigG=20&BrigB=100",
+    "Request_CONFIG": "?type=CONFIG&id=A06&BrigR=&BrigG=&BrigB=",
     "Keywords_configs": {
       "BrigR": "int",
       "BrigG": "int",
@@ -92,7 +91,7 @@
     "Nazev": "IR led",
     "Alias": "IR",
     "Notes": "Keyes KY-005",
-    "Request": "?type=CONFIG&id=A07&control=false",
+    "Request_CONFIG": "?type=CONFIG&id=A07&control=",
     "Keywords_configs": {
       "control": "bool"
     },
@@ -103,7 +102,7 @@
     "Nazev": "7 color flash",
     "Alias": "7color",
     "Notes": "Keyes KY-034",
-    "Request": "?type=CONFIG&id=A08&control=false",
+    "Request_CONFIG": "?type=CONFIG&id=A08&control=",
     "Keywords_configs": {
       "control": "bool"
     },
@@ -114,7 +113,7 @@
     "Nazev": "Laser",
     "Alias": "Laser",
     "Notes": "Keyes KY-008",
-    "Request": "?type=CONFIG&id=A09&control=false",
+    "Request_CONFIG": "?type=CONFIG&id=A09&control=",
     "Keywords_configs": {
       "control": "bool"
     },
@@ -125,7 +124,7 @@
     "Nazev": "Bzučák Pasivní",
     "Alias": "BuzzP",
     "Notes": "Keyes KY-006",
-    "Request": "?type=CONFIG&id=A10&freq=200&duration=1000",
+    "Request_CONFIG": "?type=CONFIG&id=A10&freq=&duration=",
     "Keywords_configs": {
       "freq": "int",
       "duration": "int"
@@ -137,19 +136,10 @@
     "Nazev": "Bzučák Aktivní",
     "Alias": "BuzzA",
     "Notes": "Keyes KY-012",
-    "Request": "?type=CONFIG&id=A11&control=false",
+    "Request_CONFIG": "?type=CONFIG&id=A11&control=",
     "Keywords_configs": {
       "control": "bool"
     },
-    "Keywords_values": {}
-  },
-  {
-    "Id": "",
-    "Nazev": "",
-    "Alias": "",
-    "Notes": "",
-    "Request": "",
-    "Keywords_configs": {},
     "Keywords_values": {}
   }
 ]

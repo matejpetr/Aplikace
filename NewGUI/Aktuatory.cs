@@ -24,7 +24,8 @@ namespace NewGUI
         private Timer delayedSendTimer;                            // Timer pro jednorázové zpožděné odeslání
 
         // --- NOVĚ: JSON datový model místo CSV DataTable ---
-        private List<AktuatorItem> aktuatoryData;                  // Načtené položky z Aktuátory.json
+        private List<Komponenty> aktuatoryData; // Načtené položky z aktuatory.json
+                                               
 
         public Aktuatory(Form1 rodic)
         {
@@ -80,41 +81,34 @@ namespace NewGUI
                 lastKnownPorts = currentPorts;
             }
         }
-
         // ---------- NOVĚ: NAČTENÍ JSON MÍSTO CSV ----------
         private void LoadJsonData()
         {
             try
             {
-                string jsonPath = Path.Combine(BasePath, "Aktuatory.json"); // název souboru podle tvého zadání
+                string jsonPath = Path.Combine(Application.StartupPath,"Aktuatory.json");
                 if (!File.Exists(jsonPath))
                 {
-                    MessageBox.Show($"Soubor Aktuátory.json nebyl nalezen ve složce projektu: {BasePath}");
+                    MessageBox.Show($"Soubor aktuatory.json nebyl nalezen ve složce projektu: {BasePath}");
                     return;
                 }
 
-                var jsonText = File.ReadAllText(jsonPath);
-                // Case-insensitive a podpora alternativních názvů polí (viz model AktuatorItem níže)
-                aktuatoryData = JsonSerializer.Deserialize<List<AktuatorItem>>(
-                    jsonText,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }
-                ) ?? new List<AktuatorItem>();
+                string jsonText = File.ReadAllText(jsonPath);
 
-                // Naplnění boxu aliasů stejně jako dřív, ale z JSONu
+                // Deserializace do List<Komponenty>
+                aktuatoryData = JsonSerializer.Deserialize<List<Komponenty>>(jsonText, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    NumberHandling = JsonNumberHandling.AllowReadingFromString
+                }) ?? new List<Komponenty>();
+
                 AktBox.Items.Clear();
-
-                // Budeme zobrazovat „Alias (type)“ pokud je, jinak Alias, jinak Znackeni
                 foreach (var a in aktuatoryData)
                 {
-                    var display = GetDisplayAlias(a);
-                    if (!string.IsNullOrWhiteSpace(display))
-                        AktBox.Items.Add(display);
+                    if (!string.IsNullOrWhiteSpace(a.Alias))
+                        AktBox.Items.Add(a.Alias);
                 }
 
-                // Obrázky jako dřív
                 pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
                 AktBox.SelectedIndexChanged -= AktBox_UpdateImage;
                 AktBox.TextChanged -= AktBox_UpdateImage;
@@ -127,21 +121,27 @@ namespace NewGUI
             }
         }
 
+
+
         // Získá „zobrazovací alias“ – priorita: Alias (type) → Alias → Znackeni
-        private static string GetDisplayAlias(AktuatorItem a)
+        private static string GetDisplayAlias(Komponenty a)
         {
-            var s = (a.Alias_type ?? a.Alias ?? a.Znackeni ?? string.Empty).Trim();
-            return s;
+            return (a.Alias ?? string.Empty).Trim();
         }
+
 
         // Najde položku v JSONu podle jména zvoleného v AktBox (porovnává display alias)
-        private AktuatorItem FindByDisplayAlias(string display)
+        private Komponenty FindByDisplayAlias(string alias)
         {
-            if (string.IsNullOrWhiteSpace(display) || aktuatoryData == null) return null;
+            if (string.IsNullOrWhiteSpace(alias) || aktuatoryData == null)
+                return null;
 
             return aktuatoryData.FirstOrDefault(a =>
-                string.Equals(GetDisplayAlias(a), display, StringComparison.OrdinalIgnoreCase));
+                string.Equals(a.Alias, alias, StringComparison.OrdinalIgnoreCase));
         }
+
+
+
 
         // ---------- OBRÁZEK PODLE VÝBĚRU ----------
         private void AktBox_UpdateImage(object sender, EventArgs e)
@@ -237,16 +237,12 @@ namespace NewGUI
         // ---------- UI pro CONFIG parametry ----------
         private void ShowTextBoxesForRequest(string request)
         {
-            // Reset všech textboxů a labelů
-            textBox1.Visible = false;
-            textBox2.Visible = false;
-            textBox3.Visible = false;
+            // reset UI
+            textBox1.Visible = textBox2.Visible = textBox3.Visible = false;
+            label1.Visible = label2.Visible = label3.Visible = false;
+            textBox1.Text = textBox2.Text = textBox3.Text = string.Empty;
 
-            label1.Visible = false;
-            label2.Visible = false;
-            label3.Visible = false;
-
-            // parametry ZA "id="
+            // vše za "id="
             var match = Regex.Match(request, @"\bid=[^&]*&(.+)");
             if (!match.Success) return;
 
@@ -255,31 +251,30 @@ namespace NewGUI
 
             for (int i = 0; i < parameters.Length && i < 3; i++)
             {
-                string[] keyValue = parameters[i].Split('=');
-                if (keyValue.Length < 2) continue;
+                var kv = parameters[i].Split(new[] { '=' }, 2);
+                if (kv.Length < 1) continue;
 
-                string key = keyValue[0].Trim();
+                string key = kv[0].Trim();
+                string val = kv.Length > 1 ? kv[1].Trim() : "";
 
                 if (i == 0)
                 {
-                    label1.Text = key;
-                    label1.Visible = true;
-                    textBox1.Visible = true;
+                    label1.Text = key; label1.Visible = true;
+                    textBox1.Text = val; textBox1.Visible = true;
                 }
                 else if (i == 1)
                 {
-                    label2.Text = key;
-                    label2.Visible = true;
-                    textBox2.Visible = true;
+                    label2.Text = key; label2.Visible = true;
+                    textBox2.Text = val; textBox2.Visible = true;
                 }
                 else if (i == 2)
                 {
-                    label3.Text = key;
-                    label3.Visible = true;
-                    textBox3.Visible = true;
+                    label3.Text = key; label3.Visible = true;
+                    textBox3.Text = val; textBox3.Visible = true;
                 }
             }
         }
+
 
         // ---------- Dosazení hodnot z textboxů do requestu ----------
         private string UpdateRequestWithTextBoxValues(string originalRequest)
@@ -326,21 +321,41 @@ namespace NewGUI
                 if (selectedMod == "RESET")
                 {
                     // skryj textboxy
-                    textBox1.Visible = false;
-                    textBox2.Visible = false;
-                    textBox3.Visible = false;
-                    label1.Visible = false;
-                    label2.Visible = false;
-                    label3.Visible = false;
+                    textBox1.Visible = textBox2.Visible = textBox3.Visible = false;
+                    label1.Visible = label2.Visible = label3.Visible = false;
 
-                    string idPart = checkBox1.Checked ? "*" : selectedAlias;
-                    if (string.IsNullOrEmpty(idPart))
+                    string request;
+                    if (checkBox1.Checked)
                     {
-                        MessageBox.Show("Není vybrán aktuátor.");
-                        return;
+                        // RESET všech
+                        request = "?type=RESET&id=*";
                     }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(selectedAlias))
+                        {
+                            MessageBox.Show("Vyberte aktuátor.");
+                            return;
+                        }
 
-                    string request = $"?type=RESET&id={idPart}";
+                        var item = FindByDisplayAlias(selectedAlias);
+                        if (item == null)
+                        {
+                            MessageBox.Show("Alias nebyl nalezen v JSONu.");
+                            return;
+                        }
+
+                        // vytáhneme id=... z item.Request
+                        var m = Regex.Match(item.Request_CONFIG ?? string.Empty, @"\bid=([^&]+)");
+                        var idValue = m.Success ? m.Groups[1].Value : "";
+                        if (string.IsNullOrEmpty(idValue))
+                        {
+                            MessageBox.Show("V JSONu nelze zjistit ID aktuátoru pro RESET.");
+                            return;
+                        }
+
+                        request = $"?type=RESET&id={idValue}";
+                    }
 
                     try
                     {
@@ -352,33 +367,31 @@ namespace NewGUI
                     {
                         MessageBox.Show($"Chyba při odesílání: {ex.Message}");
                     }
-
-                    return; // jen RESET → konec
+                    return;
                 }
 
-                // CONFIG / UPDATE apod.
+                // CONFIG/UPDATE apod.
                 if (string.IsNullOrEmpty(selectedAlias))
                 {
                     MessageBox.Show("Vyberte aktuátor.");
                     return;
                 }
 
-                var item = FindByDisplayAlias(selectedAlias);
-                if (item == null)
+                var it = FindByDisplayAlias(selectedAlias);
+                if (it == null)
                 {
                     MessageBox.Show("Alias nebyl nalezen v JSONu.");
                     return;
                 }
 
-                // Původně se bral sloupec "Request" z CSV; teď z JSONu vlastnost Request
-                string requestOriginal = item.Request;
+                string requestOriginal = it.Request_CONFIG;
                 if (string.IsNullOrWhiteSpace(requestOriginal))
                 {
                     MessageBox.Show("V JSONu chybí Request pro vybraný aktuátor.");
                     return;
                 }
 
-                // Přepiš typ podle vybraného módu
+                // Přepiš pouze type=..., id zůstává z JSONu
                 string requestFinal = Regex.Replace(requestOriginal, @"type=[^&]+", $"type={selectedMod}");
                 requestFinal = UpdateRequestWithTextBoxValues(requestFinal);
 
@@ -417,6 +430,7 @@ namespace NewGUI
             }
         }
 
+
         // ---------- ODLOŽENÉ ODESLÁNÍ ----------
         private void DelayedSendTimer_Tick(object sender, EventArgs e)
         {
@@ -435,7 +449,7 @@ namespace NewGUI
             if (item == null)
                 return;
 
-            string request = item.Request;
+            string request = item.Request_CONFIG;
             if (string.IsNullOrWhiteSpace(request))
                 return;
 
@@ -496,7 +510,7 @@ namespace NewGUI
             var item = FindByDisplayAlias(selectedAlias);
             if (item == null) return;
 
-            string request = item.Request;
+            string request = item.Request_CONFIG;
             if (!string.IsNullOrWhiteSpace(request) && ModBox.Text == "CONFIG")
             {
                 ShowTextBoxesForRequest(request);
@@ -512,26 +526,6 @@ namespace NewGUI
             textBox1.Enabled = enabled;
             textBox2.Enabled = enabled;
             textBox3.Enabled = enabled;
-        }
-
-        // prázdné handlery – nechávám, pokud jsou navázány v Designeru
-        private void badgeConn_Click(object sender, EventArgs e) { }
-        private void label5_Click(object sender, EventArgs e) { }
-        private void pictureBox1_Click(object sender, EventArgs e) { }
-
-        // ====== Datový model pro JSON ======
-        private class AktuatorItem
-        {
-            public int Id { get; set; }
-
-            // Preferovaný zobrazovaný název (pokud v JSONu existuje)
-            [JsonPropertyName("Alias (type)")]
-            public string Alias_type { get; set; }    // např. "Relé (RELAY)"
-
-            public string Alias { get; set; }         // alternativa: "Alias"
-            public string Znackeni { get; set; }      // alternativa: "Znackeni" (pokud se používá stejně jako u senzorů)
-
-            public string Request { get; set; }       // např. "?type=UPDATE&id=RELAY&state=&time="
         }
     }
 }
