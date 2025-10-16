@@ -321,7 +321,7 @@ namespace NewGUI                                                // Namespace pro
                         string pinExpr = BuildPinExpr();
                         request = string.IsNullOrWhiteSpace(pinExpr)
                             ? $"?type={m}&id={formattedId}&pin="
-                            : $"?type={m}&id={formattedId}&pin={pinExpr}";
+                            : $"?type={m}&id={formattedId}&{pinExpr}";
                     }
                 }
                 else if (m.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))

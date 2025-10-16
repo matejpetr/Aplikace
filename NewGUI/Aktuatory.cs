@@ -368,7 +368,7 @@ namespace NewGUI
                     }
 
                     // POZOR: formát s čárkami mezi pinX=... částmi (přesně jak požaduješ)
-                    string request = $"?type={selectedMod.ToUpperInvariant()}&id={idValue}&{pinQuery}";
+                    string request = $"?type={selectedMod.ToUpperInvariant()}&id=A{idValue}&{pinQuery}";
 
                     try
                     {
@@ -596,10 +596,10 @@ namespace NewGUI
             if (has4 && string.IsNullOrWhiteSpace(p4)) return null;
 
             var parts = new List<string>();
-            if (has1) parts.Add($"pin1={p1}");
-            if (has2) parts.Add($"pin2={p2}");
-            if (has3) parts.Add($"pin3={p3}");
-            if (has4) parts.Add($"pin4={p4}");
+            if (has1) parts.Add($"pin={p1}");
+            if (has2) parts.Add($"{p2}");
+            if (has3) parts.Add($"{p3}");
+            if (has4) parts.Add($"{p4}");
 
             // POZOR: požadoval jsi čárky mezi položkami
             return string.Join(",", parts);
