@@ -423,13 +423,13 @@ namespace NewGUI
                     MessageBox.Show($"Chyba při odesílání: {ex.Message}");
                 }
 
-                btnStart.Text = "Zastavit";
-                btnStart.ForeColor = Color.White;
-                toolTip1.SetToolTip(this.btnStart, "Okamžitě zastaví běžící akci");
-                btnStart.FlatAppearance.MouseDownBackColor = Color.FromArgb(183, 28, 28);
-                btnStart.FlatAppearance.MouseOverBackColor = Color.FromArgb(153, 0, 0);
-                btnStart.BackColor = Color.FromArgb(211, 47, 47);
-                btnStart.FlatAppearance.BorderColor = Color.FromArgb(211, 47, 47);
+                //btnStart.Text = "Zastavit";
+                //btnStart.ForeColor = Color.White;
+                //toolTip1.SetToolTip(this.btnStart, "Okamžitě zastaví běžící akci");
+                //btnStart.FlatAppearance.MouseDownBackColor = Color.FromArgb(183, 28, 28);
+                //btnStart.FlatAppearance.MouseOverBackColor = Color.FromArgb(153, 0, 0);
+                //btnStart.BackColor = Color.FromArgb(211, 47, 47);
+                //btnStart.FlatAppearance.BorderColor = Color.FromArgb(211, 47, 47);
             }
             else
             {
