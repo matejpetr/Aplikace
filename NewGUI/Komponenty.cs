@@ -20,6 +20,8 @@ namespace NewGUI
         public string Response { get; set; }
         public string PIN1 { get; set; }   // např. "Trig" nebo "Data pin"
         public string PIN2 { get; set; }   // např. "Echo" (může být null/"" pokud není druhý pin)
+        public string PIN3 { get; set; }   // SPEŠL AKTUÁTOR
+        public string PIN4 { get; set; }   // SPEŠL AKTUÁTOR
         public Dictionary<string, string> Keywords_values { get; set; }
         public Dictionary<string, string> Keywords_configs { get; set; }
         public string Request_CONFIG { get; set; }

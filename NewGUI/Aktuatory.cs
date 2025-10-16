@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.IO.Ports;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace NewGUI
 {
@@ -52,6 +53,18 @@ namespace NewGUI
             delayedSendTimer.Interval = 1000; // 1 s
             delayedSendTimer.Tick += DelayedSendTimer_Tick;
 
+            // aby se UI pinů přepínalo při změně módu/aktuátoru/vstupu
+            ModBox.SelectedIndexChanged += (s, e) => { UpdatePinInputsUi_Actuators(); UpdateStartEnabled_Actuators(); };
+            AktBox.SelectedIndexChanged += (s, e) => { UpdatePinInputsUi_Actuators(); UpdateStartEnabled_Actuators(); };
+
+            textBox1.TextChanged += (s, e) => UpdateStartEnabled_Actuators();
+            textBox2.TextChanged += (s, e) => UpdateStartEnabled_Actuators();
+            textBox3.TextChanged += (s, e) => UpdateStartEnabled_Actuators();
+            textBox4.TextChanged += (s, e) => UpdateStartEnabled_Actuators();
+
+
+            UpdatePinInputsUi_Actuators();
+            UpdateStartEnabled_Actuators();
 
 
             // Default zobrazení
@@ -271,6 +284,7 @@ namespace NewGUI
                     textBox3.Text = val; textBox3.Visible = true;
                 }
             }
+            UpdateStartEnabled_Actuators();
         }
 
 
@@ -315,13 +329,11 @@ namespace NewGUI
                 string selectedMod = ModBox.SelectedItem?.ToString();
                 string selectedAlias = AktBox.SelectedItem?.ToString();
 
-                // RESET režim
-                if (selectedMod == "RESET")
-                {
-                    // schovat textboxy
-                    textBox1.Visible = textBox2.Visible = textBox3.Visible = false;
-                    label1.Visible = label2.Visible = label3.Visible = false;
 
+                // --- CONNECT / DISCONNECT (one-shot) ---
+                if (string.Equals(selectedMod, "CONNECT", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(selectedMod, "DISCONNECT", StringComparison.OrdinalIgnoreCase))
+                {
                     if (string.IsNullOrEmpty(selectedAlias))
                     {
                         MessageBox.Show("Vyberte aktuátor.");
@@ -335,16 +347,28 @@ namespace NewGUI
                         return;
                     }
 
-                    // vytáhneme id=... z item.Request_CONFIG
-                    var m = Regex.Match(item.Request_CONFIG ?? string.Empty, @"\bid=([^&]+)");
-                    var idValue = m.Success ? m.Groups[1].Value : "";
-                    if (string.IsNullOrEmpty(idValue))
+                    // ID pro request – ideálně přímo z objektu (pokud máš string Id), jinak fallback z Request_CONFIG
+                    string idValue = item.Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    if (string.IsNullOrWhiteSpace(idValue))
                     {
-                        MessageBox.Show("V JSONu nelze zjistit ID aktuátoru pro RESET.");
+                        var m = Regex.Match(item.Request_CONFIG ?? string.Empty, @"\bid=([^&]+)");
+                        idValue = m.Success ? m.Groups[1].Value : null;
+                    }
+                    if (string.IsNullOrWhiteSpace(idValue))
+                    {
+                        MessageBox.Show("Nelze zjistit ID aktuátoru.");
                         return;
                     }
 
-                    string request = $"?type=RESET&id={idValue}";
+                    var pinQuery = BuildPinQueryActuator4(item);
+                    if (string.IsNullOrWhiteSpace(pinQuery))
+                    {
+                        MessageBox.Show("Doplňte požadované piny.");
+                        return;
+                    }
+
+                    // POZOR: formát s čárkami mezi pinX=... částmi (přesně jak požaduješ)
+                    string request = $"?request={selectedMod.ToUpperInvariant()}&id={idValue}&{pinQuery}";
 
                     try
                     {
@@ -356,8 +380,11 @@ namespace NewGUI
                     {
                         MessageBox.Show($"Chyba při odesílání: {ex.Message}");
                     }
+
+                    // one-shot: NEpřepínáme tlačítko na „Zastavit“
                     return;
                 }
+
 
 
                 // CONFIG/UPDATE apod.
@@ -418,6 +445,8 @@ namespace NewGUI
                     MainTextBox.AppendText("Odeslání bylo zrušeno tlačítkem STOP.\r\n");
                 }
             }
+            UpdateStartEnabled_Actuators();
+
         }
 
 
@@ -462,25 +491,15 @@ namespace NewGUI
 
         private void ModBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string selectedMod = ModBox.SelectedItem?.ToString();
+            // reset viditelnosti – přepneme dle módu
+            textBox1.Visible = textBox2.Visible = textBox3.Visible = textBox4.Visible = false;
+            label1.Visible = label2.Visible = label3.Visible = label4.Visible = false;
 
-            if (selectedMod == "RESET")
-            {
-
-                // schovat textboxy
-                textBox1.Visible = false;
-                textBox2.Visible = false;
-                textBox3.Visible = false;
-
-                label1.Visible = false;
-                label2.Visible = false;
-                label3.Visible = false;
-            }
-            else
-            {
-                AktBox.Enabled = true;
-            }
+            UpdatePinInputsUi_Actuators();
+            UpdateStartEnabled_Actuators();
         }
+
+
 
 
 
@@ -509,6 +528,180 @@ namespace NewGUI
             textBox1.Enabled = enabled;
             textBox2.Enabled = enabled;
             textBox3.Enabled = enabled;
+            textBox4.Enabled = enabled; 
         }
+
+        // Najde vybraný aktuátor podle AktBox
+        // Vyhledá vybraný aktuátor
+        private Komponenty FindSelectedActuator()
+        {
+            var alias = AktBox.SelectedItem?.ToString();
+            return FindByDisplayAlias(alias);
+        }
+
+        // Normalizace vstupu pinu (stejně jako u senzorů)
+        private static string NormalizePinInput(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return null;
+            input = input.Trim();
+            var digits = new string(input.Where(char.IsDigit).ToArray());
+            return string.IsNullOrEmpty(digits) ? input : digits;
+        }
+
+        // Sestaví výraz pro &pin=... podle požadavků a JSONu
+        private string BuildPinExprActuator()
+        {
+            var item = FindSelectedActuator();
+            if (item == null) return null;
+
+            var p1 = NormalizePinInput(textBox1.Text);
+            var hasSecond = !string.IsNullOrWhiteSpace(item.PIN2);
+            var p2 = NormalizePinInput(textBox2.Text);
+
+            if (hasSecond)
+            {
+                if (string.IsNullOrWhiteSpace(p1) || string.IsNullOrWhiteSpace(p2))
+                    return null;
+                return $"{p1},{p2}";
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(p1))
+                    return null;
+                return $"{p1}";
+            }
+        }
+
+
+        // Sestaví "pin1=...,pin2=...,pin3=...,pin4=..." podle JSONu a textboxů.
+        // Vrací null, pokud je vyžadovaný pin nevyplněn.
+        private string BuildPinQueryActuator4(Komponenty item)
+        {
+            if (item == null) return null;
+
+            // Podle JSONu zjistíme, kolik pinů daný aktuátor má
+            bool has1 = !string.IsNullOrWhiteSpace(item.PIN1);
+            bool has2 = !string.IsNullOrWhiteSpace(item.PIN2);
+            bool has3 = !string.IsNullOrWhiteSpace(item.PIN3);
+            bool has4 = !string.IsNullOrWhiteSpace(item.PIN4);
+
+            string p1 = has1 ? NormalizePinInput(textBox1.Text) : null;
+            string p2 = has2 ? NormalizePinInput(textBox2.Text) : null;
+            string p3 = has3 ? NormalizePinInput(textBox3.Text) : null;
+            string p4 = has4 ? NormalizePinInput(textBox4.Text) : null;
+
+            if (has1 && string.IsNullOrWhiteSpace(p1)) return null;
+            if (has2 && string.IsNullOrWhiteSpace(p2)) return null;
+            if (has3 && string.IsNullOrWhiteSpace(p3)) return null;
+            if (has4 && string.IsNullOrWhiteSpace(p4)) return null;
+
+            var parts = new List<string>();
+            if (has1) parts.Add($"pin1={p1}");
+            if (has2) parts.Add($"pin2={p2}");
+            if (has3) parts.Add($"pin3={p3}");
+            if (has4) parts.Add($"pin4={p4}");
+
+            // POZOR: požadoval jsi čárky mezi položkami
+            return string.Join(",", parts);
+        }
+
+        // Přepíná UI pro CONNECT/DISCONNECT (zobrazení až 4 pinů podle JSONu)
+        private void UpdatePinInputsUi_Actuators()
+        {
+            // výchozí skrytí
+            textBox1.Visible = textBox2.Visible = textBox3.Visible = textBox4.Visible = false;
+            label1.Visible = label2.Visible = label3.Visible = label4.Visible = false;
+
+            var mode = ModBox.Text?.Trim();
+
+            // CONFIG – ponecháváš existující ShowTextBoxesForRequest
+            if (string.Equals(mode, "CONFIG", StringComparison.OrdinalIgnoreCase))
+            {
+                var itCfg = FindSelectedActuator();
+                if (itCfg != null && !string.IsNullOrWhiteSpace(itCfg.Request_CONFIG))
+                    ShowTextBoxesForRequest(itCfg.Request_CONFIG);
+                return;
+            }
+
+            // CONNECT/DISCONNECT – ukaž piny dle JSONu
+            bool isConn = string.Equals(mode, "CONNECT", StringComparison.OrdinalIgnoreCase) ||
+                          string.Equals(mode, "DISCONNECT", StringComparison.OrdinalIgnoreCase);
+
+            if (!isConn) return;
+
+            var item = FindSelectedActuator();
+            if (item == null) return;
+
+            if (!string.IsNullOrWhiteSpace(item.PIN1))
+            {
+                label1.Text = item.PIN1;
+                label1.Visible = true; textBox1.Visible = true;
+            }
+            if (!string.IsNullOrWhiteSpace(item.PIN2))
+            {
+                label2.Text = item.PIN2;
+                label2.Visible = true; textBox2.Visible = true;
+            }
+            if (!string.IsNullOrWhiteSpace(item.PIN3))
+            {
+                label3.Text = item.PIN3;
+                label3.Visible = true; textBox3.Visible = true;
+            }
+            if (!string.IsNullOrWhiteSpace(item.PIN4))
+            {
+                label4.Text = item.PIN4;
+                label4.Visible = true; textBox4.Visible = true;
+            }
+        }
+
+        // Povolení Start – hlídá vyžadované piny 1–4
+        private void UpdateStartEnabled_Actuators()
+        {
+            bool connected = SerialManager.Instance.IsOpen;
+            bool hasMode = !string.IsNullOrWhiteSpace(ModBox.Text);
+            bool hasAct = AktBox.SelectedItem != null;
+
+            bool ready = connected && hasMode;
+            string m = ModBox.Text?.Trim() ?? string.Empty;
+
+            if (m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) ||
+                m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase))
+            {
+                var item = FindSelectedActuator();
+                if (item == null) { btnStart.Enabled = false; return; }
+
+                bool need1 = !string.IsNullOrWhiteSpace(item.PIN1);
+                bool need2 = !string.IsNullOrWhiteSpace(item.PIN2);
+                bool need3 = !string.IsNullOrWhiteSpace(item.PIN3);
+                bool need4 = !string.IsNullOrWhiteSpace(item.PIN4);
+
+                bool p1ok = !need1 || !string.IsNullOrWhiteSpace(NormalizePinInput(textBox1.Text));
+                bool p2ok = !need2 || !string.IsNullOrWhiteSpace(NormalizePinInput(textBox2.Text));
+                bool p3ok = !need3 || !string.IsNullOrWhiteSpace(NormalizePinInput(textBox3.Text));
+                bool p4ok = !need4 || !string.IsNullOrWhiteSpace(NormalizePinInput(textBox4.Text));
+
+                ready = ready && hasAct && p1ok && p2ok && p3ok && p4ok;
+            }
+            else if (m.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
+            {
+                // všechny viditelné textboxy musí být vyplněné
+                bool t1ok = !textBox1.Visible || !string.IsNullOrWhiteSpace(textBox1.Text?.Trim());
+                bool t2ok = !textBox2.Visible || !string.IsNullOrWhiteSpace(textBox2.Text?.Trim());
+                bool t3ok = !textBox3.Visible || !string.IsNullOrWhiteSpace(textBox3.Text?.Trim());
+                bool t4ok = !textBox4.Visible || !string.IsNullOrWhiteSpace(textBox4.Text?.Trim());
+
+                ready = ready && hasAct && t1ok && t2ok && t3ok && t4ok;
+            }
+            else
+            {
+                ready = ready && hasAct;
+            }
+
+            btnStart.Enabled = ready;
+        }
+
+
+
+
     }
 }
