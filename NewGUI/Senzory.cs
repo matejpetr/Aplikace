@@ -69,8 +69,14 @@ namespace NewGUI                                                // Namespace pro
             // Změna módu → přepočti request
 
             // když uživatel dopíše piny, hned se přepočítá request a povolí Start
+
             textPIN1.TextChanged += (s, e) => UpdateRequestFromUi();
             textPIN2.TextChanged += (s, e) => UpdateRequestFromUi();
+            textPIN3.TextChanged += (s, e) => UpdateRequestFromUi();
+
+            // ... na konci konstruktoru, po ostatních handlerch:
+            
+
 
         }
 
@@ -106,41 +112,65 @@ namespace NewGUI                                                // Namespace pro
         // Podle módu a dat z JSONu ukáže/skrývá pin vstupy + nastaví popisky
         private void UpdatePinInputsUi()
         {
-            // 1) VŽDY nejdřív všechno schovat (a volitelně vyčistit)
-            PIN1.Visible = PIN2.Visible = false;
-            textPIN1.Visible = textPIN2.Visible = false;
-            // případně chceš i mazat texty:
-            // textPIN1.Clear();
-            // textPIN2.Clear();
-            // a popisky třeba do defaultu:
-            // PIN1.Text = "PIN1";
-            // PIN2.Text = "PIN2";
+            // 1) vše skryj (a klidně resetuj texty)
+            PIN1.Visible = PIN2.Visible = PIN3.Visible = false;
+            textPIN1.Visible = textPIN2.Visible = textPIN3.Visible = false;
 
-            // 2) Piny ukazujeme jen pro CONNECT/DISCONNECT
+            // 2) jaký je aktuální mód?
             string mode = comboBoxMode.Text?.Trim();
-            bool isConnMode = mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
-                           || mode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
-            if (!isConnMode) return; // jsme v jiném módu → zůstanou skryté
 
-            // 3) Najdi položku z JSONu
-            var item = FindSelectedComponent();
-            if (item == null) return; // fallback necháme skrytý (nebo si můžeš zobrazit aspoň PIN1)
-
-            // 4) Zobraz podle JSONu
-            if (!string.IsNullOrWhiteSpace(item.PIN1))
+            // === A) CONFIG režim – ukaž konfigy podle senzoru ===
+            if (mode != null && mode.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
             {
-                PIN1.Text = item.PIN1;
+                var item = FindSelectedComponent();
+                if (item == null) return;
+
+                var configs = GetConfigNames(item); // názvy configů dle JSONu
+                                                    // ukážeme max 3 (PIN1..PIN3) podle toho, kolik jich je
+                if (configs.Count >= 1)
+                {
+                    PIN1.Text = CleanConfigLabel(configs[0]);
+                    PIN1.Visible = true;
+                    textPIN1.Visible = true;
+                }
+                if (configs.Count >= 2)
+                {
+                    PIN2.Text = CleanConfigLabel(configs[1]);
+                    PIN2.Visible = true;
+                    textPIN2.Visible = true;
+                }
+                if (configs.Count >= 3)
+                {
+                    PIN3.Text = CleanConfigLabel(configs[2]);
+                    PIN3.Visible = true;
+                    textPIN3.Visible = true;
+                }
+
+                return; // v CONFIG už dál nepokračujeme na CONNECT/DISCONNECT
+            }
+
+            // === B) CONNECT/DISCONNECT – původní logika s PIN1/PIN2 z JSONu ===
+            bool isConnMode = mode != null && (
+                mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) ||
+                mode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase));
+
+            if (!isConnMode) return;
+
+            var it2 = FindSelectedComponent();
+            if (it2 == null) return;
+
+            if (!string.IsNullOrWhiteSpace(it2.PIN1))
+            {
+                PIN1.Text = it2.PIN1;
                 PIN1.Visible = true;
                 textPIN1.Visible = true;
             }
-
-            if (!string.IsNullOrWhiteSpace(item.PIN2))
+            if (!string.IsNullOrWhiteSpace(it2.PIN2))
             {
-                PIN2.Text = item.PIN2;
+                PIN2.Text = it2.PIN2;
                 PIN2.Visible = true;
                 textPIN2.Visible = true;
 
-                // kdyby náhodou chyběl PIN1 v JSONu, ale je PIN2, ukaž aspoň PIN1 jako placeholder
                 if (!PIN1.Visible)
                 {
                     PIN1.Text = "PIN1";
@@ -148,6 +178,70 @@ namespace NewGUI                                                // Namespace pro
                     textPIN1.Visible = true;
                 }
             }
+        }
+
+        
+
+
+        private static List<string> GetConfigNames(Komponenty item)
+        {
+            var result = new List<string>();
+            if (item == null) return result;
+
+            // 1) pokud má pole (List<string>) s názvem "Configs"
+            var propArr = item.GetType().GetProperty("Configs");
+            if (propArr != null)
+            {
+                var val = propArr.GetValue(item) as System.Collections.IEnumerable;
+                if (val != null)
+                {
+                    foreach (var it in val)
+                    {
+                        var s = (it ?? "").ToString().Trim();
+                        if (!string.IsNullOrWhiteSpace(s)) result.Add(s);
+                    }
+                }
+                if (result.Count > 0) return result;
+            }
+
+            // 2) fallback – zkus explicitní vlastnosti Config1..Config3 (bez ohledu na case)
+            string[] names = { "Config1", "Config2", "Config3", "CONFIG1", "CONFIG2", "CONFIG3" };
+            foreach (var n in names)
+            {
+                var p = item.GetType().GetProperty(n);
+                if (p != null)
+                {
+                    var s = (p.GetValue(item)?.ToString() ?? "").Trim();
+                    if (!string.IsNullOrWhiteSpace(s)) result.Add(s);
+                }
+            }
+
+            return result;
+        }
+
+        private static string CleanConfigLabel(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return raw;
+            var s = raw.Trim();
+
+            // odřízni vše za prvním dvojtečkou "name: int" -> "name"
+            int colon = s.IndexOf(':');
+            if (colon >= 0) s = s.Substring(0, colon);
+
+            // odstraň typ v závorkách "name (int)" -> "name"
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\s*\(.*?\)\s*$", "");
+
+            // normalizuj mezery
+            s = System.Text.RegularExpressions.Regex.Replace(s, @"\s+", " ");
+
+            return s + ":"; // a přidej dvojtečku
+        }
+
+        // když potřebuješ klíč bez dvojtečky do requestu (name místo "name:")
+        private static string ConfigKey(string raw)
+        {
+            var s = CleanConfigLabel(raw);
+            return s?.TrimEnd(':').Trim();
         }
 
 
@@ -199,76 +293,102 @@ namespace NewGUI                                                // Namespace pro
             // vždy nejdřív uprav UI pinů podle módu/JSONu
             UpdatePinInputsUi();
 
-            if (hasSensor && hasMode)
-            {
-                string sensorLabel = comboBoxSensor.Text.Trim(); // "DS18B20"...
-                string mode = comboBoxMode.Text.Trim();   // INIT/UPDATE/CONFIG/RESET/CONNECT/DISCONNECT...
+            string m = comboBoxMode.Text?.Trim() ?? string.Empty;
 
+            // --- postav request podle módu ---
+            request = null;
+
+            string formattedId = null;
+            if (hasSensor)
+            {
+                string sensorLabel = comboBoxSensor.Text.Trim();
                 if (!sensorIdMap.TryGetValue(sensorLabel, out string sensorId) || string.IsNullOrWhiteSpace(sensorId))
                     sensorId = sensorLabel;
+                formattedId = FormatSensorId(sensorId);
+            }
 
-                string formattedId = FormatSensorId(sensorId);   // Sxx
-
-                bool isConnMode = mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
-                               || mode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
-
-                if (mode.Equals("INIT", StringComparison.OrdinalIgnoreCase))
+            if (hasMode)
+            {
+                if (m.Equals("INIT", StringComparison.OrdinalIgnoreCase))
                 {
-                    request = $"?type={mode}&app=APP_NAME&version=APP_VERSION&dbversion=DB_VERSION&api=API_VERSION";
+                    // INIT může být bez senzoru
+                    request = $"?type={m}&app=APP_NAME&version=APP_VERSION&dbversion=DB_VERSION&api=API_VERSION";
                 }
-                else if (isConnMode)
+                else if (m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) || m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase))
                 {
-                    // připrav výraz pro pin
-                    string pinExpr = BuildPinExpr(); // vrátí "\"13\"" nebo "\"5\",\"18\"" nebo null
-
-                    // pokud ještě nemám vyplněné piny, zobraz aspoň náhled bez nich
-                    if (string.IsNullOrWhiteSpace(pinExpr))
+                    if (hasSensor)
                     {
-                        request = $"?type={mode}&id={formattedId}&pin="; // Start tlačítko stejně níže nepovolíme
+                        string pinExpr = BuildPinExpr();
+                        request = string.IsNullOrWhiteSpace(pinExpr)
+                            ? $"?type={m}&id={formattedId}&pin="
+                            : $"?type={m}&id={formattedId}&pin={pinExpr}";
                     }
-                    else
+                }
+                else if (m.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (hasSensor)
                     {
-                        // a) pokud používáš šablonu s 'PIN', nahradíme
-                        string baseReq = $"?type={mode}&id={formattedId}&pin=PIN";
-                        request = baseReq.Replace("PIN", pinExpr);
-
-                        // b) kdybys nechtěl šablonu, tak prostě:
-                        // request = $"?type={mode}&id={formattedId}&pin={pinExpr}";
+                        var itemForCfg = FindSelectedComponent();
+                        string cfgQuery = BuildConfigQuery(itemForCfg);
+                        request = string.IsNullOrEmpty(cfgQuery)
+                            ? $"?type={m}&id={formattedId}"
+                            : $"?type={m}&id={formattedId}&{cfgQuery}";
                     }
+                }
+                else if (m.Equals("RESET", StringComparison.OrdinalIgnoreCase))
+                {
+                    // bez globálního resetu → vyžaduje senzor
+                    if (hasSensor)
+                        request = $"?type={m}&id={formattedId}";
                 }
                 else
                 {
-                    request = $"?type={mode}&id={formattedId}";
+                    if (hasSensor)
+                        request = $"?type={m}&id={formattedId}";
                 }
-
-                label8.Text = request;
-            }
-            else
-            {
-                request = null;
-                label8.Text = string.Empty;
             }
 
-            // --- povolení Start tlačítka ---
-            bool ready = connected && hasSensor && hasMode;
+            label8.Text = request ?? string.Empty;
 
-            // CONNECT/DISCONNECT navíc vyžadují vyplněné piny podle JSONu
-            string m = comboBoxMode.Text?.Trim() ?? "";
-            bool isConn = m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) || m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
-            if (isConn)
+            // --- povolení Start tlačítka (vždy vyhodnotit!) ---
+            bool ready = connected && hasMode;
+
+            if (m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) || m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase))
             {
                 var item = FindSelectedComponent();
-                if (item != null)
-                {
-                    bool needTwo = !string.IsNullOrWhiteSpace(item.PIN2);
-                    bool p1ok = !string.IsNullOrWhiteSpace(NormalizePinInput(textPIN1.Text));
-                    bool p2ok = !needTwo || !string.IsNullOrWhiteSpace(NormalizePinInput(textPIN2.Text));
-                    ready = ready && p1ok && p2ok;
-                }
+                bool needTwo = item != null && !string.IsNullOrWhiteSpace(item.PIN2);
+                bool p1ok = !string.IsNullOrWhiteSpace(NormalizePinInput(textPIN1.Text));
+                bool p2ok = !needTwo || !string.IsNullOrWhiteSpace(NormalizePinInput(textPIN2.Text));
+                ready = ready && hasSensor && p1ok && p2ok;
             }
+            else if (m.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
+            {
+                var item = FindSelectedComponent();
+                var cfgs = GetConfigNames(item);
+                bool c1 = cfgs.Count < 1 || !string.IsNullOrWhiteSpace(textPIN1.Text?.Trim());
+                bool c2 = cfgs.Count < 2 || !string.IsNullOrWhiteSpace(textPIN2.Text?.Trim());
+                bool c3 = cfgs.Count < 3 || !string.IsNullOrWhiteSpace(textPIN3.Text?.Trim());
+                ready = ready && hasSensor && c1 && c2 && c3;
+            }
+            else if (m.Equals("RESET", StringComparison.OrdinalIgnoreCase))
+            {
+                // vyžaduje senzor
+                ready = ready && hasSensor;
+            }
+            else if (!m.Equals("INIT", StringComparison.OrdinalIgnoreCase))
+            {
+                // ostatní módy kromě INIT vyžadují senzor
+                ready = ready && hasSensor;
+            }
+
+            // navíc: bez smysluplného requestu nemá smysl spustit
+            if (string.IsNullOrWhiteSpace(request))
+                ready = false;
 
             button1.Enabled = ready;
         }
+
+
 
 
         private void ApplyTimerIntervalFromUi()                 // Přenastaví periodu vykreslovacího timeru dle UI
@@ -936,6 +1056,30 @@ namespace NewGUI                                                // Namespace pro
             {
                 MessageBox.Show($"Chyba při načítání obrázku: {ex.Message}"); // Zobraz chybovou hlášku
             }
+        }
+
+        private string BuildConfigQuery(Komponenty item)
+        {
+            if (item == null) return string.Empty;
+
+            var cfgs = GetConfigNames(item); // např. ["alarm: int", "period (ms)"]
+            var values = new[] { textPIN1.Text?.Trim(), textPIN2.Text?.Trim(), textPIN3.Text?.Trim() };
+
+            var parts = new List<string>();
+            for (int i = 0; i < Math.Min(3, cfgs.Count); i++)
+            {
+                string key = ConfigKey(cfgs[i]);              // např. "alarm", "period"
+                string val = values[i];
+
+                if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(val))
+                {
+                    parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(val)}");
+                }
+                // pokud chceš posílat i prázdné hodnoty, místo if dej:
+                // parts.Add($"{Uri.EscapeDataString(key)}={(val==null ? "" : Uri.EscapeDataString(val))}");
+            }
+
+            return string.Join("&", parts);
         }
 
         private void chart1_Click(object sender, EventArgs e)

@@ -52,9 +52,7 @@ namespace NewGUI
             delayedSendTimer.Interval = 1000; // 1 s
             delayedSendTimer.Tick += DelayedSendTimer_Tick;
 
-            // Default checkbox
-            checkBox1.Visible = false;
-            checkBox1.Checked = false;
+
 
             // Default zobrazení
             SetControlButtonsEnabled(false);
@@ -320,42 +318,33 @@ namespace NewGUI
                 // RESET režim
                 if (selectedMod == "RESET")
                 {
-                    // skryj textboxy
+                    // schovat textboxy
                     textBox1.Visible = textBox2.Visible = textBox3.Visible = false;
                     label1.Visible = label2.Visible = label3.Visible = false;
 
-                    string request;
-                    if (checkBox1.Checked)
+                    if (string.IsNullOrEmpty(selectedAlias))
                     {
-                        // RESET všech
-                        request = "?type=RESET&id=*";
+                        MessageBox.Show("Vyberte aktuátor.");
+                        return;
                     }
-                    else
+
+                    var item = FindByDisplayAlias(selectedAlias);
+                    if (item == null)
                     {
-                        if (string.IsNullOrEmpty(selectedAlias))
-                        {
-                            MessageBox.Show("Vyberte aktuátor.");
-                            return;
-                        }
-
-                        var item = FindByDisplayAlias(selectedAlias);
-                        if (item == null)
-                        {
-                            MessageBox.Show("Alias nebyl nalezen v JSONu.");
-                            return;
-                        }
-
-                        // vytáhneme id=... z item.Request
-                        var m = Regex.Match(item.Request_CONFIG ?? string.Empty, @"\bid=([^&]+)");
-                        var idValue = m.Success ? m.Groups[1].Value : "";
-                        if (string.IsNullOrEmpty(idValue))
-                        {
-                            MessageBox.Show("V JSONu nelze zjistit ID aktuátoru pro RESET.");
-                            return;
-                        }
-
-                        request = $"?type=RESET&id={idValue}";
+                        MessageBox.Show("Alias nebyl nalezen v JSONu.");
+                        return;
                     }
+
+                    // vytáhneme id=... z item.Request_CONFIG
+                    var m = Regex.Match(item.Request_CONFIG ?? string.Empty, @"\bid=([^&]+)");
+                    var idValue = m.Success ? m.Groups[1].Value : "";
+                    if (string.IsNullOrEmpty(idValue))
+                    {
+                        MessageBox.Show("V JSONu nelze zjistit ID aktuátoru pro RESET.");
+                        return;
+                    }
+
+                    string request = $"?type=RESET&id={idValue}";
 
                     try
                     {
@@ -369,6 +358,7 @@ namespace NewGUI
                     }
                     return;
                 }
+
 
                 // CONFIG/UPDATE apod.
                 if (string.IsNullOrEmpty(selectedAlias))
@@ -476,7 +466,6 @@ namespace NewGUI
 
             if (selectedMod == "RESET")
             {
-                checkBox1.Visible = true;
 
                 // schovat textboxy
                 textBox1.Visible = false;
@@ -489,16 +478,11 @@ namespace NewGUI
             }
             else
             {
-                checkBox1.Visible = false;
-                checkBox1.Checked = false;
                 AktBox.Enabled = true;
             }
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
-        {
-            AktBox.Enabled = !checkBox1.Checked;
-        }
+
 
         private void AktBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -522,7 +506,6 @@ namespace NewGUI
             btnStart.Enabled = enabled;
             ModBox.Enabled = enabled;
             AktBox.Enabled = enabled;
-            checkBox1.Enabled = enabled;
             textBox1.Enabled = enabled;
             textBox2.Enabled = enabled;
             textBox3.Enabled = enabled;

@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
 
 namespace NewGUI
 {
@@ -18,13 +19,14 @@ namespace NewGUI
         
         private Timer simulationTimer;
         private string selectedSensor = "";
-        private DataTable excelTable;
         private Random random = new Random();
         private Timer comPortWatcherTimer;
         private List<string> lastKnownPorts = new List<string>();
         private bool simulationRunning = false;
-
+        private List<Komponenty> SenzoryList;
         private string BasePath = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+        private readonly Dictionary<string, string> sensorIdMap // Mapa „Znackeni“ -> „Id“ (string)
+            = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         // NEW: režim podle TypeBox (true = Senzory, false = Aktuátory)
         private bool sensorsMode = true;
@@ -81,7 +83,7 @@ namespace NewGUI
             sensorBox.Visible = true;
 
             // Naplnění bez auto-výběru
-            LoadItemsFromCsv(sensorsMode ? "MTA_Senzory.csv" : "MTA_Aktuátory.csv");
+            LoadSensorsFromJson();
             sensorBox.SelectedIndex = -1; // důležité
             selectedSensor = "";
 
@@ -91,87 +93,64 @@ namespace NewGUI
         }
 
         // === Načtení položek z CSV do excelTable + sensorBox ==================
-        private void LoadItemsFromCsv(string csvFileName)
-        {
-            try
-            {
-                string csvPath = Path.Combine(BasePath, csvFileName);
-                if (!File.Exists(csvPath))
-                {
-                    MessageBox.Show($"Soubor {csvFileName} nebyl nalezen v: {BasePath}");
-                    excelTable = new DataTable();
-                    sensorBox.Items.Clear();
-                    return;
-                }
+        private void LoadSensorsFromJson()                                        // Metoda bez vstupů – načte JSON a naplní UI + mapu
+        {                                                                         // Začátek bloku metody
+            try                                                                   // Try-catch: kdyby cokoliv spadlo (soubor, JSON), zobrazíme hlášku
+            {                                                                     // Začátek try
+                                                                                  // JSON musí být vedle .exe (Properties: Content + Copy if newer)
+                string jsonPath = Path.Combine(Application.StartupPath,           // Poskládáme absolutní cestu...
+                                                "Senzory.json");                   // ...k souboru Senzory.json ve stejné složce jako .exe
 
-                excelTable = new DataTable();
-                sensorBox.BeginUpdate();
-                sensorBox.Items.Clear();
+                if (!File.Exists(jsonPath))                                       // Ověříme, že soubor opravdu existuje
+                {                                                                 // Pokud neexistuje:
+                    MessageBox.Show("Soubor Senzory.json nebyl nalezen v "        // ...ukaž informaci uživateli
+                                     + Application.StartupPath + ".");            // ...a doplň, kde jsme hledali
+                    return;                                                        // A ukonči metodu (není co načítat)
+                }                                                                 // Konec if
 
-                using (var reader = new StreamReader(csvPath, Encoding.Default))
-                {
-                    bool headerRead = false;
-                    string[] headers = null;
+                string jsonText = File.ReadAllText(jsonPath);                     // Načti celý obsah souboru jako text (string)
 
-                    while (!reader.EndOfStream)
-                    {
-                        string line = reader.ReadLine();
-                        if (string.IsNullOrWhiteSpace(line)) continue;
+                var data = JsonSerializer.Deserialize<List<Komponenty>>(          //Převeď JSON text na List<Komponenty>
+                    jsonText,                                                     //Vstup: načtený JSON řetězec
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true } //Nastavení: názvy vlastností nerozlišuj podle velikosti písmen
+                );                                                                //Konec volání Deserialize
 
-                        string[] values;
-                        if (line.Contains(';')) values = line.Split(';');
-                        else if (line.Contains('\t')) values = line.Split('\t');
-                        else values = line.Split(',');
+                if (data == null || data.Count == 0)                              //Ověření: máme nějaká data?
+                {                                                                 //Pokud ne:
+                    MessageBox.Show("Senzory.json je prázdný nebo ve špatném formátu."); //...informuj uživatele
+                    return;                                                       // ...a skonči
+                }                                                                 // Konec if
 
-                        if (!headerRead)
-                        {
-                            headers = values.Select(h => h.Trim().Trim('"')).ToArray();
-                            foreach (var h in headers) excelTable.Columns.Add(h);
-                            headerRead = true;
-                            continue;
-                        }
+                SenzoryList = data;                                            // Ulož načtený seznam do pole třídy (budeme s tím dál pracovat)
 
-                        if (values.Length < headers.Length)
-                            Array.Resize(ref values, headers.Length);
+                sensorIdMap.Clear();                                              // Vyčisti mapu „Znaceni → Id“ (aby tam nezůstaly staré hodnoty)
+                sensorBox.BeginUpdate();                                     // Optimalizace vykreslování při hromadném plnění comboboxu
+                sensorBox.Items.Clear();                                     // Vyprázdni položky comboboxu
 
-                        excelTable.Rows.Add(values);
+                foreach (var k in SenzoryList)                                 // Projdi všechny prvky z JSONu (každý „senzor“)
+                {                                                                 // Začátek foreach
+                    string label = (k.Znaceni ?? string.Empty).Trim();           // Vytáhni text „Znackeni“ (název/štítek do UI), ošetři null a ořízni
+                    if (string.IsNullOrWhiteSpace(label))                         // Když je prázdný/whitespace,
+                        continue;                                                 // ...tuhle položku přeskoč
 
-                        // alias sloupec: "Alias (type)" nebo "Alias"
-                        int aliasIdx = Array.FindIndex(headers, h =>
-                            h.Equals("Alias (type)", StringComparison.OrdinalIgnoreCase) ||
-                            h.Equals("Značení", StringComparison.OrdinalIgnoreCase));
+                    if (!sensorIdMap.ContainsKey(label))                          // Je to nový label? (ještě není v mapě)
+                        sensorBox.Items.Add(label);                          // ...tak ho přidej do comboboxu (aby šel vybrat)
 
-                        if (aliasIdx >= 0)
-                        {
-                            string alias = values[aliasIdx]?.Trim().Trim('"');
-                            if (!string.IsNullOrWhiteSpace(alias))
-                                sensorBox.Items.Add(alias);
-                        }
-                    }
-                }
+                    sensorIdMap[label] = k.Id.ToString();                         // Do mapy ulož dvojici Label → Id (Id převedeme na string)
+                                                                                  // POZN: Pokud máš v modelu Id už jako "Sxx" string, napiš prostě: sensorIdMap[label] = k.Id;
+                }                                                                 // Konec foreach
 
-                sensorBox.EndUpdate();
-
-            }
-            catch (IOException)
-            {
-                MessageBox.Show("CSV je pravděpodobně otevřené v jiném programu. Zavři ho a zkus to znovu.");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Chyba při načítání {csvFileName}: {ex.Message}");
-            }
+                sensorBox.EndUpdate();                                       // Ukonči hromadnou aktualizaci (UI jednorázově překreslí změny)
+                sensorBox.SelectedIndex = -1;                                // Nic nepředvybírej (uživatel si vybere sám)
+                //UpdateRequestFromUi();                                            // Přepočítej náhled požadavku (label8, tlačítko Start apod.)
+            }                                                                     // Konec try
+            catch (Exception ex)                                                  // Zachytíme libovolnou výjimku (soubor, parsování…)
+            {                                                                     // Začátek catch
+                MessageBox.Show("Chyba při načítání Senzory.json: " + ex.Message);// Ukaž chybovou hlášku s důvodem
+            }                                                                     // Konec catch
         }
 
-        // === Vyhledání řádku podle aliasu =====================================
-        private DataRow NajdiSensor(string sensorAlias)
-        {
-            if (excelTable == null) return null;
-            return excelTable.AsEnumerable()
-                .FirstOrDefault(row => row.Table.Columns.Contains("Alias (type)")
-                    ? row["Alias (type)"].ToString() == sensorAlias
-                    : (row.Table.Columns.Contains("Alias") && row["Alias"].ToString() == sensorAlias));
-        }
+
 
         // === Generování hodnot =================================================
         private string VygenerujHodnotu(string type)
@@ -214,47 +193,29 @@ namespace NewGUI
         }
 
         // === Vytvoření response podle šablony/keywords =======================
-        private string VytvorResponse(string sensorAlias)
+        public string VytvorResponse(Komponenty sensor)
         {
-            DataRow sensorRow = NajdiSensor(sensorAlias);
-            if (sensorRow == null) return "";
+            if (sensor == null) return "";
 
-            string responseTemplate = sensorRow.Table.Columns.Contains("Response") ? sensorRow["Response"].ToString() : "";
-            string keywords = sensorRow.Table.Columns.Contains("Keywords - values") ? sensorRow["Keywords - values"].ToString() : "";
+            string type = sensor.Znaceni ?? "UNKNOWN";
+            string id = $"S{sensor.Id}";
+            var sb = new StringBuilder();
 
-            if (string.IsNullOrEmpty(responseTemplate) || string.IsNullOrEmpty(keywords))
-                return "";
+            sb.Append("?type=").Append(Uri.EscapeDataString(type));
+            sb.Append("&id=").Append(id);
 
-            string result = responseTemplate;
-
-            // Mapování key -> typ
-            Dictionary<string, string> keyTypeMap = new Dictionary<string, string>();
-            string[] keywordPairs = keywords.Split(',');
-            foreach (var pair in keywordPairs)
+            if (sensor.Keywords_values != null && sensor.Keywords_values.Count > 0)
             {
-                string[] parts = pair.Split(':');
-                if (parts.Length == 2)
+                foreach (var kv in sensor.Keywords_values)
                 {
-                    string key = parts[0].Trim();
-                    string type = parts[1].Trim();
-                    keyTypeMap[key] = type;
+                    string key = kv.Key;
+                    string valType = kv.Value;
+                    string val = VygenerujHodnotu(valType);
+                    sb.Append("&").Append(key).Append("=").Append(val);
                 }
             }
 
-            // Nahrazení hodnot v response
-            var matches = Regex.Matches(responseTemplate, @"(\w+)=([^&]*)");
-            foreach (Match match in matches)
-            {
-                string keyInResponse = match.Groups[1].Value; // např. temp
-                if (keyTypeMap.TryGetValue(keyInResponse, out string type))
-                {
-                    string newValue = VygenerujHodnotu(type);
-                    string pattern = $@"({keyInResponse}=)[^&]*";
-                    result = Regex.Replace(result, pattern, m => m.Groups[1].Value + newValue);
-                }
-            }
-
-            return result;
+            return sb.ToString();
         }
 
         private void SimulationTimer_Tick(object sender, EventArgs e)
@@ -262,9 +223,17 @@ namespace NewGUI
             if (string.IsNullOrEmpty(selectedSensor))
                 return;
 
-            string responseToSend = VytvorResponse(selectedSensor);
+            // Najdi objekt podle jména (v JSONu je Znaceni = stejný text jako v sensorBox)
+            var sensorObj = SenzoryList.FirstOrDefault(s =>
+                string.Equals(s.Znaceni, selectedSensor, StringComparison.OrdinalIgnoreCase));
 
-            textBox.AppendText(responseToSend + Environment.NewLine);
+            if (sensorObj == null)
+                return;
+
+            string responseToSend = VytvorResponse(sensorObj);
+
+            AppendLineToTextBox(responseToSend);
+
 
             // ⤵ posíláme přes SerialManager
             if (SerialManager.Instance.IsOpen)
@@ -398,6 +367,7 @@ namespace NewGUI
                 btnStartStop.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(153)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
                 btnStartStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(211)))), ((int)(((byte)(47)))), ((int)(((byte)(47)))));
                 btnStartStop.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(211)))), ((int)(((byte)(47)))), ((int)(((byte)(47)))));
+                btnConnect.Enabled = false;
             }
             else
             {
@@ -405,13 +375,23 @@ namespace NewGUI
                 simulationTimer.Stop();
                 btnStartStop.Text = ("Spustit");
                 selectedSensor = "";
-                textBox.Text += "Simulace byla zastavena" + Environment.NewLine;
+                AppendLineToTextBox("Simulace byla zastavena");
                 this.btnStartStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(108)))), ((int)(((byte)(189)))));
                 this.btnStartStop.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(108)))), ((int)(((byte)(189)))));
                 this.btnStartStop.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(94)))), ((int)(((byte)(163)))));
                 this.btnStartStop.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(12)))), ((int)(((byte)(83)))), ((int)(((byte)(146)))));
+                btnConnect.Enabled = true;
             }
         }
+
+        private void AppendLineToTextBox(string text)
+        {
+            textBox.AppendText(text + Environment.NewLine);
+            textBox.SelectionStart = textBox.Text.Length;
+            textBox.ScrollToCaret();
+        }
+
+
 
         // === Náhled obrázku podle režimu (Senzory/Aktuátory) ==================
         private void sensorBox_UpdateImage(object sender, EventArgs e)

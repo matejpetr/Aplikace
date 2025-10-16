@@ -13,9 +13,10 @@
     "PIN1": "Pin",
     "PIN2": "",
     "Keywords_values": {
-      "temp": "float"
+      "temp": "float",
+      "alarm": "String"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S00&Res=12",
+    "Request_CONFIG": "?type=CONFIG&id=S00&Res=&LowAlarm=&HighAlarm=",
     "Config1": "Res:int",
     "Config2": "LowAlarm:string",
     "Config3": "HighAlarm:string"
@@ -34,9 +35,10 @@
     "PIN1": "Pin",
     "PIN2": "",
     "Keywords_values": {
-      "humi": "int"
+      "humi": "int",
+      "temp": "int"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S01&Unit=C",
+    "Request_CONFIG": "?type=CONFIG&id=S01&Unit=C&Unit=&HI=",
     "Config1": "Unit:char",
     "Config2": "HI:bool",
     "Config3": ""
@@ -76,9 +78,10 @@
     "PIN1": "Pin",
     "PIN2": "",
     "Keywords_values": {
-      "val": "int"
+      "val": "int",
+      "polarity": "string"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S03&Res=10&Llimit= 500",
+    "Request_CONFIG": "?type=CONFIG&id=S03&Res=&Llimit=&Hlimit=",
     "Config1": "Res:int",
     "Config2": "Llimit:int",
     "Config3": "Hlimit:int"
@@ -141,7 +144,7 @@
     "Keywords_values": {
       "distance": "float"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S06&Limit=150",
+    "Request_CONFIG": "?type=CONFIG&id=S06&Limit=&Delay=",
     "Config1": "Limit:int",
     "Config2": "Delay:int",
     "Config3": ""
@@ -202,9 +205,10 @@
     "PIN1": "SDA",
     "PIN2": "SCL",
     "Keywords_values": {
-      "temp": "float"
+      "temp": "float",
+      "press": "float"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S09&Filter=2",
+    "Request_CONFIG": "?type=CONFIG&id=S09&Os_temp=&Os_press=&Filter=",
     "Config1": "Os_temp:int",
     "Config2": "Os_press:int",
     "Config3": "Filter:int"
@@ -223,9 +227,10 @@
     "PIN1": "SDA",
     "PIN2": "SCL",
     "Keywords_values": {
-      "press": "float"
+      "press": "float",
+      "altitude": "float"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S10&Gain=1.1",
+    "Request_CONFIG": "?type=CONFIG&id=S10&Gain=",
     "Config1": "Gain:float",
     "Config2": "",
     "Config3": ""
@@ -244,9 +249,11 @@
     "PIN1": "SDA",
     "PIN2": "SCL",
     "Keywords_values": {
-      "R": "int"
+      "R": "int",
+      "G": "int",
+      "B": "int"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S11&Gain=4",
+    "Request_CONFIG": "?type=CONFIG&id=S11&Itime=&Gain=",
     "Config1": "Itime:int",
     "Config2": "Gain:int",
     "Config3": ""
@@ -309,7 +316,7 @@
     "Keywords_values": {
       "temp": "float"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S14&Res=12",
+    "Request_CONFIG": "?type=CONFIG&id=S14&Res=&Filter=",
     "Config1": "Res:int",
     "Config2": "Filter:int",
     "Config3": ""
@@ -330,7 +337,7 @@
     "Keywords_values": {
       "intensity": "int"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S15&Res=12",
+    "Request_CONFIG": "?type=CONFIG&id=S15&Res=&Gain=",
     "Config1": "Res:int",
     "Config2": "Gain:float",
     "Config3": ""
@@ -351,7 +358,7 @@
     "Keywords_values": {
       "direction": "string"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S16&Res=10",
+    "Request_CONFIG": "?type=CONFIG&id=S16&Res=&Threshold=",
     "Config1": "Res:int",
     "Config2": "Threshold:int",
     "Config3": ""
@@ -372,7 +379,7 @@
     "Keywords_values": {
       "voltage": "float"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S17&Res=10",
+    "Request_CONFIG": "?type=CONFIG&id=S17&Res=&Unit=",
     "Config1": "Res:int",
     "Config2": "Unit:String",
     "Config3": ""
@@ -454,9 +461,10 @@
     "PIN1": "Pin",
     "PIN2": "",
     "Keywords_values": {
-      "distance": "float"
+      "distance": "float",
+      "alarm": "String"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S21&Unit=0",
+    "Request_CONFIG": "?type=CONFIG&id=S21&Unit=&LowAlarm=&HighAlarm=",
     "Config1": "Unit:int",
     "Config2": "LowAlarm:string",
     "Config3": "HighAlarm:string"
@@ -475,9 +483,10 @@
     "PIN1": "DT",
     "PIN2": "CLK",
     "Keywords_values": {
-      "position": "int"
+      "position": "int",
+      "alarm": "String"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S22&Direction=normal",
+    "Request_CONFIG": "?type=CONFIG&id=S22&Direction=&LowAlarm=&HighAlarm=",
     "Config1": "Direction:string",
     "Config2": "LowAlarm:string",
     "Config3": "HighAlarm:string"
@@ -582,7 +591,7 @@
     "Keywords_values": {
       "volume": "float"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S27&Res=12",
+    "Request_CONFIG": "?type=CONFIG&id=S27&Res=&MT=",
     "Config1": "Res:int",
     "Config2": "MT:int",
     "Config3": ""
@@ -603,7 +612,7 @@
     "Keywords_values": {
       "volume": "float"
     },
-    "Request_CONFIG": "?type=CONFIG&id=S28&Res=12",
+    "Request_CONFIG": "?type=CONFIG&id=S28&Res=&MT=",
     "Config1": "Res:int",
     "Config2": "MT:int",
     "Config3": ""

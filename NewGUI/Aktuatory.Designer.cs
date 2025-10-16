@@ -47,7 +47,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.btnConnect = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
@@ -287,23 +286,6 @@
             this.pictureBox1.Size = new System.Drawing.Size(140, 140);
             this.pictureBox1.TabIndex = 8;
             this.pictureBox1.TabStop = false;
-
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.checkBox1.Font = new System.Drawing.Font("Segoe UI Variable Text", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.checkBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.checkBox1.Location = new System.Drawing.Point(531, 155);
-            this.checkBox1.Margin = new System.Windows.Forms.Padding(2);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Padding = new System.Windows.Forms.Padding(2, 0, 0, 0);
-            this.checkBox1.Size = new System.Drawing.Size(97, 30);
-            this.checkBox1.TabIndex = 6;
-            this.checkBox1.Text = "všechny";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // label5
             // 
@@ -340,7 +322,6 @@
             this.badgeConn.Size = new System.Drawing.Size(123, 29);
             this.badgeConn.TabIndex = 12;
             this.badgeConn.Text = "Nepřipojeno";
-
             // 
             // Aktuatory
             // 
@@ -350,7 +331,6 @@
             this.Controls.Add(this.badgeConn);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -396,7 +376,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ToolTip toolTip1;

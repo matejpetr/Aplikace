@@ -27,9 +27,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.button1 = new System.Windows.Forms.Button();
             this.comboBoxSensor = new System.Windows.Forms.ComboBox();
             this.comboBoxMode = new System.Windows.Forms.ComboBox();
@@ -42,11 +42,8 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.comboBoxTIMER = new System.Windows.Forms.ComboBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.AktivBox = new System.Windows.Forms.TextBox();
             this.ConnectBtn = new System.Windows.Forms.Button();
             this.badgeConn = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label8 = new System.Windows.Forms.Label();
             this.PIN1 = new System.Windows.Forms.Label();
@@ -55,6 +52,8 @@
             this.textPIN1 = new System.Windows.Forms.TextBox();
             this.textPIN2 = new System.Windows.Forms.TextBox();
             this.textPIN3 = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.AktivBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -65,7 +64,7 @@
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.button1.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold);
             this.button1.ForeColor = System.Drawing.Color.White;
-            this.button1.Location = new System.Drawing.Point(28, 121);
+            this.button1.Location = new System.Drawing.Point(28, 75);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(120, 40);
             this.button1.TabIndex = 1;
@@ -134,50 +133,50 @@
             // chart1
             // 
             this.chart1.BorderlineColor = System.Drawing.Color.Transparent;
-            chartArea2.AxisX.IsLabelAutoFit = false;
-            chartArea2.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F);
-            chartArea2.AxisX.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
-            chartArea2.AxisX.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
-            chartArea2.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX.Title = "\"\"";
-            chartArea2.AxisY.IsLabelAutoFit = false;
-            chartArea2.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            chartArea2.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
-            chartArea2.AxisY.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
-            chartArea2.AxisY.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY.Title = "\"\"";
-            chartArea2.BackColor = System.Drawing.Color.White;
-            chartArea2.BorderWidth = 0;
-            chartArea2.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea2);
+            chartArea5.AxisX.IsLabelAutoFit = false;
+            chartArea5.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F);
+            chartArea5.AxisX.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            chartArea5.AxisX.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
+            chartArea5.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX.Title = "\"\"";
+            chartArea5.AxisY.IsLabelAutoFit = false;
+            chartArea5.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            chartArea5.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            chartArea5.AxisY.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
+            chartArea5.AxisY.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY.Title = "\"\"";
+            chartArea5.BackColor = System.Drawing.Color.White;
+            chartArea5.BorderWidth = 0;
+            chartArea5.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea5);
             this.chart1.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            legend2.BackColor = System.Drawing.Color.Transparent;
-            legend2.BorderWidth = 0;
-            legend2.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
-            legend2.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            legend2.IsTextAutoFit = false;
-            legend2.Name = "Legend1";
-            this.chart1.Legends.Add(legend2);
-            this.chart1.Location = new System.Drawing.Point(0, 254);
+            legend5.BackColor = System.Drawing.Color.Transparent;
+            legend5.BorderWidth = 0;
+            legend5.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
+            legend5.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            legend5.IsTextAutoFit = false;
+            legend5.Name = "Legend1";
+            this.chart1.Legends.Add(legend5);
+            this.chart1.Location = new System.Drawing.Point(0, 263);
             this.chart1.Margin = new System.Windows.Forms.Padding(12);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.None;
-            series2.BorderWidth = 2;
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
-            series2.Color = System.Drawing.SystemColors.Highlight;
-            series2.LabelBorderWidth = 2;
-            series2.LabelForeColor = System.Drawing.Color.SteelBlue;
-            series2.Legend = "Legend1";
-            series2.MarkerBorderColor = System.Drawing.SystemColors.Highlight;
-            series2.MarkerBorderWidth = 2;
-            series2.MarkerColor = System.Drawing.Color.White;
-            series2.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
-            series2.Name = "Series1";
-            this.chart1.Series.Add(series2);
-            this.chart1.Size = new System.Drawing.Size(441, 196);
+            series5.BorderWidth = 2;
+            series5.ChartArea = "ChartArea1";
+            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series5.Color = System.Drawing.SystemColors.Highlight;
+            series5.LabelBorderWidth = 2;
+            series5.LabelForeColor = System.Drawing.Color.SteelBlue;
+            series5.Legend = "Legend1";
+            series5.MarkerBorderColor = System.Drawing.SystemColors.Highlight;
+            series5.MarkerBorderWidth = 2;
+            series5.MarkerColor = System.Drawing.Color.White;
+            series5.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
+            series5.Name = "Series1";
+            this.chart1.Series.Add(series5);
+            this.chart1.Size = new System.Drawing.Size(441, 187);
             this.chart1.TabIndex = 9;
             this.chart1.Text = "chart1";
             this.chart1.Click += new System.EventHandler(this.chart1_Click);
@@ -242,6 +241,107 @@
             this.comboBoxTIMER.Size = new System.Drawing.Size(129, 29);
             this.comboBoxTIMER.TabIndex = 3;
             // 
+            // ConnectBtn
+            // 
+            this.ConnectBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(108)))), ((int)(((byte)(189)))));
+            this.ConnectBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.ConnectBtn.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold);
+            this.ConnectBtn.ForeColor = System.Drawing.Color.White;
+            this.ConnectBtn.Location = new System.Drawing.Point(28, 20);
+            this.ConnectBtn.Name = "ConnectBtn";
+            this.ConnectBtn.Size = new System.Drawing.Size(120, 40);
+            this.ConnectBtn.TabIndex = 1;
+            this.ConnectBtn.Text = "Připojit";
+            this.ConnectBtn.UseVisualStyleBackColor = false;
+            this.ConnectBtn.Click += new System.EventHandler(this.ConnectBtn_Click);
+            // 
+            // badgeConn
+            // 
+            this.badgeConn.AutoSize = true;
+            this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
+            this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.badgeConn.ForeColor = System.Drawing.Color.White;
+            this.badgeConn.Location = new System.Drawing.Point(255, 28);
+            this.badgeConn.Name = "badgeConn";
+            this.badgeConn.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
+            this.badgeConn.Size = new System.Drawing.Size(123, 29);
+            this.badgeConn.TabIndex = 13;
+            this.badgeConn.Text = "Nepřipojeno";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(480, 202);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(140, 140);
+            this.pictureBox1.TabIndex = 15;
+            this.pictureBox1.TabStop = false;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Segoe UI Variable Text", 7F);
+            this.label8.ForeColor = System.Drawing.SystemColors.AppWorkspace;
+            this.label8.Location = new System.Drawing.Point(403, 2);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(32, 14);
+            this.label8.TabIndex = 16;
+            this.label8.Text = "label8";
+            this.label8.UseMnemonic = false;
+            // 
+            // PIN1
+            // 
+            this.PIN1.AutoSize = true;
+            this.PIN1.Location = new System.Drawing.Point(25, 145);
+            this.PIN1.Name = "PIN1";
+            this.PIN1.Size = new System.Drawing.Size(44, 21);
+            this.PIN1.TabIndex = 18;
+            this.PIN1.Text = "PIN1:";
+            this.PIN1.Visible = false;
+            // 
+            // PIN2
+            // 
+            this.PIN2.AutoSize = true;
+            this.PIN2.Location = new System.Drawing.Point(25, 180);
+            this.PIN2.Name = "PIN2";
+            this.PIN2.Size = new System.Drawing.Size(47, 21);
+            this.PIN2.TabIndex = 18;
+            this.PIN2.Text = "PIN2:";
+            this.PIN2.Visible = false;
+            // 
+            // PIN3
+            // 
+            this.PIN3.AutoSize = true;
+            this.PIN3.Location = new System.Drawing.Point(25, 215);
+            this.PIN3.Name = "PIN3";
+            this.PIN3.Size = new System.Drawing.Size(47, 21);
+            this.PIN3.TabIndex = 18;
+            this.PIN3.Text = "PIN3:";
+            this.PIN3.Visible = false;
+            // 
+            // textPIN1
+            // 
+            this.textPIN1.Location = new System.Drawing.Point(110, 140);
+            this.textPIN1.Name = "textPIN1";
+            this.textPIN1.Size = new System.Drawing.Size(35, 29);
+            this.textPIN1.TabIndex = 19;
+            this.textPIN1.Visible = false;
+            // 
+            // textPIN2
+            // 
+            this.textPIN2.Location = new System.Drawing.Point(110, 175);
+            this.textPIN2.Name = "textPIN2";
+            this.textPIN2.Size = new System.Drawing.Size(35, 29);
+            this.textPIN2.TabIndex = 19;
+            this.textPIN2.Visible = false;
+            // 
+            // textPIN3
+            // 
+            this.textPIN3.Location = new System.Drawing.Point(110, 210);
+            this.textPIN3.Name = "textPIN3";
+            this.textPIN3.Size = new System.Drawing.Size(35, 29);
+            this.textPIN3.TabIndex = 19;
+            this.textPIN3.Visible = false;
+            // 
             // label7
             // 
             this.label7.AutoSize = true;
@@ -263,117 +363,6 @@
             this.AktivBox.Size = new System.Drawing.Size(213, 65);
             this.AktivBox.TabIndex = 10;
             // 
-            // ConnectBtn
-            // 
-            this.ConnectBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(108)))), ((int)(((byte)(189)))));
-            this.ConnectBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.ConnectBtn.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold);
-            this.ConnectBtn.ForeColor = System.Drawing.Color.White;
-            this.ConnectBtn.Location = new System.Drawing.Point(28, 75);
-            this.ConnectBtn.Name = "ConnectBtn";
-            this.ConnectBtn.Size = new System.Drawing.Size(120, 40);
-            this.ConnectBtn.TabIndex = 1;
-            this.ConnectBtn.Text = "Připojit";
-            this.ConnectBtn.UseVisualStyleBackColor = false;
-            this.ConnectBtn.Click += new System.EventHandler(this.ConnectBtn_Click);
-            // 
-            // badgeConn
-            // 
-            this.badgeConn.AutoSize = true;
-            this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
-            this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.badgeConn.ForeColor = System.Drawing.Color.White;
-            this.badgeConn.Location = new System.Drawing.Point(165, 20);
-            this.badgeConn.Name = "badgeConn";
-            this.badgeConn.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
-            this.badgeConn.Size = new System.Drawing.Size(123, 29);
-            this.badgeConn.TabIndex = 13;
-            this.badgeConn.Text = "Nepřipojeno";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label3.Location = new System.Drawing.Point(24, 16);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(124, 36);
-            this.label3.TabIndex = 14;
-            this.label3.Text = "Připojení";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(480, 202);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(140, 140);
-            this.pictureBox1.TabIndex = 15;
-            this.pictureBox1.TabStop = false;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Segoe UI Variable Text", 7F);
-            this.label8.ForeColor = System.Drawing.SystemColors.AppWorkspace;
-            this.label8.Location = new System.Drawing.Point(450, 436);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(32, 14);
-            this.label8.TabIndex = 16;
-            this.label8.Text = "label8";
-            this.label8.UseMnemonic = false;
-            // 
-            // PIN1
-            // 
-            this.PIN1.AutoSize = true;
-            this.PIN1.Location = new System.Drawing.Point(27, 169);
-            this.PIN1.Name = "PIN1";
-            this.PIN1.Size = new System.Drawing.Size(44, 21);
-            this.PIN1.TabIndex = 18;
-            this.PIN1.Text = "PIN1:";
-            this.PIN1.Visible = false;
-            // 
-            // PIN2
-            // 
-            this.PIN2.AutoSize = true;
-            this.PIN2.Location = new System.Drawing.Point(27, 196);
-            this.PIN2.Name = "PIN2";
-            this.PIN2.Size = new System.Drawing.Size(47, 21);
-            this.PIN2.TabIndex = 18;
-            this.PIN2.Text = "PIN2:";
-            this.PIN2.Visible = false;
-            // 
-            // PIN3
-            // 
-            this.PIN3.AutoSize = true;
-            this.PIN3.Location = new System.Drawing.Point(27, 222);
-            this.PIN3.Name = "PIN3";
-            this.PIN3.Size = new System.Drawing.Size(47, 21);
-            this.PIN3.TabIndex = 18;
-            this.PIN3.Text = "PIN3:";
-            this.PIN3.Visible = false;
-            // 
-            // textPIN1
-            // 
-            this.textPIN1.Location = new System.Drawing.Point(113, 169);
-            this.textPIN1.Name = "textPIN1";
-            this.textPIN1.Size = new System.Drawing.Size(35, 29);
-            this.textPIN1.TabIndex = 19;
-            this.textPIN1.Visible = false;
-            // 
-            // textPIN2
-            // 
-            this.textPIN2.Location = new System.Drawing.Point(113, 196);
-            this.textPIN2.Name = "textPIN2";
-            this.textPIN2.Size = new System.Drawing.Size(35, 29);
-            this.textPIN2.TabIndex = 19;
-            this.textPIN2.Visible = false;
-            // 
-            // textPIN3
-            // 
-            this.textPIN3.Location = new System.Drawing.Point(113, 222);
-            this.textPIN3.Name = "textPIN3";
-            this.textPIN3.Size = new System.Drawing.Size(35, 29);
-            this.textPIN3.TabIndex = 19;
-            this.textPIN3.Visible = false;
-            // 
             // Senzory
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
@@ -386,7 +375,6 @@
             this.Controls.Add(this.PIN1);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.badgeConn);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.comboBoxCOM);
@@ -426,11 +414,8 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox comboBoxTIMER;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TextBox AktivBox;
         private System.Windows.Forms.Button ConnectBtn;
         private System.Windows.Forms.Label badgeConn;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label PIN1;
@@ -439,5 +424,7 @@
         private System.Windows.Forms.TextBox textPIN1;
         private System.Windows.Forms.TextBox textPIN2;
         private System.Windows.Forms.TextBox textPIN3;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox AktivBox;
     }
 }

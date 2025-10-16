@@ -143,7 +143,7 @@
             // 
             // component_pic
             // 
-            this.component_pic.Location = new System.Drawing.Point(455, 207);
+            this.component_pic.Location = new System.Drawing.Point(475, 181);
             this.component_pic.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.component_pic.Name = "component_pic";
             this.component_pic.Size = new System.Drawing.Size(140, 140);
@@ -154,12 +154,12 @@
             // 
             this.textBox.BackColor = System.Drawing.Color.White;
             this.textBox.Font = new System.Drawing.Font("Consolas", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.textBox.Location = new System.Drawing.Point(0, 367);
+            this.textBox.Location = new System.Drawing.Point(0, 331);
             this.textBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox.Multiline = true;
             this.textBox.Name = "textBox";
             this.textBox.ReadOnly = true;
-            this.textBox.Size = new System.Drawing.Size(666, 83);
+            this.textBox.Size = new System.Drawing.Size(666, 119);
             this.textBox.TabIndex = 0;
             // 
             // label1
