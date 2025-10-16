@@ -47,7 +47,8 @@
     "Nazev": "Two color led ",
     "Alias": "TwoColor",
     "Notes": "Keyes KY-011",
-    "PIN1": "PIN",
+    "PIN1": "PIN1",
+    "PIN2": "PIN2",
     "Request_CONFIG": "?type=CONFIG&id=A03&color=R&Brig=",
     "Keywords_configs": {
       "color": "char",
@@ -60,7 +61,8 @@
     "Nazev": "Mini two color led",
     "Alias": "TwoColorMini",
     "Notes": "Keyes KY-029",
-    "PIN1": "PIN",
+    "PIN1": "PIN1",
+    "PIN2": "PIN2",
     "Request_CONFIG": "?type=CONFIG&id=A04&color=G&Brig=",
     "Keywords_configs": {
       "color": "char",

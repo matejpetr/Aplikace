@@ -368,7 +368,7 @@ namespace NewGUI
                     }
 
                     // POZOR: formát s čárkami mezi pinX=... částmi (přesně jak požaduješ)
-                    string request = $"?request={selectedMod.ToUpperInvariant()}&id={idValue}&{pinQuery}";
+                    string request = $"?type={selectedMod.ToUpperInvariant()}&id={idValue}&{pinQuery}";
 
                     try
                     {
