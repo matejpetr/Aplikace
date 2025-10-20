@@ -496,30 +496,12 @@ namespace NewGUI
             }
         }
 
-        private void ShowOrFocus(SerialPopupForm form, string title, int offsetX)
-        {
-            if (form == null || form.IsDisposed)
-                form = (title == "INIT výpis")
-                    ? (_initForm = new SerialPopupForm(title))
-                    : (_linkForm = new SerialPopupForm(title));
 
-            var host = this.FindForm();
-            if (host != null)
-            {
-                form.Left = host.Right + offsetX;
-                form.Top = host.Top;
-            }
-            form.Show();
-            form.BringToFront();
-        }
 
         private void UiLog(string msg)
         {
             LogLink(msg);
         }
-
-
-
 
 
         private void buttonStart_Click(object sender, EventArgs e)
@@ -786,7 +768,7 @@ namespace NewGUI
                                  .ToDictionary(pair => pair[0], pair => pair[1]);
 
             var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    { "type", "id", "pin", "app", "version", "dbversion", "api", "status", "code" };
+             { "type", "id", "pin", "app", "version", "dbversion", "api", "status", "code" };
 
             var dataForGraph = parameters
                 .Where(kvp => !skipKeys.Contains(kvp.Key))
@@ -1168,7 +1150,7 @@ namespace NewGUI
             if (form == null) return;
 
             // Enter bude spouštět jen když je tlačítko připravené a je ve stavu "Spustit"
-            if (button1.Enabled && string.Equals(button1.Text, "Spustit", StringComparison.OrdinalIgnoreCase))
+            if (button1.Enabled)
                 form.AcceptButton = button1;
             else
                 form.AcceptButton = null;
@@ -1235,6 +1217,11 @@ namespace NewGUI
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
         {
 
         }
