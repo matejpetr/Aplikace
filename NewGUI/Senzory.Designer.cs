@@ -27,24 +27,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.button1 = new System.Windows.Forms.Button();
             this.comboBoxSensor = new System.Windows.Forms.ComboBox();
             this.comboBoxMode = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.textBox2 = new System.Windows.Forms.TextBox();
             this.comboBoxCOM = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.comboBoxTIMER = new System.Windows.Forms.ComboBox();
             this.ConnectBtn = new System.Windows.Forms.Button();
             this.badgeConn = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label8 = new System.Windows.Forms.Label();
             this.PIN1 = new System.Windows.Forms.Label();
             this.PIN2 = new System.Windows.Forms.Label();
@@ -52,9 +49,14 @@
             this.textPIN1 = new System.Windows.Forms.TextBox();
             this.textPIN2 = new System.Windows.Forms.TextBox();
             this.textPIN3 = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.AktivBox = new System.Windows.Forms.TextBox();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.link_btn = new System.Windows.Forms.Button();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.init_btn = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -77,7 +79,7 @@
             this.comboBoxSensor.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.comboBoxSensor.FormattingEnabled = true;
             this.comboBoxSensor.IntegralHeight = false;
-            this.comboBoxSensor.Location = new System.Drawing.Point(249, 123);
+            this.comboBoxSensor.Location = new System.Drawing.Point(292, 120);
             this.comboBoxSensor.MaxDropDownItems = 10;
             this.comboBoxSensor.Name = "comboBoxSensor";
             this.comboBoxSensor.Size = new System.Drawing.Size(129, 29);
@@ -96,7 +98,7 @@
             "RESET",
             "CONNECT",
             "DISCONNECT"});
-            this.comboBoxMode.Location = new System.Drawing.Point(249, 169);
+            this.comboBoxMode.Location = new System.Drawing.Point(516, 70);
             this.comboBoxMode.MaxDropDownItems = 5;
             this.comboBoxMode.Name = "comboBoxMode";
             this.comboBoxMode.Size = new System.Drawing.Size(129, 29);
@@ -105,7 +107,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(181, 123);
+            this.label1.Location = new System.Drawing.Point(224, 120);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(58, 21);
             this.label1.TabIndex = 5;
@@ -114,84 +116,61 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(181, 169);
+            this.label2.Location = new System.Drawing.Point(442, 70);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(53, 21);
             this.label2.TabIndex = 6;
             this.label2.Text = "Režim";
             // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label4.Location = new System.Drawing.Point(400, 16);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(154, 36);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "Přijatá data";
-            // 
             // chart1
             // 
             this.chart1.BorderlineColor = System.Drawing.Color.Transparent;
-            chartArea5.AxisX.IsLabelAutoFit = false;
-            chartArea5.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F);
-            chartArea5.AxisX.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
-            chartArea5.AxisX.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea5.AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
-            chartArea5.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea5.AxisX.Title = "\"\"";
-            chartArea5.AxisY.IsLabelAutoFit = false;
-            chartArea5.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            chartArea5.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
-            chartArea5.AxisY.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea5.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
-            chartArea5.AxisY.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea5.AxisY.Title = "\"\"";
-            chartArea5.BackColor = System.Drawing.Color.White;
-            chartArea5.BorderWidth = 0;
-            chartArea5.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea5);
+            chartArea2.AxisX.IsLabelAutoFit = false;
+            chartArea2.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F);
+            chartArea2.AxisX.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            chartArea2.AxisX.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
+            chartArea2.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisX.Title = "\"\"";
+            chartArea2.AxisY.IsLabelAutoFit = false;
+            chartArea2.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            chartArea2.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            chartArea2.AxisY.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
+            chartArea2.AxisY.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea2.AxisY.Title = "\"\"";
+            chartArea2.BackColor = System.Drawing.Color.White;
+            chartArea2.BorderWidth = 0;
+            chartArea2.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea2);
             this.chart1.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            legend5.BackColor = System.Drawing.Color.Transparent;
-            legend5.BorderWidth = 0;
-            legend5.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
-            legend5.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            legend5.IsTextAutoFit = false;
-            legend5.Name = "Legend1";
-            this.chart1.Legends.Add(legend5);
-            this.chart1.Location = new System.Drawing.Point(0, 263);
+            legend2.BackColor = System.Drawing.Color.Transparent;
+            legend2.BorderWidth = 0;
+            legend2.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
+            legend2.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            legend2.IsTextAutoFit = false;
+            legend2.Name = "Legend1";
+            this.chart1.Legends.Add(legend2);
+            this.chart1.Location = new System.Drawing.Point(15, 191);
             this.chart1.Margin = new System.Windows.Forms.Padding(12);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.None;
-            series5.BorderWidth = 2;
-            series5.ChartArea = "ChartArea1";
-            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
-            series5.Color = System.Drawing.SystemColors.Highlight;
-            series5.LabelBorderWidth = 2;
-            series5.LabelForeColor = System.Drawing.Color.SteelBlue;
-            series5.Legend = "Legend1";
-            series5.MarkerBorderColor = System.Drawing.SystemColors.Highlight;
-            series5.MarkerBorderWidth = 2;
-            series5.MarkerColor = System.Drawing.Color.White;
-            series5.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
-            series5.Name = "Series1";
-            this.chart1.Series.Add(series5);
-            this.chart1.Size = new System.Drawing.Size(441, 187);
+            series2.BorderWidth = 2;
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series2.Color = System.Drawing.SystemColors.Highlight;
+            series2.LabelBorderWidth = 2;
+            series2.LabelForeColor = System.Drawing.Color.SteelBlue;
+            series2.Legend = "Legend1";
+            series2.MarkerBorderColor = System.Drawing.SystemColors.Highlight;
+            series2.MarkerBorderWidth = 2;
+            series2.MarkerColor = System.Drawing.Color.White;
+            series2.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
+            series2.Name = "Series1";
+            this.chart1.Series.Add(series2);
+            this.chart1.Size = new System.Drawing.Size(435, 243);
             this.chart1.TabIndex = 9;
             this.chart1.Text = "chart1";
-            this.chart1.Click += new System.EventHandler(this.chart1_Click);
-            // 
-            // textBox2
-            // 
-            this.textBox2.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.textBox2.Font = new System.Drawing.Font("Segoe UI Variable Text", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.textBox2.Location = new System.Drawing.Point(406, 75);
-            this.textBox2.Multiline = true;
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox2.Size = new System.Drawing.Size(257, 120);
-            this.textBox2.TabIndex = 10;
             // 
             // comboBoxCOM
             // 
@@ -199,7 +178,7 @@
             this.comboBoxCOM.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxCOM.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.comboBoxCOM.FormattingEnabled = true;
-            this.comboBoxCOM.Location = new System.Drawing.Point(249, 75);
+            this.comboBoxCOM.Location = new System.Drawing.Point(292, 70);
             this.comboBoxCOM.MaxDropDownItems = 5;
             this.comboBoxCOM.Name = "comboBoxCOM";
             this.comboBoxCOM.Size = new System.Drawing.Size(129, 29);
@@ -208,7 +187,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(181, 219);
+            this.label5.Location = new System.Drawing.Point(442, 120);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(62, 21);
             this.label5.TabIndex = 6;
@@ -217,7 +196,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(181, 75);
+            this.label6.Location = new System.Drawing.Point(224, 70);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(38, 21);
             this.label6.TabIndex = 12;
@@ -235,7 +214,7 @@
             "250",
             "500",
             "1000"});
-            this.comboBoxTIMER.Location = new System.Drawing.Point(249, 219);
+            this.comboBoxTIMER.Location = new System.Drawing.Point(516, 120);
             this.comboBoxTIMER.MaxDropDownItems = 5;
             this.comboBoxTIMER.Name = "comboBoxTIMER";
             this.comboBoxTIMER.Size = new System.Drawing.Size(129, 29);
@@ -261,27 +240,19 @@
             this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
             this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.badgeConn.ForeColor = System.Drawing.Color.White;
-            this.badgeConn.Location = new System.Drawing.Point(255, 28);
+            this.badgeConn.Location = new System.Drawing.Point(224, 20);
             this.badgeConn.Name = "badgeConn";
             this.badgeConn.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
             this.badgeConn.Size = new System.Drawing.Size(123, 29);
             this.badgeConn.TabIndex = 13;
             this.badgeConn.Text = "Nepřipojeno";
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(480, 202);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(140, 140);
-            this.pictureBox1.TabIndex = 15;
-            this.pictureBox1.TabStop = false;
-            // 
             // label8
             // 
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Segoe UI Variable Text", 7F);
             this.label8.ForeColor = System.Drawing.SystemColors.AppWorkspace;
-            this.label8.Location = new System.Drawing.Point(403, 2);
+            this.label8.Location = new System.Drawing.Point(12, 436);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(32, 14);
             this.label8.TabIndex = 16;
@@ -291,7 +262,7 @@
             // PIN1
             // 
             this.PIN1.AutoSize = true;
-            this.PIN1.Location = new System.Drawing.Point(25, 145);
+            this.PIN1.Location = new System.Drawing.Point(510, 335);
             this.PIN1.Name = "PIN1";
             this.PIN1.Size = new System.Drawing.Size(44, 21);
             this.PIN1.TabIndex = 18;
@@ -301,7 +272,7 @@
             // PIN2
             // 
             this.PIN2.AutoSize = true;
-            this.PIN2.Location = new System.Drawing.Point(25, 180);
+            this.PIN2.Location = new System.Drawing.Point(510, 370);
             this.PIN2.Name = "PIN2";
             this.PIN2.Size = new System.Drawing.Size(47, 21);
             this.PIN2.TabIndex = 18;
@@ -311,7 +282,7 @@
             // PIN3
             // 
             this.PIN3.AutoSize = true;
-            this.PIN3.Location = new System.Drawing.Point(25, 215);
+            this.PIN3.Location = new System.Drawing.Point(510, 405);
             this.PIN3.Name = "PIN3";
             this.PIN3.Size = new System.Drawing.Size(47, 21);
             this.PIN3.TabIndex = 18;
@@ -320,7 +291,7 @@
             // 
             // textPIN1
             // 
-            this.textPIN1.Location = new System.Drawing.Point(110, 140);
+            this.textPIN1.Location = new System.Drawing.Point(595, 330);
             this.textPIN1.Name = "textPIN1";
             this.textPIN1.Size = new System.Drawing.Size(35, 29);
             this.textPIN1.TabIndex = 19;
@@ -328,7 +299,7 @@
             // 
             // textPIN2
             // 
-            this.textPIN2.Location = new System.Drawing.Point(110, 175);
+            this.textPIN2.Location = new System.Drawing.Point(595, 365);
             this.textPIN2.Name = "textPIN2";
             this.textPIN2.Size = new System.Drawing.Size(35, 29);
             this.textPIN2.TabIndex = 19;
@@ -336,37 +307,62 @@
             // 
             // textPIN3
             // 
-            this.textPIN3.Location = new System.Drawing.Point(110, 210);
+            this.textPIN3.Location = new System.Drawing.Point(595, 400);
             this.textPIN3.Name = "textPIN3";
             this.textPIN3.Size = new System.Drawing.Size(35, 29);
             this.textPIN3.TabIndex = 19;
             this.textPIN3.Visible = false;
             // 
-            // label7
+            // panel1
             // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label7.Location = new System.Drawing.Point(446, 345);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(195, 21);
-            this.label7.TabIndex = 8;
-            this.label7.Text = "Seznam aktivních senzorů";
+            this.panel1.Controls.Add(this.link_btn);
+            this.panel1.Location = new System.Drawing.Point(620, 191);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(43, 45);
+            this.panel1.TabIndex = 20;
             // 
-            // AktivBox
+            // link_btn
             // 
-            this.AktivBox.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.AktivBox.Location = new System.Drawing.Point(450, 369);
-            this.AktivBox.Multiline = true;
-            this.AktivBox.Name = "AktivBox";
-            this.AktivBox.ReadOnly = true;
-            this.AktivBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.AktivBox.Size = new System.Drawing.Size(213, 65);
-            this.AktivBox.TabIndex = 10;
+            this.link_btn.Image = global::NewGUI.Properties.Resources.link_mini;
+            this.link_btn.Location = new System.Drawing.Point(-25, -25);
+            this.link_btn.Name = "link_btn";
+            this.link_btn.Size = new System.Drawing.Size(94, 97);
+            this.link_btn.TabIndex = 0;
+            this.link_btn.UseVisualStyleBackColor = true;
+            this.link_btn.Click += new System.EventHandler(this.link_btn_Click);
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.init_btn);
+            this.panel2.Location = new System.Drawing.Point(623, 269);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(43, 45);
+            this.panel2.TabIndex = 22;
+            // 
+            // init_btn
+            // 
+            this.init_btn.Image = global::NewGUI.Properties.Resources.init_mini;
+            this.init_btn.Location = new System.Drawing.Point(-25, -25);
+            this.init_btn.Name = "init_btn";
+            this.init_btn.Size = new System.Drawing.Size(94, 97);
+            this.init_btn.TabIndex = 0;
+            this.init_btn.UseVisualStyleBackColor = true;
+            this.init_btn.Click += new System.EventHandler(this.init_btn_Click);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(465, 191);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(140, 123);
+            this.pictureBox1.TabIndex = 15;
+            this.pictureBox1.TabStop = false;
             // 
             // Senzory
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.textPIN3);
             this.Controls.Add(this.textPIN2);
             this.Controls.Add(this.textPIN1);
@@ -378,11 +374,7 @@
             this.Controls.Add(this.badgeConn);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.comboBoxCOM);
-            this.Controls.Add(this.AktivBox);
-            this.Controls.Add(this.textBox2);
             this.Controls.Add(this.chart1);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.label4);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -394,7 +386,10 @@
             this.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Name = "Senzory";
             this.Size = new System.Drawing.Size(666, 450);
+            this.Load += new System.EventHandler(this.Senzory_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -407,9 +402,7 @@
         private System.Windows.Forms.ComboBox comboBoxMode;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
-        private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.ComboBox comboBoxCOM;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
@@ -424,7 +417,9 @@
         private System.Windows.Forms.TextBox textPIN1;
         private System.Windows.Forms.TextBox textPIN2;
         private System.Windows.Forms.TextBox textPIN3;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TextBox AktivBox;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Button link_btn;
+        private System.Windows.Forms.Button init_btn;
+        private System.Windows.Forms.Panel panel2;
     }
 }

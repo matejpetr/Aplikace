@@ -579,31 +579,39 @@ namespace NewGUI
         {
             if (item == null) return null;
 
-            // Podle JSONu zjistíme, kolik pinů daný aktuátor má
+            // Které piny aktuátor podle JSONu vyžaduje
             bool has1 = !string.IsNullOrWhiteSpace(item.PIN1);
             bool has2 = !string.IsNullOrWhiteSpace(item.PIN2);
             bool has3 = !string.IsNullOrWhiteSpace(item.PIN3);
             bool has4 = !string.IsNullOrWhiteSpace(item.PIN4);
 
+            // Hodnoty z UI (pouze pro piny, které daný aktuátor má)
             string p1 = has1 ? NormalizePinInput(textBox1.Text) : null;
             string p2 = has2 ? NormalizePinInput(textBox2.Text) : null;
             string p3 = has3 ? NormalizePinInput(textBox3.Text) : null;
             string p4 = has4 ? NormalizePinInput(textBox4.Text) : null;
 
+            // Pokud je některý vyžadovaný pin prázdný, nevracej nic (volající to ošetří)
             if (has1 && string.IsNullOrWhiteSpace(p1)) return null;
             if (has2 && string.IsNullOrWhiteSpace(p2)) return null;
             if (has3 && string.IsNullOrWhiteSpace(p3)) return null;
             if (has4 && string.IsNullOrWhiteSpace(p4)) return null;
 
-            var parts = new List<string>();
-            if (has1) parts.Add($"pin={p1}");
-            if (has2) parts.Add($"{p2}");
-            if (has3) parts.Add($"{p3}");
-            if (has4) parts.Add($"{p4}");
+            // Poskládej jen existující/požadované piny ve správném pořadí
+            var pins = new List<string>();
+            if (has1) pins.Add(p1);
+            if (has2) pins.Add(p2);
+            if (has3) pins.Add(p3);
+            if (has4) pins.Add(p4);
 
-            // POZOR: požadoval jsi čárky mezi položkami
-            return string.Join(",", parts);
+            // 1 pin -> "pin=V"
+            if (pins.Count == 1)
+                return $"pin={pins[0]}";
+
+            // 2–4 piny -> "pins=V1,V2[,V3,V4]"
+            return $"pins={string.Join(",", pins)}";
         }
+
 
         // Přepíná UI pro CONNECT/DISCONNECT (zobrazení až 4 pinů podle JSONu)
         private void UpdatePinInputsUi_Actuators()
@@ -700,8 +708,8 @@ namespace NewGUI
             btnStart.Enabled = ready;
         }
 
-
-
-
+        private void label5_Click(object sender, EventArgs e)
+        {
+                    }
     }
 }

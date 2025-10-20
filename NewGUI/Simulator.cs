@@ -38,7 +38,7 @@ namespace NewGUI
             // Handlery UI (přidat jednou)
             sensorBox.SelectedIndexChanged += sensorBox_UpdateImage;
             sensorBox.TextChanged += sensorBox_UpdateImage;
-            TypeBox.SelectedIndexChanged += TypeBox_SelectedIndexChanged;
+            
 
             // ❌ Inicializace SerialPort – nahrazeno SerialManagerem
 
@@ -72,10 +72,10 @@ namespace NewGUI
         // === Přepínání Senzory / Aktuátory ====================================
         private void TypeBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (TypeBox.SelectedItem == null) return;
+            if (TypeBox.Text == null) return;
 
-            var choice = TypeBox.SelectedItem.ToString();
-            sensorsMode = string.Equals(choice, "Senzory", StringComparison.OrdinalIgnoreCase);
+            
+            sensorsMode = string.Equals(TypeBox.Text, "Senzory", StringComparison.OrdinalIgnoreCase);
 
             // Viditelnost a zobrazení vstupu
             lblSensor.Visible = sensorsMode;
@@ -420,5 +420,7 @@ namespace NewGUI
                 // ticho – soubor mohl zmizet / nebýt validní obrázek
             }
         }
+
+     
     }
 }
