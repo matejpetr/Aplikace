@@ -376,6 +376,7 @@ namespace NewGUI
             button1.Enabled = ready;
 
             UpdateInitBtnEnabled();
+            UpdateAcceptButton();
         }
 
         private void ApplyTimerIntervalFromUi()
@@ -408,6 +409,8 @@ namespace NewGUI
             UpdateRequestFromUi();
             if (!isConnected) { _initRequestSent = false; _lastInitPayload = null; }
             UpdateInitBtnEnabled();
+            UpdateAcceptButton();  
+
         }
 
         private void ComPortWatcherTimer_Tick(object sender, EventArgs e)
@@ -541,6 +544,7 @@ namespace NewGUI
                     comboBoxTIMER.Enabled = true;
                     ConnectBtn.Enabled = true;
                     button1.Text = "Spustit";
+                    UpdateAcceptButton();
 
                     StopSendingRequest();
                     UiLog("Měření pozastaveno (přepnutí na CONNECT/DISCONNECT).");
@@ -617,6 +621,7 @@ namespace NewGUI
                     UiLog("INIT odesláno.");
 
                 button1.Text = "Zastavit";
+                UpdateAcceptButton();
                 comboBoxSensor.Enabled = false;
                 comboBoxMode.Enabled = false;
                 comboBoxCOM.Enabled = false;
@@ -635,7 +640,7 @@ namespace NewGUI
                 comboBoxTIMER.Enabled = true;
                 ConnectBtn.Enabled = true;
                 button1.Text = "Spustit";
-
+                UpdateAcceptButton();
                 StopSendingRequest();
                 UiLog("Měření pozastaveno.");
 
@@ -769,6 +774,8 @@ namespace NewGUI
 
         private void ParseAndDisplayData(string data)
         {
+            var numericPairs = new List<string>();
+
             data = data.Trim();
             data = data.TrimStart('\uFEFF');
             if (data.StartsWith("?")) data = data.Substring(1);
@@ -803,12 +810,15 @@ namespace NewGUI
                     System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture,
                     out numericValue);
+                numericPairs.Add($"{variableName}={numericValue.ToString("G", System.Globalization.CultureInfo.InvariantCulture)}");
+
 
                 if (hasNumber)
                 {
-                    // -> NElogujeme do textBox2 (UI). Případný debug pošli do link okna:
-                    LogLink($"[GRAPH] {variableName} -> {numericValue}");
+                    numericPairs.Add($"{variableName}={numericValue.ToString("G", System.Globalization.CultureInfo.InvariantCulture)}");
 
+
+                    LogLink($"[GRAPH] {variableName} -> {numericValue}");
 
                     this.Invoke(new Action(() =>
                     {
@@ -837,6 +847,19 @@ namespace NewGUI
                         chart1.ChartAreas[0].AxisY.Title = dataForGraph.Count > 1 ? "Values" : variableName.ToUpper();
                     }));
                 }
+                if (numericPairs.Count > 0)
+                {
+                    var text = string.Join(", ", numericPairs); // např. "temp=23.5, hum=41.2"
+
+                    // ↓↓↓ nahraď názvem svého Labelu (valueLabel / valueBox / cokoliv máš v Designeru)
+                    if (valueText.InvokeRequired)
+                        BeginInvoke((Action)(() => valueText.Text = text));
+                    else
+                        valueText.Text = text;
+                }
+
+
+
                 else
                 {
                     // textové hodnoty -> jen do logu, bez kreslení grafu
@@ -1142,6 +1165,18 @@ namespace NewGUI
             }
         }
 
+
+        private void UpdateAcceptButton()
+        {
+            var form = this.FindForm();
+            if (form == null) return;
+
+            // Enter bude spouštět jen když je tlačítko připravené a je ve stavu "Spustit"
+            if (button1.Enabled && string.Equals(button1.Text, "Spustit", StringComparison.OrdinalIgnoreCase))
+                form.AcceptButton = button1;
+            else
+                form.AcceptButton = null;
+        }
 
         private void UpdateInitBtnEnabled()
         {

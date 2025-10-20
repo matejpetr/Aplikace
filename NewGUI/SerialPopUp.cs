@@ -20,11 +20,27 @@ namespace NewGUI
         public SerialPopupForm(string title = "Sériový výpis")
         {
             Text = title;
-            Width = 600;
+            Width = 300;
             Height = 400;
             StartPosition = FormStartPosition.Manual;
-
+            FormBorderStyle = FormBorderStyle.None;  // zruší titlebar (bez X, bez resize)
+            ControlBox = false;                      // jistota, že se nevykreslí systémové ovládání
+            MinimizeBox = false;
+            MaximizeBox = false;
+            ShowIcon = false;
+            ShowInTaskbar = false;                   // popup se nebude zobrazovat v taskbaru
+            Text = string.Empty;                     // žádný titulek (i když není vidět)
             Controls.Add(Output);
+
+            KeyPreview = true;
+            KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.Escape)
+                {
+                    e.Handled = true;
+                    this.Hide();                          // nebo this.Close(); když chceš fakt ukončit
+                }
+            };
 
             // --- nastavení fontu: Cascadia Code 12, fallback na Consolas ---
             const string desired = "Cascadia Code";
