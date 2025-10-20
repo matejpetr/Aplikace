@@ -289,7 +289,7 @@ namespace NewGUI
             {
                 if (m.Equals("INIT", StringComparison.OrdinalIgnoreCase))
                 {
-                    request = $"?type={m}&app=APP_NAME&version=APP_VERSION&dbversion=DB_VERSION&api=API_VERSION";
+                    request = "?type=INIT&api=1.0";
                 }
                 else if (m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) || m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase))
                 {
