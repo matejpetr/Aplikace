@@ -786,7 +786,7 @@ namespace NewGUI
                                  .ToDictionary(pair => pair[0], pair => pair[1]);
 
             var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "type", "id", "pin", "app", "version", "dbversion", "api", "status", "code" };
+    { "type", "id", "pin", "app", "version", "dbversion", "api", "status", "code" };
 
             var dataForGraph = parameters
                 .Where(kvp => !skipKeys.Contains(kvp.Key))
@@ -810,13 +810,11 @@ namespace NewGUI
                     System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture,
                     out numericValue);
-                numericPairs.Add($"{variableName}={numericValue.ToString("G", System.Globalization.CultureInfo.InvariantCulture)}");
-
 
                 if (hasNumber)
                 {
+                    // přidej do přehledu pro valueText
                     numericPairs.Add($"{variableName}={numericValue.ToString("G", System.Globalization.CultureInfo.InvariantCulture)}");
-
 
                     LogLink($"[GRAPH] {variableName} -> {numericValue}");
 
@@ -847,29 +845,27 @@ namespace NewGUI
                         chart1.ChartAreas[0].AxisY.Title = dataForGraph.Count > 1 ? "Values" : variableName.ToUpper();
                     }));
                 }
-                if (numericPairs.Count > 0)
+                else // jen když to NENÍ číslo
                 {
-                    var text = string.Join(", ", numericPairs); // např. "temp=23.5, hum=41.2"
-
-                    // ↓↓↓ nahraď názvem svého Labelu (valueLabel / valueBox / cokoliv máš v Designeru)
-                    if (valueText.InvokeRequired)
-                        BeginInvoke((Action)(() => valueText.Text = text));
-                    else
-                        valueText.Text = text;
-                }
-
-
-
-                else
-                {
-                    // textové hodnoty -> jen do logu, bez kreslení grafu
+                    // textové hodnoty -> do logu, bez kreslení grafu
                     LogLink($"{variableName}: {raw}");
                 }
+            }
+
+            // až po zpracování všech klíčů z rámce aktualizuj valueText jedním řádkem
+            if (numericPairs.Count > 0)
+            {
+                var text = string.Join(", ", numericPairs); // např. "temp=23.5, hum=41.2"
+                if (valueText.InvokeRequired)
+                    BeginInvoke((Action)(() => valueText.Text = text));
+                else
+                    valueText.Text = text;
             }
 
             sampleCount++;
             chart1.Invalidate();
         }
+
 
         private static string FormatSensorId(string rawId)
         {
