@@ -348,17 +348,21 @@ namespace NewGUI
                     }
 
                     // ID pro request – ideálně přímo z objektu (pokud máš string Id), jinak fallback z Request_CONFIG
-                    string idValue = item.Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                    if (string.IsNullOrWhiteSpace(idValue))
+                    string idRaw = item.Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+                    if (string.IsNullOrWhiteSpace(idRaw))
                     {
                         var m = Regex.Match(item.Request_CONFIG ?? string.Empty, @"\bid=([^&]+)");
-                        idValue = m.Success ? m.Groups[1].Value : null;
+                        idRaw = m.Success ? m.Groups[1].Value : null;
                     }
-                    if (string.IsNullOrWhiteSpace(idValue))
+
+                    string idTwoDigits = FormatTwoDigitId(idRaw);
+                    if (string.IsNullOrWhiteSpace(idTwoDigits))
                     {
                         MessageBox.Show("Nelze zjistit ID aktuátoru.");
                         return;
                     }
+
 
                     var pinQuery = BuildPinQueryActuator4(item);
                     if (string.IsNullOrWhiteSpace(pinQuery))
@@ -368,7 +372,8 @@ namespace NewGUI
                     }
 
                     // POZOR: formát s čárkami mezi pinX=... částmi (přesně jak požaduješ)
-                    string request = $"?type={selectedMod.ToUpperInvariant()}&id=A{idValue}&{pinQuery}";
+                    string request = $"?type={selectedMod.ToUpperInvariant()}&id=A{idTwoDigits}&{pinQuery}";
+
 
                     try
                     {
@@ -681,6 +686,16 @@ namespace NewGUI
 
             btnStart.Enabled = ready;
         }
+
+        // Vrátí pouze číslice z ID, doplněné zleva na 2 znaky (01–09), 10+ zůstane beze změny.
+        private static string FormatTwoDigitId(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            string digitsOnly = new string(raw.Where(char.IsDigit).ToArray());
+            if (string.IsNullOrEmpty(digitsOnly)) return null;
+            return digitsOnly.PadLeft(2, '0');
+        }
+
 
         private void label5_Click(object sender, EventArgs e)
         {
