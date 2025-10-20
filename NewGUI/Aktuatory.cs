@@ -499,10 +499,6 @@ namespace NewGUI
             UpdateStartEnabled_Actuators();
         }
 
-
-
-
-
         private void AktBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (AktBox.SelectedItem == null || aktuatoryData == null)
@@ -548,29 +544,7 @@ namespace NewGUI
             return string.IsNullOrEmpty(digits) ? input : digits;
         }
 
-        // Sestaví výraz pro &pin=... podle požadavků a JSONu
-        private string BuildPinExprActuator()
-        {
-            var item = FindSelectedActuator();
-            if (item == null) return null;
 
-            var p1 = NormalizePinInput(textBox1.Text);
-            var hasSecond = !string.IsNullOrWhiteSpace(item.PIN2);
-            var p2 = NormalizePinInput(textBox2.Text);
-
-            if (hasSecond)
-            {
-                if (string.IsNullOrWhiteSpace(p1) || string.IsNullOrWhiteSpace(p2))
-                    return null;
-                return $"{p1},{p2}";
-            }
-            else
-            {
-                if (string.IsNullOrWhiteSpace(p1))
-                    return null;
-                return $"{p1}";
-            }
-        }
 
 
         // Sestaví "pin1=...,pin2=...,pin3=...,pin4=..." podle JSONu a textboxů.

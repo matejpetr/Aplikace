@@ -45,6 +45,7 @@ namespace NewGUI
 
         // do třídy Senzory:
         private readonly StringBuilder _linkBuffer = new StringBuilder();
+        private readonly StringBuilder _initBuffer = new StringBuilder();   // jen INIT odpovědi
 
 
         public Senzory(Form1 rodic)
@@ -87,6 +88,9 @@ namespace NewGUI
             textPIN1.TextChanged += (s, e) => UpdateRequestFromUi();
             textPIN2.TextChanged += (s, e) => UpdateRequestFromUi();
             textPIN3.TextChanged += (s, e) => UpdateRequestFromUi();
+
+  
+
         }
 
         private void InitializeChart()
@@ -508,25 +512,7 @@ namespace NewGUI
 
         private void UiLog(string msg)
         {
-            if (string.IsNullOrWhiteSpace(msg)) return;
-
-            void Write()
-            {
-                if (!msg.EndsWith("\r\n")) msg += "\r\n";
-
-                // 1) vždy loguj do paměťového bufferu
-                _linkBuffer.Append(msg);
-
-                // 2) pokud popup existuje, připisuj i do něj (bez zviditelnění okna)
-                if (_linkForm != null && !_linkForm.IsDisposed)
-                {
-                    _linkForm.AppendLine(msg);
-                }
-                // pokud neexistuje, nic neotvírej – až ho uživatel otevře, buffer se do něj nasype
-            }
-
-            if (InvokeRequired) BeginInvoke((Action)Write);
-            else Write();
+            LogLink(msg);
         }
 
 
@@ -672,44 +658,50 @@ namespace NewGUI
 
             displayTimer?.Start();
 
+            // reset/obnova CTS
             _sendCts?.Cancel();
             _sendCts?.Dispose();
             _sendCts = new System.Threading.CancellationTokenSource();
 
+            // 1) UPDATE = cyklické posílání
             if (request.StartsWith("?type=update", StringComparison.OrdinalIgnoreCase))
             {
                 isSendingRequest = true;
                 _ = SendLoopAsync(_sendCts.Token);
+                return;
             }
-            else
-            {
-                try
-                {
-                    if (SerialManager.Instance.IsOpen)
-                    {
-                        SerialManager.Instance.WriteLine(request);
 
-                        // pokud jsme odeslali INIT, označ „sent“ a čekáme na odpověď
-                        if (request.StartsWith("?type=INIT", StringComparison.OrdinalIgnoreCase))
-                        {
-                            _initRequestSent = true;
-                            _awaitingInitResponse = true;
-                            _lastInitPayload = null;
-                            UpdateInitBtnEnabled();
-                        }
-                    }
-                    else
-                    {
-                        UiLog("Port není otevřen – požadavek se neodešle.");
-                    }
-                }
-                catch (Exception ex)
+            // 2) Ostatní (INIT / CONFIG / RESET / CONNECT / atd.) = jednorázově
+            try
+            {
+                if (!SerialManager.Instance.IsOpen)
                 {
-                    UiLog($"Chyba při zápisu: {ex.Message}");
+                    UiLog("Port není otevřen – požadavek se neodešle.");
+                    return;
                 }
+
+                SerialManager.Instance.WriteLine(request);
+
+                // INIT: začínáme nový INIT cyklus – smaž starý INIT log a čekej odpověď
+                if (request.StartsWith("?type=INIT", StringComparison.OrdinalIgnoreCase))
+                {
+                    _initRequestSent = true;
+                    _awaitingInitResponse = true;
+                    _lastInitPayload = null;
+                    _initBuffer.Clear();
+                    UpdateInitBtnEnabled();
+                }
+            }
+            catch (Exception ex)
+            {
+                UiLog($"Chyba při zápisu: {ex.Message}");
+            }
+            finally
+            {
                 isSendingRequest = false;
             }
         }
+
 
         private async Task SendLoopAsync(System.Threading.CancellationToken ct)
         {
@@ -815,8 +807,8 @@ namespace NewGUI
                 if (hasNumber)
                 {
                     // -> NElogujeme do textBox2 (UI). Případný debug pošli do link okna:
-                    if (_linkForm != null && !_linkForm.IsDisposed)
-                        _linkForm.AppendLine($"[GRAPH] {variableName} -> {numericValue}");
+                    LogLink($"[GRAPH] {variableName} -> {numericValue}");
+
 
                     this.Invoke(new Action(() =>
                     {
@@ -847,9 +839,8 @@ namespace NewGUI
                 }
                 else
                 {
-                    // textové hodnoty -> jen do link okna
-                    if (_linkForm != null && !_linkForm.IsDisposed)
-                        _linkForm.AppendLine($"{variableName}: {raw}");
+                    // textové hodnoty -> jen do logu, bez kreslení grafu
+                    LogLink($"{variableName}: {raw}");
                 }
             }
 
@@ -983,40 +974,40 @@ namespace NewGUI
 
                 var line = raw.Trim();
                 line = line.TrimStart('\uFEFF');
-                line = new string(line.Where(ch => !char.IsControl(ch) || ch == '?' || ch == '=' || ch == '&' || ch == '.' || ch == ',' || ch == '-' || char.IsLetterOrDigit(ch)).ToArray());
+                line = new string(line.Where(ch => !char.IsControl(ch)
+                                                   || ch == '?' || ch == '=' || ch == '&'
+                                                   || ch == '.' || ch == ',' || ch == '-'
+                                                   || char.IsLetterOrDigit(ch)).ToArray());
                 if (string.IsNullOrEmpty(line)) continue;
 
-                // 1) INIT seznam (id:type,id:type,...) — pošleme do INIT okna
+                // 1) INIT seznam (id:type,id:type,...) — loguj do INIT a povol tlačítko
                 if (LooksLikeInitList(line))
                 {
                     ParseInitMessage(line);
 
                     _lastInitPayload = line;
+                    _awaitingInitResponse = false;
                     UpdateInitBtnEnabled();
 
-                    if (_awaitingInitResponse && _initForm != null && !_initForm.IsDisposed)
-                        _initForm.AppendLine(line);
-
-                    _awaitingInitResponse = false;
+                    LogInit(line);
                     continue;
                 }
 
-                // 2) měřicí rámce "?id=..." – graf + (volitelně) link okno
+                // 2) měřicí rámce "?id=..." – graf + běžný log
                 if (line.StartsWith("?id=", StringComparison.OrdinalIgnoreCase))
                 {
                     ParseAndDisplayData(line);
-                    if (_linkForm != null && !_linkForm.IsDisposed)
-                        _linkForm.AppendLine(line);
+                    LogLink(line);
                     continue;
                 }
 
-                // 3) cokoliv ostatní – patří do link okna
-                if (_linkForm != null && !_linkForm.IsDisposed)
-                    _linkForm.AppendLine(line);
+                // 3) ostatní text → běžný log
+                LogLink(line);
             }
 
             chart1.Invalidate();
         }
+
 
         private static bool LooksLikeInitList(string s)
         {
@@ -1096,7 +1087,7 @@ namespace NewGUI
                 _linkForm = new SerialPopupForm("Sériový výpis");
                 _linkForm.FormClosed += (_, __) => _linkForm = null;
 
-                // inicialní naplnění obsahem z bufferu (nic nemaž)
+                // vždy nasyp aktuální buffer:
                 if (_linkBuffer.Length > 0)
                     _linkForm.SetText(_linkBuffer.ToString());
 
@@ -1110,14 +1101,15 @@ namespace NewGUI
                 _linkForm.Hide();
             else
             {
-                // před zobrazením můžeš (nepovinně) dorovnat rozdíl: 
-                // _linkForm.AppendLine(_linkBuffer.ToString());  // jen kdyby sis to někde čistil
+                // dorovnat stav (kdyby se v mezidobí buffer zvětšil):
+                _linkForm.SetText(_linkBuffer.ToString());
                 PositionNextToHost(_linkForm);
                 _linkForm.Show();
                 _linkForm.BringToFront();
             }
         }
-        
+
+
 
 
 
@@ -1127,6 +1119,11 @@ namespace NewGUI
             {
                 _initForm = new SerialPopupForm("INIT výpis");
                 _initForm.FormClosed += (_, __) => _initForm = null;
+
+                // vždy nasyp aktuální INIT buffer:
+                if (_initBuffer.Length > 0)
+                    _initForm.SetText(_initBuffer.ToString());
+
                 PositionNextToHost(_initForm);
                 _initForm.Show();
                 _initForm.BringToFront();
@@ -1137,6 +1134,8 @@ namespace NewGUI
                 _initForm.Hide();
             else
             {
+                // dorovnat stav:
+                _initForm.SetText(_initBuffer.ToString());
                 PositionNextToHost(_initForm);
                 _initForm.Show();
                 _initForm.BringToFront();
@@ -1150,8 +1149,8 @@ namespace NewGUI
             bool connected = SerialManager.Instance.IsOpen;
             bool isInit = m.Equals("INIT", StringComparison.OrdinalIgnoreCase);
 
-            // Povolit až když: mód = INIT, připojeno, INIT poslán a máme nenulovou odpověď
-            init_btn.Enabled = isInit && connected && _initRequestSent && !string.IsNullOrWhiteSpace(_lastInitPayload);
+            // povol až když: mód = INIT, připojeno a už opravdu nějaká INIT odpověď dorazila
+            init_btn.Enabled = isInit && connected && !string.IsNullOrWhiteSpace(_lastInitPayload);
         }
 
         private void PositionNextToHost(Form form, int offsetX = 10)
@@ -1164,8 +1163,47 @@ namespace NewGUI
             }
         }
 
+        // Bezpečně přidá řádek do LINK bufferu a do otevřeného LINK popupu
+        private void LogLink(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line)) return;
+            if (!line.EndsWith("\r\n")) line += "\r\n";
+
+            void Write()
+            {
+                _linkBuffer.Append(line); // vždy do bufferu
+                if (_linkForm != null && !_linkForm.IsDisposed) // a když je okno otevřené, tak i do něj
+                    _linkForm.AppendLine(line);
+            }
+
+            if (InvokeRequired) BeginInvoke((Action)Write);
+            else Write();
+        }
+
+        // Bezpečně přidá řádek do INIT bufferu a do otevřeného INIT popupu
+        private void LogInit(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line)) return;
+            if (!line.EndsWith("\r\n")) line += "\r\n";
+
+            void Write()
+            {
+                _initBuffer.Append(line); // vždy do bufferu
+                if (_initForm != null && !_initForm.IsDisposed) // a když je okno otevřené, tak i do něj
+                    _initForm.AppendLine(line);
+            }
+
+            if (InvokeRequired) BeginInvoke((Action)Write);
+            else Write();
+        }
+
 
         private void Senzory_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
         {
 
         }

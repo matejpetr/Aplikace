@@ -27,9 +27,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.button1 = new System.Windows.Forms.Button();
             this.comboBoxSensor = new System.Windows.Forms.ComboBox();
             this.comboBoxMode = new System.Windows.Forms.ComboBox();
@@ -125,49 +125,49 @@
             // chart1
             // 
             this.chart1.BorderlineColor = System.Drawing.Color.Transparent;
-            chartArea2.AxisX.IsLabelAutoFit = false;
-            chartArea2.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F);
-            chartArea2.AxisX.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
-            chartArea2.AxisX.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
-            chartArea2.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisX.Title = "\"\"";
-            chartArea2.AxisY.IsLabelAutoFit = false;
-            chartArea2.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            chartArea2.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
-            chartArea2.AxisY.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
-            chartArea2.AxisY.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea2.AxisY.Title = "\"\"";
-            chartArea2.BackColor = System.Drawing.Color.White;
-            chartArea2.BorderWidth = 0;
-            chartArea2.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea2);
+            chartArea5.AxisX.IsLabelAutoFit = false;
+            chartArea5.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F);
+            chartArea5.AxisX.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            chartArea5.AxisX.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
+            chartArea5.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisX.Title = "\"\"";
+            chartArea5.AxisY.IsLabelAutoFit = false;
+            chartArea5.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            chartArea5.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            chartArea5.AxisY.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
+            chartArea5.AxisY.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea5.AxisY.Title = "\"\"";
+            chartArea5.BackColor = System.Drawing.Color.White;
+            chartArea5.BorderWidth = 0;
+            chartArea5.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea5);
             this.chart1.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            legend2.BackColor = System.Drawing.Color.Transparent;
-            legend2.BorderWidth = 0;
-            legend2.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
-            legend2.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            legend2.IsTextAutoFit = false;
-            legend2.Name = "Legend1";
-            this.chart1.Legends.Add(legend2);
+            legend5.BackColor = System.Drawing.Color.Transparent;
+            legend5.BorderWidth = 0;
+            legend5.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
+            legend5.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            legend5.IsTextAutoFit = false;
+            legend5.Name = "Legend1";
+            this.chart1.Legends.Add(legend5);
             this.chart1.Location = new System.Drawing.Point(15, 191);
             this.chart1.Margin = new System.Windows.Forms.Padding(12);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.None;
-            series2.BorderWidth = 2;
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
-            series2.Color = System.Drawing.SystemColors.Highlight;
-            series2.LabelBorderWidth = 2;
-            series2.LabelForeColor = System.Drawing.Color.SteelBlue;
-            series2.Legend = "Legend1";
-            series2.MarkerBorderColor = System.Drawing.SystemColors.Highlight;
-            series2.MarkerBorderWidth = 2;
-            series2.MarkerColor = System.Drawing.Color.White;
-            series2.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
-            series2.Name = "Series1";
-            this.chart1.Series.Add(series2);
+            series5.BorderWidth = 2;
+            series5.ChartArea = "ChartArea1";
+            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series5.Color = System.Drawing.SystemColors.Highlight;
+            series5.LabelBorderWidth = 2;
+            series5.LabelForeColor = System.Drawing.Color.SteelBlue;
+            series5.Legend = "Legend1";
+            series5.MarkerBorderColor = System.Drawing.SystemColors.Highlight;
+            series5.MarkerBorderWidth = 2;
+            series5.MarkerColor = System.Drawing.Color.White;
+            series5.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
+            series5.Name = "Series1";
+            this.chart1.Series.Add(series5);
             this.chart1.Size = new System.Drawing.Size(435, 243);
             this.chart1.TabIndex = 9;
             this.chart1.Text = "chart1";
@@ -262,7 +262,7 @@
             // PIN1
             // 
             this.PIN1.AutoSize = true;
-            this.PIN1.Location = new System.Drawing.Point(510, 335);
+            this.PIN1.Location = new System.Drawing.Point(525, 335);
             this.PIN1.Name = "PIN1";
             this.PIN1.Size = new System.Drawing.Size(44, 21);
             this.PIN1.TabIndex = 18;
@@ -272,7 +272,7 @@
             // PIN2
             // 
             this.PIN2.AutoSize = true;
-            this.PIN2.Location = new System.Drawing.Point(510, 370);
+            this.PIN2.Location = new System.Drawing.Point(525, 370);
             this.PIN2.Name = "PIN2";
             this.PIN2.Size = new System.Drawing.Size(47, 21);
             this.PIN2.TabIndex = 18;
@@ -282,7 +282,7 @@
             // PIN3
             // 
             this.PIN3.AutoSize = true;
-            this.PIN3.Location = new System.Drawing.Point(510, 405);
+            this.PIN3.Location = new System.Drawing.Point(525, 405);
             this.PIN3.Name = "PIN3";
             this.PIN3.Size = new System.Drawing.Size(47, 21);
             this.PIN3.TabIndex = 18;
@@ -291,7 +291,7 @@
             // 
             // textPIN1
             // 
-            this.textPIN1.Location = new System.Drawing.Point(595, 330);
+            this.textPIN1.Location = new System.Drawing.Point(610, 330);
             this.textPIN1.Name = "textPIN1";
             this.textPIN1.Size = new System.Drawing.Size(35, 29);
             this.textPIN1.TabIndex = 19;
@@ -299,7 +299,7 @@
             // 
             // textPIN2
             // 
-            this.textPIN2.Location = new System.Drawing.Point(595, 365);
+            this.textPIN2.Location = new System.Drawing.Point(610, 365);
             this.textPIN2.Name = "textPIN2";
             this.textPIN2.Size = new System.Drawing.Size(35, 29);
             this.textPIN2.TabIndex = 19;
@@ -307,7 +307,7 @@
             // 
             // textPIN3
             // 
-            this.textPIN3.Location = new System.Drawing.Point(595, 400);
+            this.textPIN3.Location = new System.Drawing.Point(610, 400);
             this.textPIN3.Name = "textPIN3";
             this.textPIN3.Size = new System.Drawing.Size(35, 29);
             this.textPIN3.TabIndex = 19;
@@ -316,7 +316,7 @@
             // panel1
             // 
             this.panel1.Controls.Add(this.link_btn);
-            this.panel1.Location = new System.Drawing.Point(620, 191);
+            this.panel1.Location = new System.Drawing.Point(28, 131);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(43, 45);
             this.panel1.TabIndex = 20;
@@ -334,7 +334,7 @@
             // panel2
             // 
             this.panel2.Controls.Add(this.init_btn);
-            this.panel2.Location = new System.Drawing.Point(623, 269);
+            this.panel2.Location = new System.Drawing.Point(105, 131);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(43, 45);
             this.panel2.TabIndex = 22;
@@ -351,11 +351,12 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(465, 191);
+            this.pictureBox1.Location = new System.Drawing.Point(505, 191);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(140, 123);
             this.pictureBox1.TabIndex = 15;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // Senzory
             // 
