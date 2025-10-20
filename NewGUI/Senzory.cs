@@ -982,15 +982,13 @@ namespace NewGUI
                 if (string.IsNullOrEmpty(line)) continue;
 
                 // 1) INIT seznam (id:type,id:type,...) — loguj do INIT a povol tlačítko
-                if (LooksLikeInitList(line))
+                if (IsInitLine(line, out string initPayload))
                 {
-                    ParseInitMessage(line);
-
-                    _lastInitPayload = line;
+                    // uložíme payload (bez prefixů) a zalogujeme do INIT okna
+                    _lastInitPayload = initPayload;
                     _awaitingInitResponse = false;
                     UpdateInitBtnEnabled();
-
-                    LogInit(line);
+                    LogInit(initPayload);
                     continue;
                 }
 
@@ -1010,12 +1008,30 @@ namespace NewGUI
         }
 
 
-        private static bool LooksLikeInitList(string s)
+        private static bool IsInitLine(string line, out string payload)
         {
-            if (string.IsNullOrWhiteSpace(s)) return false;
-            if (s.StartsWith("?")) return false;
-            return s.Contains(":") && s.Contains(",");
+            payload = null;
+            if (string.IsNullOrWhiteSpace(line)) return false;
+
+            // čistý "id:type,id:type"
+            if (!line.StartsWith("?") && line.Contains(":") && line.Contains(","))
+            {
+                payload = line.Trim();
+                return true;
+            }
+
+            // varianta s prefixem "?type=INIT&..."
+            if (line.StartsWith("?type=INIT", StringComparison.OrdinalIgnoreCase))
+            {
+                // payload = vše za prvním '&' (pokud tam je); jinak celý řetězec bez "?type=INIT"
+                int amp = line.IndexOf('&');
+                payload = (amp >= 0) ? line.Substring(amp + 1).Trim() : line.Substring("?type=INIT".Length).TrimStart('&', ' ');
+                return true;
+            }
+
+            return false;
         }
+
 
         private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1158,13 +1174,10 @@ namespace NewGUI
 
         private void UpdateInitBtnEnabled()
         {
-            string m = comboBoxMode.Text?.Trim() ?? string.Empty;
             bool connected = SerialManager.Instance.IsOpen;
-            bool isInit = m.Equals("INIT", StringComparison.OrdinalIgnoreCase);
-
-            // povol až když: mód = INIT, připojeno a už opravdu nějaká INIT odpověď dorazila
-            init_btn.Enabled = isInit && connected && !string.IsNullOrWhiteSpace(_lastInitPayload);
+            init_btn.Enabled = connected && !string.IsNullOrWhiteSpace(_lastInitPayload);
         }
+
 
         private void PositionNextToHost(Form form, int offsetX = 10)
         {
