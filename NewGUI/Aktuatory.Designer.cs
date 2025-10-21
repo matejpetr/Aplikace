@@ -137,7 +137,7 @@
             this.ModBox.Name = "ModBox";
             this.ModBox.Size = new System.Drawing.Size(180, 34);
             this.ModBox.TabIndex = 2;
-            this.toolTip1.SetToolTip(this.ModBox, "Zvol režim (Konfigurace / Reset)");
+            this.toolTip1.SetToolTip(this.ModBox, "Vyber režim práce aktuátoru");
             this.ModBox.SelectedIndexChanged += new System.EventHandler(this.ModBox_SelectedIndexChanged);
             // 
             // SeznamAkt
@@ -183,7 +183,7 @@
             this.ComBox.Name = "ComBox";
             this.ComBox.Size = new System.Drawing.Size(134, 34);
             this.ComBox.TabIndex = 0;
-            this.toolTip1.SetToolTip(this.ComBox, "Vyber COM port");
+            this.toolTip1.SetToolTip(this.ComBox, "Zvol odpovídají COM pro sériovou komunikaci");
             // 
             // Port
             // 

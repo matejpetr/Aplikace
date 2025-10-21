@@ -81,9 +81,11 @@ namespace NewGUI
             comboBoxSensor.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();
             comboBoxMode.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();
 
+
             // INIT stav reset při změně módu/senzoru
-            comboBoxMode.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdateInitBtnEnabled(); };
-            comboBoxSensor.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdateInitBtnEnabled(); };
+            comboBoxSensor.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdateInitBtnEnabled(); UpdatePinInputsUi(); };
+            comboBoxMode.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdateInitBtnEnabled(); UpdatePinInputsUi(); };
+
 
             textPIN1.TextChanged += (s, e) => UpdateRequestFromUi();
             textPIN2.TextChanged += (s, e) => UpdateRequestFromUi();
@@ -122,70 +124,86 @@ namespace NewGUI
 
         private void UpdatePinInputsUi()
         {
-            // vše skryj
-            PIN1.Visible = PIN2.Visible = PIN3.Visible = false;
-            textPIN1.Visible = textPIN2.Visible = textPIN3.Visible = false;
+            // Zapamatuj si, kde je focus a pozici kurzoru (pokud jsme v jednom z PIN textboxů)
+            Control focused = this.FindForm()?.ActiveControl;
+            TextBox focusedTb = null;
+            int caret = 0;
+            if (focused == textPIN1 || focused == textPIN2 || focused == textPIN3)
+            {
+                focusedTb = (TextBox)focused;
+                caret = focusedTb.SelectionStart;
+            }
 
+            // Pomocná lokální funkce: nastav viditelnost jen když se mění
+            void SetVis(Control c, bool vis)
+            {
+                if (c.Visible != vis) c.Visible = vis;
+            }
+
+            // NIC neschovávej hromadně. Nejdřív spočítej, co má být vidět:
+            bool show1 = false, show2 = false, show3 = false;
             string mode = comboBoxMode.Text?.Trim();
 
-            // CONFIG – ukaž key/labely dle JSONu (Configs/Config1..3)
-            if (mode != null && mode.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(mode) &&
+                mode.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
             {
                 var item = FindSelectedComponent();
-                if (item == null) return;
-
                 var configs = GetConfigNames(item);
-                if (configs.Count >= 1)
+                show1 = configs.Count >= 1;
+                show2 = configs.Count >= 2;
+                show3 = configs.Count >= 3;
+
+                if (show1) PIN1.Text = CleanConfigLabel(configs[0]);
+                if (show2) PIN2.Text = CleanConfigLabel(configs[1]);
+                if (show3) PIN3.Text = CleanConfigLabel(configs[2]);
+            }
+            else if (!string.IsNullOrWhiteSpace(mode) &&
+                    (mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) ||
+                     mode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase)))
+            {
+                var it2 = FindSelectedComponent();
+                if (it2 != null)
                 {
-                    PIN1.Text = CleanConfigLabel(configs[0]);
-                    PIN1.Visible = true;
-                    textPIN1.Visible = true;
+                    if (!string.IsNullOrWhiteSpace(it2.PIN1))
+                    {
+                        PIN1.Text = it2.PIN1;
+                        show1 = true;
+                    }
+                    if (!string.IsNullOrWhiteSpace(it2.PIN2))
+                    {
+                        PIN2.Text = it2.PIN2;
+                        show2 = true;
+
+                        if (!show1)
+                        {
+                            PIN1.Text = "PIN1";
+                            show1 = true;
+                        }
+                    }
                 }
-                if (configs.Count >= 2)
-                {
-                    PIN2.Text = CleanConfigLabel(configs[1]);
-                    PIN2.Visible = true;
-                    textPIN2.Visible = true;
-                }
-                if (configs.Count >= 3)
-                {
-                    PIN3.Text = CleanConfigLabel(configs[2]);
-                    PIN3.Visible = true;
-                    textPIN3.Visible = true;
-                }
-                return;
+            }
+            else
+            {
+                // jiné módy – PINy neukazuj
+                show1 = show2 = show3 = false;
             }
 
-            // CONNECT/DISCONNECT – ukaž piny dle PIN1/PIN2 z JSONu
-            bool isConnMode = mode != null && (
-                mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) ||
-                mode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase));
+            // A teď teprve „šetrně“ aplikuj viditelnost (jen když je změna)
+            SetVis(PIN1, show1);
+            SetVis(textPIN1, show1);
+            SetVis(PIN2, show2);
+            SetVis(textPIN2, show2);
+            SetVis(PIN3, show3);
+            SetVis(textPIN3, show3);
 
-            if (!isConnMode) return;
-
-            var it2 = FindSelectedComponent();
-            if (it2 == null) return;
-
-            if (!string.IsNullOrWhiteSpace(it2.PIN1))
+            // Vrať focus a caret, pokud to dává smysl
+            if (focusedTb != null && focusedTb.Visible)
             {
-                PIN1.Text = it2.PIN1;
-                PIN1.Visible = true;
-                textPIN1.Visible = true;
-            }
-            if (!string.IsNullOrWhiteSpace(it2.PIN2))
-            {
-                PIN2.Text = it2.PIN2;
-                PIN2.Visible = true;
-                textPIN2.Visible = true;
-
-                if (!PIN1.Visible)
-                {
-                    PIN1.Text = "PIN1";
-                    PIN1.Visible = true;
-                    textPIN1.Visible = true;
-                }
+                focusedTb.Focus();
+                focusedTb.SelectionStart = Math.Min(caret, focusedTb.TextLength);
             }
         }
+
 
         private static List<string> GetConfigNames(Komponenty item)
         {
@@ -274,7 +292,7 @@ namespace NewGUI
             bool hasMode = comboBoxMode.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxMode.Text);
             bool connected = SerialManager.Instance.IsOpen;
 
-            UpdatePinInputsUi();
+           
 
             string m = comboBoxMode.Text?.Trim() ?? string.Empty;
 
@@ -1235,6 +1253,11 @@ namespace NewGUI
         }
 
         private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comboBoxMode_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }

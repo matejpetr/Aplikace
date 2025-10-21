@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.btnConnect = new System.Windows.Forms.Button();
+            this.components = new System.ComponentModel.Container();
             this.comBox = new System.Windows.Forms.ComboBox();
             this.lblComPort = new System.Windows.Forms.Label();
             this.lblSensor = new System.Windows.Forms.Label();
@@ -36,6 +37,7 @@
             this.btnStartStop = new System.Windows.Forms.Button();
             this.component_pic = new System.Windows.Forms.PictureBox();
             this.textBox = new System.Windows.Forms.TextBox();
+            this.ToolTipSim = new System.Windows.Forms.ToolTip(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.lblAktuator = new System.Windows.Forms.Label();
@@ -64,6 +66,7 @@
             this.btnConnect.Text = "Připojit";
             this.btnConnect.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnConnect.UseVisualStyleBackColor = false;
+            this.ToolTipSim.SetToolTip(this.btnConnect, "Naváže spojení se zadaným portem nebo ho odpojí");
             this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
             // comBox
@@ -80,6 +83,7 @@
             this.comBox.Location = new System.Drawing.Point(59, 82);
             this.comBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comBox.Name = "comBox";
+            this.ToolTipSim.SetToolTip(this.comBox, "Zvol odpovídají COM pro sériovou komunikaci");
             this.comBox.Size = new System.Drawing.Size(160, 27);
             this.comBox.TabIndex = 4;
             // 
@@ -120,6 +124,7 @@
             this.sensorBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.sensorBox.Name = "sensorBox";
             this.sensorBox.Size = new System.Drawing.Size(160, 27);
+            this.ToolTipSim.SetToolTip(sensorBox, "Vyber odpovídající senzor");
             this.sensorBox.TabIndex = 4;
             this.sensorBox.Visible = false;
             // 
@@ -140,6 +145,7 @@
             this.btnStartStop.TabIndex = 6;
             this.btnStartStop.Text = "Spustit ";
             this.btnStartStop.UseVisualStyleBackColor = false;
+            this.ToolTipSim.SetToolTip(this.btnStartStop, "Spustí/Zastaví akci simulace");
             this.btnStartStop.Click += new System.EventHandler(this.btnStartStop_Click);
             // 
             // component_pic
@@ -160,6 +166,7 @@
             this.textBox.Multiline = true;
             this.textBox.Name = "textBox";
             this.textBox.ReadOnly = true;
+            this.ToolTipSim.SetToolTip(this.textBox, "Výpis náhodně simulovaných hodnot");
             this.textBox.Size = new System.Drawing.Size(666, 119);
             this.textBox.TabIndex = 0;
             // 
@@ -269,6 +276,7 @@
         private System.Windows.Forms.TextBox textBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ToolTip ToolTipSim;
         private System.Windows.Forms.Label lblAktuator;
         private System.Windows.Forms.Label lblType;
         private System.Windows.Forms.Label badgeConn;

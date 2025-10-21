@@ -27,9 +27,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.button1 = new System.Windows.Forms.Button();
             this.comboBoxSensor = new System.Windows.Forms.ComboBox();
             this.comboBoxMode = new System.Windows.Forms.ComboBox();
@@ -42,6 +43,8 @@
             this.comboBoxTIMER = new System.Windows.Forms.ComboBox();
             this.ConnectBtn = new System.Windows.Forms.Button();
             this.badgeConn = new System.Windows.Forms.Label();
+            this.ToolTipS = new System.Windows.Forms.ToolTip(this.components);
+            this.link_btn = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.PIN1 = new System.Windows.Forms.Label();
             this.PIN2 = new System.Windows.Forms.Label();
@@ -50,7 +53,6 @@
             this.textPIN2 = new System.Windows.Forms.TextBox();
             this.textPIN3 = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.link_btn = new System.Windows.Forms.Button();
             this.panel2 = new System.Windows.Forms.Panel();
             this.init_btn = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -72,6 +74,7 @@
             this.button1.Size = new System.Drawing.Size(120, 40);
             this.button1.TabIndex = 1;
             this.button1.Text = "Spustit";
+            this.ToolTipS.SetToolTip(this.button1, "Spustí/Zastaví akci ve zvoleném režimu");
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.buttonStart_Click);
             // 
@@ -85,6 +88,7 @@
             this.comboBoxSensor.Name = "comboBoxSensor";
             this.comboBoxSensor.Size = new System.Drawing.Size(129, 29);
             this.comboBoxSensor.TabIndex = 3;
+            this.ToolTipS.SetToolTip(this.comboBoxSensor, "Vyber odpovídající senzor");
             // 
             // comboBoxMode
             // 
@@ -104,6 +108,8 @@
             this.comboBoxMode.Name = "comboBoxMode";
             this.comboBoxMode.Size = new System.Drawing.Size(129, 29);
             this.comboBoxMode.TabIndex = 4;
+            this.ToolTipS.SetToolTip(this.comboBoxMode, "Vyber režim práce senzoru");
+            this.comboBoxMode.SelectedIndexChanged += new System.EventHandler(this.comboBoxMode_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -127,49 +133,49 @@
             // chart1
             // 
             this.chart1.BorderlineColor = System.Drawing.Color.Transparent;
-            chartArea4.AxisX.IsLabelAutoFit = false;
-            chartArea4.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F);
-            chartArea4.AxisX.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
-            chartArea4.AxisX.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea4.AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
-            chartArea4.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea4.AxisX.Title = "\"\"";
-            chartArea4.AxisY.IsLabelAutoFit = false;
-            chartArea4.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            chartArea4.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
-            chartArea4.AxisY.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea4.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
-            chartArea4.AxisY.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea4.AxisY.Title = "\"\"";
-            chartArea4.BackColor = System.Drawing.Color.White;
-            chartArea4.BorderWidth = 0;
-            chartArea4.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea4);
+            chartArea1.AxisX.IsLabelAutoFit = false;
+            chartArea1.AxisX.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F);
+            chartArea1.AxisX.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            chartArea1.AxisX.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
+            chartArea1.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea1.AxisX.Title = "\"\"";
+            chartArea1.AxisY.IsLabelAutoFit = false;
+            chartArea1.AxisY.LabelStyle.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            chartArea1.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(95)))));
+            chartArea1.AxisY.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea1.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(232)))), ((int)(((byte)(236)))));
+            chartArea1.AxisY.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea1.AxisY.Title = "\"\"";
+            chartArea1.BackColor = System.Drawing.Color.White;
+            chartArea1.BorderWidth = 0;
+            chartArea1.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea1);
             this.chart1.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            legend4.BackColor = System.Drawing.Color.Transparent;
-            legend4.BorderWidth = 0;
-            legend4.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
-            legend4.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            legend4.IsTextAutoFit = false;
-            legend4.Name = "Legend1";
-            this.chart1.Legends.Add(legend4);
+            legend1.BackColor = System.Drawing.Color.Transparent;
+            legend1.BorderWidth = 0;
+            legend1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Top;
+            legend1.Font = new System.Drawing.Font("Segoe UI Variable Text", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            legend1.IsTextAutoFit = false;
+            legend1.Name = "Legend1";
+            this.chart1.Legends.Add(legend1);
             this.chart1.Location = new System.Drawing.Point(15, 191);
             this.chart1.Margin = new System.Windows.Forms.Padding(12);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.None;
-            series4.BorderWidth = 2;
-            series4.ChartArea = "ChartArea1";
-            series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
-            series4.Color = System.Drawing.SystemColors.Highlight;
-            series4.LabelBorderWidth = 2;
-            series4.LabelForeColor = System.Drawing.Color.SteelBlue;
-            series4.Legend = "Legend1";
-            series4.MarkerBorderColor = System.Drawing.SystemColors.Highlight;
-            series4.MarkerBorderWidth = 2;
-            series4.MarkerColor = System.Drawing.Color.White;
-            series4.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
-            series4.Name = "Series1";
-            this.chart1.Series.Add(series4);
+            series1.BorderWidth = 2;
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
+            series1.Color = System.Drawing.SystemColors.Highlight;
+            series1.LabelBorderWidth = 2;
+            series1.LabelForeColor = System.Drawing.Color.SteelBlue;
+            series1.Legend = "Legend1";
+            series1.MarkerBorderColor = System.Drawing.SystemColors.Highlight;
+            series1.MarkerBorderWidth = 2;
+            series1.MarkerColor = System.Drawing.Color.White;
+            series1.MarkerStyle = System.Windows.Forms.DataVisualization.Charting.MarkerStyle.Circle;
+            series1.Name = "Series1";
+            this.chart1.Series.Add(series1);
             this.chart1.Size = new System.Drawing.Size(435, 243);
             this.chart1.TabIndex = 9;
             this.chart1.Text = "chart1";
@@ -185,6 +191,7 @@
             this.comboBoxCOM.Name = "comboBoxCOM";
             this.comboBoxCOM.Size = new System.Drawing.Size(129, 29);
             this.comboBoxCOM.TabIndex = 11;
+            this.ToolTipS.SetToolTip(this.comboBoxCOM, "Zvol odpovídají COM pro sériovou komunikaci");
             // 
             // label5
             // 
@@ -210,17 +217,18 @@
             this.comboBoxTIMER.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.comboBoxTIMER.FormattingEnabled = true;
             this.comboBoxTIMER.Items.AddRange(new object[] {
-            "10",
-            "50",
-            "100",
-            "250",
-            "500",
-            "1000"});
+            "10 ms",
+            "50 ms",
+            "100 ms",
+            "250 ms",
+            "500 ms",
+            "1000 ms"});
             this.comboBoxTIMER.Location = new System.Drawing.Point(516, 120);
             this.comboBoxTIMER.MaxDropDownItems = 5;
             this.comboBoxTIMER.Name = "comboBoxTIMER";
             this.comboBoxTIMER.Size = new System.Drawing.Size(129, 29);
             this.comboBoxTIMER.TabIndex = 3;
+            this.ToolTipS.SetToolTip(this.comboBoxTIMER, "Zvol periodu výpisu");
             // 
             // ConnectBtn
             // 
@@ -233,6 +241,7 @@
             this.ConnectBtn.Size = new System.Drawing.Size(120, 40);
             this.ConnectBtn.TabIndex = 1;
             this.ConnectBtn.Text = "Připojit";
+            this.ToolTipS.SetToolTip(this.ConnectBtn, "Naváže spojení se zadaným portem nebo ho odpojí");
             this.ConnectBtn.UseVisualStyleBackColor = false;
             this.ConnectBtn.Click += new System.EventHandler(this.ConnectBtn_Click);
             // 
@@ -248,6 +257,17 @@
             this.badgeConn.Size = new System.Drawing.Size(123, 29);
             this.badgeConn.TabIndex = 13;
             this.badgeConn.Text = "Nepřipojeno";
+            // 
+            // link_btn
+            // 
+            this.link_btn.Image = global::NewGUI.Properties.Resources.link_mini;
+            this.link_btn.Location = new System.Drawing.Point(-25, -25);
+            this.link_btn.Name = "link_btn";
+            this.link_btn.Size = new System.Drawing.Size(94, 97);
+            this.link_btn.TabIndex = 0;
+            this.ToolTipS.SetToolTip(this.link_btn, "Zobrazí výpis inicializace");
+            this.link_btn.UseVisualStyleBackColor = true;
+            this.link_btn.Click += new System.EventHandler(this.link_btn_Click);
             // 
             // label8
             // 
@@ -323,16 +343,6 @@
             this.panel1.Size = new System.Drawing.Size(43, 45);
             this.panel1.TabIndex = 20;
             // 
-            // link_btn
-            // 
-            this.link_btn.Image = global::NewGUI.Properties.Resources.link_mini;
-            this.link_btn.Location = new System.Drawing.Point(-25, -25);
-            this.link_btn.Name = "link_btn";
-            this.link_btn.Size = new System.Drawing.Size(94, 97);
-            this.link_btn.TabIndex = 0;
-            this.link_btn.UseVisualStyleBackColor = true;
-            this.link_btn.Click += new System.EventHandler(this.link_btn_Click);
-            // 
             // panel2
             // 
             this.panel2.Controls.Add(this.init_btn);
@@ -365,9 +375,8 @@
             this.valueText.AutoSize = true;
             this.valueText.Location = new System.Drawing.Point(313, 201);
             this.valueText.Name = "valueText";
-            this.valueText.Size = new System.Drawing.Size(47, 21);
+            this.valueText.Size = new System.Drawing.Size(0, 21);
             this.valueText.TabIndex = 24;
-            this.valueText.Text = "value";
             // 
             // Senzory
             // 
@@ -435,5 +444,6 @@
         private System.Windows.Forms.Button init_btn;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label valueText;
+        private System.Windows.Forms.ToolTip ToolTipS;
     }
 }
