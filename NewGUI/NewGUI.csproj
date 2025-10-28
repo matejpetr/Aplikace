@@ -105,6 +105,7 @@
     <Compile Include="Aktuatory.Designer.cs">
       <DependentUpon>Aktuatory.cs</DependentUpon>
     </Compile>
+    <Compile Include="ChartManager.cs" />
     <Compile Include="Documentation.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -117,6 +118,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrameData.cs" />
     <Compile Include="help.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -136,15 +138,25 @@
       <DependentUpon>Info.cs</DependentUpon>
     </Compile>
     <Compile Include="Komponenty.cs" />
+    <Compile Include="PinsSelect.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PinsSelect.Designer.cs">
+      <DependentUpon>PinsSelect.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestBuilder.cs" />
     <Compile Include="Senzory.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Senzory.Designer.cs">
       <DependentUpon>Senzory.cs</DependentUpon>
     </Compile>
+    <Compile Include="SerialController.cs" />
+    <Compile Include="SerialFrameProcessor.cs" />
     <Compile Include="SerialManager.cs" />
+    <Compile Include="SerialParser.cs" />
     <Compile Include="SerialPopUp.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -169,6 +181,7 @@
     <Compile Include="Tlacitka.Designer.cs">
       <DependentUpon>Tlacitka.cs</DependentUpon>
     </Compile>
+    <Compile Include="UiManagers.cs" />
     <EmbeddedResource Include="Aktuatory.resx">
       <DependentUpon>Aktuatory.cs</DependentUpon>
     </EmbeddedResource>
@@ -186,6 +199,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Info.resx">
       <DependentUpon>Info.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PinsSelect.resx">
+      <DependentUpon>PinsSelect.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -213,6 +229,8 @@
     <None Include="Resources\link_mini.png" />
     <None Include="Resources\init.png" />
     <None Include="Resources\init_mini.png" />
+    <None Include="Resources\pins_mini.png" />
+    <None Include="Resources\ESP_mensi.png" />
     <Content Include="Senzory.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

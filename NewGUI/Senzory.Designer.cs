@@ -13,9 +13,28 @@
         /// <param name="disposing">hodnota true, když by se měl spravovaný prostředek odstranit; jinak false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                // Odhlášení eventů a uvolnění timerů/objektů
+                try { _serialController?.Dispose(); } catch { }
+                try { _chartManager?.Dispose(); } catch { }
+
+                try
+                {
+                    if (comPortWatcherTimer != null)
+                    {
+                        comPortWatcherTimer.Stop();
+                        comPortWatcherTimer.Tick -= ComPortWatcherTimer_Tick;
+                        comPortWatcherTimer.Dispose();
+                        comPortWatcherTimer = null;
+                    }
+                }
+                catch { }
+
+                if (components != null)
+                {
+                    components.Dispose();
+                }
             }
             base.Dispose(disposing);
         }
@@ -55,11 +74,14 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.init_btn = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.valueText = new System.Windows.Forms.Label();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.pins_btn = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
+            this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -71,7 +93,7 @@
             this.button1.ForeColor = System.Drawing.Color.White;
             this.button1.Location = new System.Drawing.Point(28, 75);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(120, 40);
+            this.button1.Size = new System.Drawing.Size(147, 40);
             this.button1.TabIndex = 1;
             this.button1.Text = "Spustit";
             this.ToolTipS.SetToolTip(this.button1, "Spustí/Zastaví akci ve zvoleném režimu");
@@ -109,7 +131,6 @@
             this.comboBoxMode.Size = new System.Drawing.Size(129, 29);
             this.comboBoxMode.TabIndex = 4;
             this.ToolTipS.SetToolTip(this.comboBoxMode, "Vyber režim práce senzoru");
-            this.comboBoxMode.SelectedIndexChanged += new System.EventHandler(this.comboBoxMode_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -128,7 +149,6 @@
             this.label2.Size = new System.Drawing.Size(53, 21);
             this.label2.TabIndex = 6;
             this.label2.Text = "Režim";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // chart1
             // 
@@ -232,13 +252,13 @@
             // 
             // ConnectBtn
             // 
-            this.ConnectBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(108)))), ((int)(((byte)(189)))));
+            this.ConnectBtn.BackColor = System.Drawing.Color.FromArgb(15, 108, 189);
             this.ConnectBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.ConnectBtn.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold);
             this.ConnectBtn.ForeColor = System.Drawing.Color.White;
             this.ConnectBtn.Location = new System.Drawing.Point(28, 20);
             this.ConnectBtn.Name = "ConnectBtn";
-            this.ConnectBtn.Size = new System.Drawing.Size(120, 40);
+            this.ConnectBtn.Size = new System.Drawing.Size(147, 40);
             this.ConnectBtn.TabIndex = 1;
             this.ConnectBtn.Text = "Připojit";
             this.ToolTipS.SetToolTip(this.ConnectBtn, "Naváže spojení se zadaným portem nebo ho odpojí");
@@ -248,7 +268,7 @@
             // badgeConn
             // 
             this.badgeConn.AutoSize = true;
-            this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
+            this.badgeConn.BackColor = System.Drawing.Color.FromArgb(107, 114, 128);
             this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.badgeConn.ForeColor = System.Drawing.Color.White;
             this.badgeConn.Location = new System.Drawing.Point(224, 20);
@@ -346,7 +366,7 @@
             // panel2
             // 
             this.panel2.Controls.Add(this.init_btn);
-            this.panel2.Location = new System.Drawing.Point(105, 131);
+            this.panel2.Location = new System.Drawing.Point(132, 131);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(43, 45);
             this.panel2.TabIndex = 22;
@@ -361,15 +381,6 @@
             this.init_btn.UseVisualStyleBackColor = true;
             this.init_btn.Click += new System.EventHandler(this.init_btn_Click);
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(505, 191);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(140, 123);
-            this.pictureBox1.TabIndex = 15;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
-            // 
             // valueText
             // 
             this.valueText.AutoSize = true;
@@ -378,10 +389,36 @@
             this.valueText.Size = new System.Drawing.Size(0, 21);
             this.valueText.TabIndex = 24;
             // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.pins_btn);
+            this.panel3.Location = new System.Drawing.Point(80, 131);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(43, 45);
+            this.panel3.TabIndex = 23;
+            // 
+            // pins_btn
+            // 
+            this.pins_btn.Image = global::NewGUI.Properties.Resources.pins_mini;
+            this.pins_btn.Location = new System.Drawing.Point(-25, -25);
+            this.pins_btn.Name = "pins_btn";
+            this.pins_btn.Size = new System.Drawing.Size(94, 97);
+            this.pins_btn.TabIndex = 0;
+            this.pins_btn.UseVisualStyleBackColor = true;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(505, 191);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(140, 123);
+            this.pictureBox1.TabIndex = 15;
+            this.pictureBox1.TabStop = false;
+            // 
             // Senzory
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 21F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.panel3);
             this.Controls.Add(this.valueText);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
@@ -408,10 +445,10 @@
             this.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Name = "Senzory";
             this.Size = new System.Drawing.Size(666, 450);
-            this.Load += new System.EventHandler(this.Senzory_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel2.ResumeLayout(false);
+            this.panel3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -445,5 +482,7 @@
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Label valueText;
         private System.Windows.Forms.ToolTip ToolTipS;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.Button pins_btn;
     }
 }

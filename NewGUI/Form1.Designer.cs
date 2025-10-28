@@ -13,9 +13,13 @@
         /// <param name="disposing">hodnota true, když by se měl spravovaný prostředek odstranit; jinak false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                try { _serialController?.Dispose(); } catch { }
+                if (components != null)
+                {
+                    components.Dispose();
+                }
             }
             base.Dispose(disposing);
         }

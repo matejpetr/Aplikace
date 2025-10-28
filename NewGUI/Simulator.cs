@@ -31,6 +31,9 @@ namespace NewGUI
         // NEW: režim podle TypeBox (true = Senzory, false = Aktuátory)
         private bool sensorsMode = true;
 
+        // Serial controller (encapsulates SerialManager + SerialParser)
+        private SerialController _serialController;
+
         public Simulator(Form1 rodic)
         {
             InitializeComponent();
@@ -40,7 +43,8 @@ namespace NewGUI
             sensorBox.TextChanged += sensorBox_UpdateImage;
             
 
-            // ❌ Inicializace SerialPort – nahrazeno SerialManagerem
+            // Inicializovat SerialController
+            _serialController = new SerialController();
 
             // Timer pro simulaci
             simulationTimer = new Timer();
@@ -236,11 +240,11 @@ namespace NewGUI
 
 
             // ⤵ posíláme přes SerialManager
-            if (SerialManager.Instance.IsOpen)
+            if (_serialController.IsOpen)
             {
                 try
                 {
-                    SerialManager.Instance.WriteLine(responseToSend);
+                    _serialController.WriteLine(responseToSend);
                 }
                 catch (Exception ex)
                 {
@@ -281,7 +285,7 @@ namespace NewGUI
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            if (SerialManager.Instance.IsOpen == false)
+            if (_serialController.IsOpen == false)
             {
                 if (comBox.SelectedItem == null)
                 {
@@ -305,7 +309,7 @@ namespace NewGUI
                     // V Simulatoru příjem nepotřebujeme → nepřipojujeme žádný DataReceived handler
                     // SerialManager.Instance.AttachExclusiveReceiver(SomeRxHandler);
 
-                    SerialManager.Instance.Open();
+                    _serialController.Open();
 
                     btnConnect.Text = "Odpojit";
                     comBox.Enabled = false;
@@ -329,7 +333,7 @@ namespace NewGUI
                     // Odpoj a ukliď
                     simulationRunning = false;
                     simulationTimer.Stop();
-                    SerialManager.Instance.Close();
+                    _serialController.Close();
                 }
                 finally
                 {
@@ -348,7 +352,7 @@ namespace NewGUI
         {
             if (!simulationRunning)
             {
-                if (!SerialManager.Instance.IsOpen)
+                if (!_serialController.IsOpen)
                 {
                     MessageBox.Show("Nejprve připojte zařízení.");
                     return;

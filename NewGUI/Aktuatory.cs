@@ -27,11 +27,16 @@ namespace NewGUI
         // --- NOVĚ: JSON datový model místo CSV DataTable ---
         private List<Komponenty> aktuatoryData; // Načtené položky z aktuatory.json
                                                
+        // Serial controller
+        private SerialController _serialController;
 
         public Aktuatory(Form1 rodic)
         {
             InitializeComponent();
             LoadJsonData();                                        // ⟵ místo LoadCsvData()
+
+            // Inicializace SerialController
+            _serialController = new SerialController();
 
             // Kontrola COM portů
             comPortWatcherTimer = new Timer();
@@ -183,13 +188,13 @@ namespace NewGUI
         // Při zavření (pokud tuhle událost někde připojuješ)
         private void Aktuator_Closing(object sender, FormClosedEventArgs e)
         {
-            SerialManager.Instance.Close();
+            _serialController?.Close();
         }
 
         // ---------- PŘIPOJENÍ/ODPOJENÍ ----------
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            if (!SerialManager.Instance.IsOpen)
+            if (!_serialController.IsOpen)
             {
                 if (ComBox.SelectedItem == null)
                 {
@@ -199,7 +204,7 @@ namespace NewGUI
 
                 try
                 {
-                    SerialManager.Instance.ConfigurePort(
+                    _serialController.ConfigurePort(
                         portName: ComBox.SelectedItem.ToString(),
                         baudRate: 115200,
                         parity: Parity.None,
@@ -212,7 +217,7 @@ namespace NewGUI
                     // V Aktuátorech RX nepotřebujeme – případně:
                     // SerialManager.Instance.AttachExclusiveReceiver(Aktuatory_DataReceived);
 
-                    SerialManager.Instance.Open();
+                    _serialController.Open();
 
                     btnConnect.Text = "Odpojit";
                     SetControlButtonsEnabled(true);
@@ -232,7 +237,7 @@ namespace NewGUI
                 try
                 {
                     if (delayedSendTimer.Enabled) delayedSendTimer.Stop(); // zruš odložené odeslání
-                    SerialManager.Instance.Close();
+                    _serialController.Close();
                 }
                 finally
                 {
@@ -320,7 +325,7 @@ namespace NewGUI
         {
             if (btnStart.Text == "Spustit")
             {
-                if (!SerialManager.Instance.IsOpen)
+                if (!_serialController.IsOpen)
                 {
                     MessageBox.Show("Nejste připojen k žádnému COM portu.");
                     return;
@@ -377,7 +382,7 @@ namespace NewGUI
 
                     try
                     {
-                        SerialManager.Instance.WriteLine(request);
+                        _serialController.WriteLine(request);
                         MainTextBox.Clear();
                         MainTextBox.AppendText(request + Environment.NewLine);
                     }
@@ -386,7 +391,7 @@ namespace NewGUI
                         MessageBox.Show($"Chyba při odesílání: {ex.Message}");
                     }
 
-                    // one-shot: NEpřepínáme tlačítko na „Zastavit“
+                    // one-shot: NEpřepínáme tlačítko na „Zastavit"
                     return;
                 }
 
@@ -419,7 +424,7 @@ namespace NewGUI
 
                 try
                 {
-                    SerialManager.Instance.WriteLine(requestFinal);
+                    _serialController.WriteLine(requestFinal);
                     MainTextBox.Clear();
                     MainTextBox.AppendText(requestFinal + Environment.NewLine);
                 }
@@ -460,7 +465,7 @@ namespace NewGUI
         {
             delayedSendTimer.Stop(); // jednorázové odeslání
 
-            if (!SerialManager.Instance.IsOpen)
+            if (!_serialController.IsOpen)
                 return;
 
             string selectedAlias = AktBox.SelectedItem?.ToString();
@@ -482,7 +487,7 @@ namespace NewGUI
 
             try
             {
-                SerialManager.Instance.WriteLine(request);
+                _serialController.WriteLine(request);
 
                 MainTextBox.Clear();
                 MainTextBox.AppendText($"Odesláno po zpoždění: {request}{Environment.NewLine}");
@@ -644,7 +649,7 @@ namespace NewGUI
         // Povolení Start – hlídá vyžadované piny 1–4
         private void UpdateStartEnabled_Actuators()
         {
-            bool connected = SerialManager.Instance.IsOpen;
+            bool connected = _serialController.IsOpen;
             bool hasMode = !string.IsNullOrWhiteSpace(ModBox.Text);
             bool hasAct = AktBox.SelectedItem != null;
 

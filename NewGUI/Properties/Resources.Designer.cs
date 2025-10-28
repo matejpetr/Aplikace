@@ -73,6 +73,16 @@ namespace NewGUI.Properties {
         /// <summary>
         ///   Vyhledává lokalizovaný prostředek typu System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ESP_mensi {
+            get {
+                object obj = ResourceManager.GetObject("ESP_mensi", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Vyhledává lokalizovaný prostředek typu System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap esp_simulator {
             get {
                 object obj = ResourceManager.GetObject("esp_simulator", resourceCulture);
@@ -266,6 +276,16 @@ namespace NewGUI.Properties {
         internal static System.Drawing.Bitmap MTA_Mini {
             get {
                 object obj = ResourceManager.GetObject("MTA_Mini", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Vyhledává lokalizovaný prostředek typu System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap pins_mini {
+            get {
+                object obj = ResourceManager.GetObject("pins_mini", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

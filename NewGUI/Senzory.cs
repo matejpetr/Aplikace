@@ -17,7 +17,6 @@ namespace NewGUI
     {
         private bool isSendingRequest = false;
         public string request;
-        private int sampleCount = 0;
         private string lastUsedID = null;
         private Random rnd = new Random();
         private Timer comPortWatcherTimer;
@@ -25,11 +24,10 @@ namespace NewGUI
         private readonly Dictionary<string, string> sensorIdMap
             = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly object _rxLock = new object();
-        private string _latestDataFrame;
-        private Timer displayTimer;
+        // serial controller (encapsulates SerialManager + SerialParser)
+        private SerialController _serialController;
+
         private System.Threading.CancellationTokenSource _sendCts;
-        private readonly StringBuilder _rxBuffer = new StringBuilder();
 
         private List<Komponenty> SenzoryData;
         private string _lastSentMode = null;
@@ -37,6 +35,7 @@ namespace NewGUI
         // Popup okna
         private SerialPopupForm _linkForm;   // vše mimo INIT
         private SerialPopupForm _initForm;   // jen INIT odpověď
+        private PinsSelect _pinsForm;         // výběr pinů
 
         // INIT stav
         private bool _awaitingInitResponse = false; // čekám na odpověď INIT?
@@ -47,6 +46,9 @@ namespace NewGUI
         private readonly StringBuilder _linkBuffer = new StringBuilder();
         private readonly StringBuilder _initBuffer = new StringBuilder();   // jen INIT odpovědi
 
+        // UI managers
+        private ValueDisplayManager _valueDisplayManager;
+        private ChartManager _chartManager;
 
         public Senzory(Form1 rodic)
         {
@@ -55,11 +57,6 @@ namespace NewGUI
 
             comboBoxTIMER.SelectedIndex = 1;
 
-            displayTimer = new Timer();
-            displayTimer.Interval = 100;
-            displayTimer.Tick += DisplayTimer_Tick;
-            displayTimer.Start();
-
             comboBoxTIMER.SelectedIndexChanged += (s, e) => ApplyTimerIntervalFromUi();
             ApplyTimerIntervalFromUi();
 
@@ -67,6 +64,12 @@ namespace NewGUI
             comPortWatcherTimer.Interval = 500;
             comPortWatcherTimer.Tick += ComPortWatcherTimer_Tick;
             comPortWatcherTimer.Start();
+
+            // serial controller must exist before UI queries IsOpen
+            _serialController = new SerialController();
+            _serialController.InitReceived += Parser_InitReceived;
+            _serialController.DataFrameReceived += Parser_DataFrameReceived;
+            _serialController.RawLineReceived += Parser_RawLineReceived;
 
             SetUiForConnection(false);
 
@@ -91,8 +94,14 @@ namespace NewGUI
             textPIN2.TextChanged += (s, e) => UpdateRequestFromUi();
             textPIN3.TextChanged += (s, e) => UpdateRequestFromUi();
 
-  
+            // value display manager (thread-safe updates)
+            _valueDisplayManager = new ValueDisplayManager(valueText);
 
+            // chart manager (will process frames and update chart on UI thread)
+            _chartManager = new ChartManager(chart1, _valueDisplayManager, LogLink, intervalMs: 100, maxPoints: 50);
+            ApplyTimerIntervalFromUi();
+
+            // Note: SerialController already wires to SerialManager internally
         }
 
         private void InitializeChart()
@@ -107,6 +116,9 @@ namespace NewGUI
                 IsVisibleInLegend = false
             };
             chart1.Series.Add(series);
+
+            if (chart1.ChartAreas.Count == 0)
+                chart1.ChartAreas.Add(new ChartArea());
 
             chart1.ChartAreas[0].AxisX.Title = "Počet vzorků";
             chart1.ChartAreas[0].AxisY.LineWidth = 2;
@@ -148,14 +160,15 @@ namespace NewGUI
                 mode.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
             {
                 var item = FindSelectedComponent();
-                var configs = GetConfigNames(item);
+                var configs = RequestBuilder.GetConfigNames(item);
+                // note: UI label formatting kept local
                 show1 = configs.Count >= 1;
                 show2 = configs.Count >= 2;
                 show3 = configs.Count >= 3;
 
-                if (show1) PIN1.Text = CleanConfigLabel(configs[0]);
-                if (show2) PIN2.Text = CleanConfigLabel(configs[1]);
-                if (show3) PIN3.Text = CleanConfigLabel(configs[2]);
+                if (show1) PIN1.Text = (configs.Count >= 1) ? configs[0].Split(':')[0] + ":" : PIN1.Text;
+                if (show2) PIN2.Text = (configs.Count >= 2) ? configs[1].Split(':')[0] + ":" : PIN2.Text;
+                if (show3) PIN3.Text = (configs.Count >= 3) ? configs[2].Split(':')[0] + ":" : PIN3.Text;
             }
             else if (!string.IsNullOrWhiteSpace(mode) &&
                     (mode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) ||
@@ -204,158 +217,16 @@ namespace NewGUI
             }
         }
 
-
-        private static List<string> GetConfigNames(Komponenty item)
-        {
-            var result = new List<string>();
-            if (item == null) return result;
-
-            var propArr = item.GetType().GetProperty("Configs");
-            if (propArr != null)
-            {
-                var val = propArr.GetValue(item) as System.Collections.IEnumerable;
-                if (val != null)
-                {
-                    foreach (var it in val)
-                    {
-                        var s = (it ?? "").ToString().Trim();
-                        if (!string.IsNullOrWhiteSpace(s)) result.Add(s);
-                    }
-                }
-                if (result.Count > 0) return result;
-            }
-
-            string[] names = { "Config1", "Config2", "Config3", "CONFIG1", "CONFIG2", "CONFIG3" };
-            foreach (var n in names)
-            {
-                var p = item.GetType().GetProperty(n);
-                if (p != null)
-                {
-                    var s = (p.GetValue(item)?.ToString() ?? "").Trim();
-                    if (!string.IsNullOrWhiteSpace(s)) result.Add(s);
-                }
-            }
-            return result;
-        }
-
-        private static string CleanConfigLabel(string raw)
-        {
-            if (string.IsNullOrWhiteSpace(raw)) return raw;
-            var s = raw.Trim();
-            int colon = s.IndexOf(':');
-            if (colon >= 0) s = s.Substring(0, colon);
-            s = System.Text.RegularExpressions.Regex.Replace(s, @"\s*\(.*?\)\s*$", "");
-            s = System.Text.RegularExpressions.Regex.Replace(s, @"\s+", " ");
-            return s + ":";
-        }
-
-        private static string ConfigKey(string raw)
-        {
-            var s = CleanConfigLabel(raw);
-            return s?.TrimEnd(':').Trim();
-        }
-
-        private static string NormalizePinInput(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input)) return null;
-            input = input.Trim();
-            var digits = new string(input.Where(char.IsDigit).ToArray());
-            return string.IsNullOrEmpty(digits) ? input : digits;
-        }
-
-        private string BuildPinExpr()
-        {
-            var item = FindSelectedComponent();
-            if (item == null) return null;
-
-            var p1 = NormalizePinInput(textPIN1.Text);
-            var hasSecond = !string.IsNullOrWhiteSpace(item.PIN2);
-            var p2 = NormalizePinInput(textPIN2.Text);
-
-            if (hasSecond)
-            {
-                if (string.IsNullOrWhiteSpace(p1) || string.IsNullOrWhiteSpace(p2))
-                    return null;
-                return $"{p1},{p2}";
-            }
-            else
-            {
-                if (string.IsNullOrWhiteSpace(p1))
-                    return null;
-                return $"{p1}";
-            }
-        }
-
         private void UpdateRequestFromUi()
         {
             bool hasSensor = comboBoxSensor.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxSensor.Text);
             bool hasMode = comboBoxMode.SelectedIndex >= 0 && !string.IsNullOrWhiteSpace(comboBoxMode.Text);
-            bool connected = SerialManager.Instance.IsOpen;
-
-           
+            bool connected = _serialController?.IsOpen == true;
 
             string m = comboBoxMode.Text?.Trim() ?? string.Empty;
 
-            request = null;
-
-            string formattedId = null;
-            if (hasSensor)
-            {
-                string sensorLabel = comboBoxSensor.Text.Trim();
-                if (!sensorIdMap.TryGetValue(sensorLabel, out string sensorId) || string.IsNullOrWhiteSpace(sensorId))
-                    sensorId = sensorLabel;
-                formattedId = FormatSensorId(sensorId);
-            }
-
-            if (hasMode)
-            {
-                if (m.Equals("INIT", StringComparison.OrdinalIgnoreCase))
-                {
-                    request = "?type=INIT&api=1.0";
-                }
-                else if (m.Equals("CONNECT", StringComparison.OrdinalIgnoreCase) || m.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (hasSensor)
-                    {
-                        var item = FindSelectedComponent();
-                        string pinExpr = BuildPinExpr(); // "13" nebo "5,18"
-
-                        if (string.IsNullOrWhiteSpace(pinExpr))
-                        {
-                            bool needTwo = item != null && !string.IsNullOrWhiteSpace(item.PIN2);
-                            string keyWhenEmpty = needTwo ? "pins" : "pin";
-                            request = $"?type={m}&id={formattedId}&{keyWhenEmpty}=";
-                        }
-                        else
-                        {
-                            bool multiple = pinExpr.Contains(",");
-                            string key = multiple ? "pins" : "pin";
-                            request = $"?type={m}&id={formattedId}&{key}={pinExpr}";
-                        }
-                    }
-                }
-                else if (m.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (hasSensor)
-                    {
-                        var itemForCfg = FindSelectedComponent();
-                        string cfgQuery = BuildConfigQuery(itemForCfg);
-                        request = string.IsNullOrEmpty(cfgQuery)
-                            ? $"?type={m}&id={formattedId}"
-                            : $"?type={m}&id={formattedId}&{cfgQuery}";
-                    }
-                }
-                else if (m.Equals("RESET", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (hasSensor)
-                        request = $"?type={m}&id={formattedId}";
-                }
-                else
-                {
-                    if (hasSensor)
-                        request = $"?type={m}&id={formattedId}";
-                }
-            }
+            // delegate building request to RequestBuilder
+            request = RequestBuilder.BuildRequest(m, comboBoxSensor.Text?.Trim(), sensorIdMap, FindSelectedComponent(), textPIN1.Text, textPIN2.Text, textPIN3.Text);
 
             label8.Text = request ?? string.Empty;
 
@@ -366,14 +237,14 @@ namespace NewGUI
             {
                 var item = FindSelectedComponent();
                 bool needTwo = item != null && !string.IsNullOrWhiteSpace(item.PIN2);
-                bool p1ok = !string.IsNullOrWhiteSpace(NormalizePinInput(textPIN1.Text));
-                bool p2ok = !needTwo || !string.IsNullOrWhiteSpace(NormalizePinInput(textPIN2.Text));
+                bool p1ok = !string.IsNullOrWhiteSpace(RequestBuilder.NormalizePinInput(textPIN1.Text));
+                bool p2ok = !needTwo || !string.IsNullOrWhiteSpace(RequestBuilder.NormalizePinInput(textPIN2.Text));
                 ready = ready && hasSensor && p1ok && p2ok;
             }
             else if (m.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
             {
                 var item = FindSelectedComponent();
-                var cfgs = GetConfigNames(item);
+                var cfgs = RequestBuilder.GetConfigNames(item);
                 bool c1 = cfgs.Count < 1 || !string.IsNullOrWhiteSpace(textPIN1.Text?.Trim());
                 bool c2 = cfgs.Count < 2 || !string.IsNullOrWhiteSpace(textPIN2.Text?.Trim());
                 bool c3 = cfgs.Count < 3 || !string.IsNullOrWhiteSpace(textPIN3.Text?.Trim());
@@ -403,7 +274,7 @@ namespace NewGUI
             int delay;
             if (!int.TryParse(txt, out delay) || delay < 10)
                 delay = 100;
-            displayTimer.Interval = delay;
+            _chartManager?.SetInterval(delay);
         }
 
         private void SetUiForConnection(bool isConnected)
@@ -457,13 +328,12 @@ namespace NewGUI
 
         private void ConnectBtn_Click(object sender, EventArgs e)
         {
-            if (SerialManager.Instance.IsOpen)
+            if (_serialController.IsOpen)
             {
                 try
                 {
                     StopSendingRequest();
-                    SerialManager.Instance.DetachReceiver();
-                    SerialManager.Instance.Close();
+                    _serialController.Close();
                     UiLog("Odpojeno od portu.");
                 }
                 catch (Exception ex)
@@ -487,7 +357,7 @@ namespace NewGUI
 
             try
             {
-                SerialManager.Instance.ConfigurePort(
+                _serialController.ConfigurePort(
                     portName: selectedPort,
                     baudRate: 115200,
                     parity: Parity.None,
@@ -497,8 +367,8 @@ namespace NewGUI
                     newLine: "\n"
                 );
 
-                SerialManager.Instance.AttachExclusiveReceiver(SerialPort_DataReceived);
-                SerialManager.Instance.Open();
+                // open and let controller attach
+                _serialController.Open();
 
                 SetUiForConnection(true);
                 UiLog($"Připojeno k {selectedPort}.");
@@ -560,7 +430,7 @@ namespace NewGUI
                     MessageBox.Show("Prosím vyber COM port.");
                     return;
                 }
-                if (!SerialManager.Instance.IsOpen)
+                if (!_serialController.IsOpen)
                 {
                     MessageBox.Show("Nejprve se připoj k sériovému portu.");
                     return;
@@ -598,8 +468,8 @@ namespace NewGUI
                             return;
                         }
 
-                        displayTimer?.Start();
-                        SerialManager.Instance.WriteLine(request);
+                        _chartManager?.Start();
+                        _serialController.WriteLine(request);
                         // Zde do textBox2 nelogujeme request, necháme jen UI hlášky
                         _lastSentMode = null;
                         UiLog("Měření spuštěno."); // UI hláška
@@ -661,7 +531,7 @@ namespace NewGUI
                 return;
             }
 
-            displayTimer?.Start();
+            _chartManager?.Start();
 
             // reset/obnova CTS
             _sendCts?.Cancel();
@@ -679,13 +549,13 @@ namespace NewGUI
             // 2) Ostatní (INIT / CONFIG / RESET / CONNECT / atd.) = jednorázově
             try
             {
-                if (!SerialManager.Instance.IsOpen)
+                if (!_serialController.IsOpen)
                 {
                     UiLog("Port není otevřen – požadavek se neodešle.");
                     return;
                 }
 
-                SerialManager.Instance.WriteLine(request);
+                _serialController.WriteLine(request);
 
                 // INIT: začínáme nový INIT cyklus – smaž starý INIT log a čekej odpověď
                 if (request.StartsWith("?type=INIT", StringComparison.OrdinalIgnoreCase))
@@ -711,7 +581,7 @@ namespace NewGUI
         private async Task SendLoopAsync(System.Threading.CancellationToken ct)
         {
             while (!ct.IsCancellationRequested &&
-                   SerialManager.Instance.IsOpen &&
+                   _serialController.IsOpen &&
                    isSendingRequest)
             {
                 int delay = 100;
@@ -724,7 +594,7 @@ namespace NewGUI
                     await Task.Delay(delay, ct);
                     if (ct.IsCancellationRequested) break;
 
-                    SerialManager.Instance.WriteLine(request);
+                    _serialController.WriteLine(request);
                 }
                 catch (OperationCanceledException)
                 {
@@ -741,10 +611,8 @@ namespace NewGUI
         private void StopSendingRequest()
         {
             isSendingRequest = false;
-            displayTimer?.Stop();
+            _chartManager?.Stop();
             _sendCts?.Cancel();
-
-            lock (_rxLock) _latestDataFrame = null;
 
             try
             {
@@ -753,174 +621,37 @@ namespace NewGUI
             catch { }
         }
 
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        // Parser event handlers -> UI actions
+        private void Parser_InitReceived(object sender, InitEventArgs e)
         {
-            try
-            {
-                var port = sender as SerialPort;
-                string data = port?.ReadExisting();
-                if (string.IsNullOrEmpty(data)) return;
-
-                lock (_rxLock)
-                {
-                    _rxBuffer.Append(data);
-                }
-            }
-            catch
-            {
-                // ticho
-            }
+            _lastInitPayload = e.Payload;
+            _awaitingInitResponse = false;
+            UpdateInitBtnEnabled();
+            LogInit(e.Payload);
         }
 
-        private void ParseAndDisplayData(string data)
+        private void Parser_DataFrameReceived(object sender, DataFrameEventArgs e)
         {
-            var numericPairs = new List<string>();
-
-            data = data.Trim();
-            data = data.TrimStart('\uFEFF');
-            if (data.StartsWith("?")) data = data.Substring(1);
-
-            var parameters = data.Split('&')
-                                 .Select(part => part.Split('='))
-                                 .Where(pair => pair.Length == 2)
-                                 .ToDictionary(pair => pair[0], pair => pair[1]);
-
-            var skipKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-             { "type", "id", "pin", "app", "version", "dbversion", "api", "status", "code" };
-
-            var dataForGraph = parameters
-                .Where(kvp => !skipKeys.Contains(kvp.Key))
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-            foreach (var kvp in dataForGraph)
-            {
-                string variableName = kvp.Key;
-                string raw = kvp.Value ?? string.Empty;
-
-                string normalized = raw;
-                if (normalized.IndexOf(',') >= 0 && normalized.IndexOf('.') < 0)
-                    normalized = normalized.Replace(',', '.');
-
-                var m = System.Text.RegularExpressions.Regex.Match(
-                            normalized, @"[-+]?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?");
-
-                double numericValue = 0.0;
-                bool hasNumber = m.Success && double.TryParse(
-                    m.Value,
-                    System.Globalization.NumberStyles.Any,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    out numericValue);
-
-                if (hasNumber)
-                {
-                    // přidej do přehledu pro valueText
-                    numericPairs.Add($"{variableName}={numericValue.ToString("G", System.Globalization.CultureInfo.InvariantCulture)}");
-
-                    LogLink($"[GRAPH] {variableName} -> {numericValue}");
-
-                    this.Invoke(new Action(() =>
-                    {
-                        if (chart1.Series.IsUniqueName(variableName))
-                        {
-                            var s = new Series(variableName)
-                            {
-                                ChartType = SeriesChartType.Line,
-                                BorderWidth = 2,
-                                Color = Color.FromArgb(rnd.Next(256), rnd.Next(256), rnd.Next(256))
-                            };
-                            chart1.Series.Add(s);
-                        }
-
-                        var series = chart1.Series[variableName];
-                        if (series.Points.Count > 50) series.Points.RemoveAt(0);
-
-                        series.Points.AddXY(sampleCount, numericValue);
-
-                        if (chart1.ChartAreas.Count == 0)
-                            chart1.ChartAreas.Add(new ChartArea());
-
-                        chart1.ChartAreas[0].AxisX.Minimum = Math.Max(0, sampleCount - 10);
-                        chart1.ChartAreas[0].AxisX.Maximum = sampleCount;
-                        chart1.ChartAreas[0].RecalculateAxesScale();
-                        chart1.ChartAreas[0].AxisY.Title = dataForGraph.Count > 1 ? "Values" : variableName.ToUpper();
-                    }));
-                }
-                else // jen když to NENÍ číslo
-                {
-                    // textové hodnoty -> do logu, bez kreslení grafu
-                    LogLink($"{variableName}: {raw}");
-                }
-            }
-
-            // až po zpracování všech klíčů z rámce aktualizuj valueText jedním řádkem
-            if (numericPairs.Count > 0)
-            {
-                var text = string.Join(", ", numericPairs); // např. "temp=23.5, hum=41.2"
-                if (valueText.InvokeRequired)
-                    BeginInvoke((Action)(() => valueText.Text = text));
-                else
-                    valueText.Text = text;
-            }
-
-            sampleCount++;
-            chart1.Invalidate();
+            _chartManager.ParseAndEnqueue(e.Line);
+            LogLink(e.Line);
         }
 
-
-        private static string FormatSensorId(string rawId)
+        private void Parser_RawLineReceived(object sender, RawLineEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(rawId)) return rawId;
-
-            string t = rawId.Trim();
-
-            if (t.StartsWith("S", StringComparison.OrdinalIgnoreCase))
-                return "S" + t.Substring(1);
-
-            if (int.TryParse(t, out int n) && n >= 0)
-                return "S" + n.ToString("D2");
-
-            var digits = new string(t.Where(char.IsDigit).ToArray());
-            if (int.TryParse(digits, out n) && n >= 0)
-                return "S" + n.ToString("D2");
-
-            return "S" + t;
+            LogLink(e.Line);
         }
 
-        private void ParseInitMessage(string data)
-        {
-            string rawData = data.Trim();
-
-            if (rawData.StartsWith("?"))
-            {
-                rawData = rawData.Substring(1);
-            }
-
-            string[] sensorEntries = rawData.Split(',');
-            var result = new StringBuilder();
-
-            foreach (string entry in sensorEntries)
-            {
-                string[] parts = entry.Split(':');
-                if (parts.Length == 2)
-                {
-                    string id = parts[0];
-                    string type = parts[1];
-                    result.AppendLine($"{type} ({id})");
-                }
-            }
-            // výstup pro INIT teď posíláme do popup okna (_initForm) v DisplayTimer_Tick
-        }
+        //----------------------------------------------------------------------
 
         private void ResetChart()
         {
-            sampleCount = 0;
             chart1.Series.Clear();
             InitializeChart();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            SerialManager.Instance.Close();
+            try { _serialController?.Close(); } catch { }
         }
 
         private void LoadSensorsFromJson()
@@ -974,83 +705,6 @@ namespace NewGUI
             }
         }
 
-        private void DisplayTimer_Tick(object sender, EventArgs e)
-        {
-            string chunk;
-            lock (_rxLock)
-            {
-                if (_rxBuffer.Length == 0) return;
-                chunk = _rxBuffer.ToString();
-                _rxBuffer.Clear();
-            }
-
-            chunk = chunk.Replace("\r", "");
-            var lines = chunk.Split('\n');
-
-            foreach (var raw in lines)
-            {
-                if (string.IsNullOrEmpty(raw)) continue;
-
-                var line = raw.Trim();
-                line = line.TrimStart('\uFEFF');
-                line = new string(line.Where(ch => !char.IsControl(ch)
-                                                   || ch == '?' || ch == '=' || ch == '&'
-                                                   || ch == '.' || ch == ',' || ch == '-'
-                                                   || char.IsLetterOrDigit(ch)).ToArray());
-                if (string.IsNullOrEmpty(line)) continue;
-
-                // 1) INIT seznam (id:type,id:type,...) — loguj do INIT a povol tlačítko
-                if (IsInitLine(line, out string initPayload))
-                {
-                    // uložíme payload (bez prefixů) a zalogujeme do INIT okna
-                    _lastInitPayload = initPayload;
-                    _awaitingInitResponse = false;
-                    UpdateInitBtnEnabled();
-                    LogInit(initPayload);
-                    continue;
-                }
-
-                // 2) měřicí rámce "?id=..." – graf + běžný log
-                if (line.StartsWith("?id=", StringComparison.OrdinalIgnoreCase))
-                {
-                    ParseAndDisplayData(line);
-                    LogLink(line);
-                    continue;
-                }
-
-                // 3) ostatní text → běžný log
-                LogLink(line);
-            }
-
-            chart1.Invalidate();
-        }
-
-
-        private static bool IsInitLine(string line, out string payload)
-        {
-            payload = null;
-            if (string.IsNullOrWhiteSpace(line)) return false;
-
-            // čistý "id:type,id:type"
-            if (!line.StartsWith("?") && line.Contains(":") && line.Contains(","))
-            {
-                payload = line.Trim();
-                return true;
-            }
-
-            // varianta s prefixem "?type=INIT&..."
-            if (line.StartsWith("?type=INIT", StringComparison.OrdinalIgnoreCase))
-            {
-                // payload = vše za prvním '&' (pokud tam je); jinak celý řetězec bez "?type=INIT"
-                int amp = line.IndexOf('&');
-                payload = (amp >= 0) ? line.Substring(amp + 1).Trim() : line.Substring("?type=INIT".Length).TrimStart('&', ' ');
-                return true;
-            }
-
-            return false;
-        }
-
-
         private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e)
         {
             try
@@ -1093,28 +747,6 @@ namespace NewGUI
             }
         }
 
-        private string BuildConfigQuery(Komponenty item)
-        {
-            if (item == null) return string.Empty;
-
-            var cfgs = GetConfigNames(item);
-            var values = new[] { textPIN1.Text?.Trim(), textPIN2.Text?.Trim(), textPIN3.Text?.Trim() };
-
-            var parts = new List<string>();
-            for (int i = 0; i < Math.Min(3, cfgs.Count); i++)
-            {
-                string key = ConfigKey(cfgs[i]);
-                string val = values[i];
-
-                if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(val))
-                {
-                    parts.Add($"{Uri.EscapeDataString(key)}={Uri.EscapeDataString(val)}");
-                }
-            }
-
-            return string.Join("&", parts);
-        }
-
         private void link_btn_Click(object sender, EventArgs e)
         {
             if (_linkForm == null || _linkForm.IsDisposed)
@@ -1143,8 +775,6 @@ namespace NewGUI
                 _linkForm.BringToFront();
             }
         }
-
-
 
 
 
@@ -1192,7 +822,7 @@ namespace NewGUI
 
         private void UpdateInitBtnEnabled()
         {
-            bool connected = SerialManager.Instance.IsOpen;
+            bool connected = _serialController?.IsOpen == true;
             init_btn.Enabled = connected && !string.IsNullOrWhiteSpace(_lastInitPayload);
         }
 
@@ -1241,25 +871,5 @@ namespace NewGUI
             else Write();
         }
 
-
-        private void Senzory_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void comboBoxMode_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }

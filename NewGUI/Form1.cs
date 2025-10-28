@@ -22,11 +22,17 @@ namespace NewGUI
         private Color _hoverColor = Color.FromArgb(243, 95, 0);  // oranžová
         private Color _textColor = Color.White;             // barva pro symboly
 
+        // Serial controller (replace direct SerialManager usage)
+        private SerialController _serialController;
+
         public Form1()
         {
             InitializeComponent();
             _animTimer = new Timer { Interval = 15 };
             _animTimer.Tick += AnimTimer_Tick;
+
+            // init serial controller
+            _serialController = new SerialController();
 
             // příklady: nahraď svými skutečnými názvy tlačítek a panelů
             // oranžová varianta ikony z Resources (nebo Image.FromFile(...))
@@ -77,9 +83,8 @@ namespace NewGUI
          */
         public void NahraditObsah(UserControl novyObsah)
         {
-            // Pojistka: vždy odpojit staré serial věci
-            SerialManager.Instance.DetachReceiver();
-            SerialManager.Instance.Close();
+            // Pojistka: vždy odpojit staré serial věci (přes SerialController)
+            try { _serialController?.Close(); } catch { }
 
             Main_panel.Controls.Clear();
             novyObsah.Dock = DockStyle.Fill;

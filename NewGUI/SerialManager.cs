@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Text;
+using System.Collections.Generic;
 
 namespace NewGUI
 {
@@ -13,8 +14,17 @@ namespace NewGUI
         private readonly object _ioLock = new object();
         private SerialDataReceivedEventHandler _attachedHandler;
 
-        private SerialManager()
+        // internal line buffering
+        private readonly StringBuilder _lineBuffer = new StringBuilder();
+        private readonly object _bufLock = new object();
+        private readonly SerialDataReceivedEventHandler _internalDataReceivedHandler;
+        private bool _internalHandlerAttached = false;
+
+        public event EventHandler<LinesEventArgs> LinesReceived;
+
+        public SerialManager()
         {
+            _internalDataReceivedHandler = InternalDataReceived;
             _port.ReadTimeout = 500;
             _port.WriteTimeout = 500;
             _port.NewLine = "\r\n";
@@ -47,6 +57,13 @@ namespace NewGUI
         public void Open()
         {
             if (!IsOpen) _port.Open();
+
+            // ensure our internal handler is attached once
+            if (!_internalHandlerAttached)
+            {
+                _port.DataReceived += _internalDataReceivedHandler;
+                _internalHandlerAttached = true;
+            }
         }
 
         public void Close()
@@ -54,6 +71,12 @@ namespace NewGUI
             try
             {
                 DetachReceiver();
+                if (_internalHandlerAttached)
+                {
+                    try { _port.DataReceived -= _internalDataReceivedHandler; } catch { }
+                    _internalHandlerAttached = false;
+                }
+
                 if (IsOpen) _port.Close();
             }
             catch { /* log/ignore */ }
@@ -101,5 +124,55 @@ namespace NewGUI
             catch { /* ignore */ }
         }
 
+        private void InternalDataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                string data = _port.ReadExisting();
+                if (string.IsNullOrEmpty(data)) return;
+
+                List<string> completeLines = null;
+
+                lock (_bufLock)
+                {
+                    _lineBuffer.Append(data);
+                    var buf = _lineBuffer.ToString();
+                    int lastNewline = buf.LastIndexOf('\n');
+                    if (lastNewline >= 0)
+                    {
+                        string complete = buf.Substring(0, lastNewline + 1);
+                        string remaining = buf.Substring(lastNewline + 1);
+                        _lineBuffer.Clear();
+                        if (!string.IsNullOrEmpty(remaining)) _lineBuffer.Append(remaining);
+
+                        // normalize and split lines
+                        complete = complete.Replace("\r", "");
+                        var rawLines = complete.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        completeLines = new List<string>(rawLines.Length);
+                        foreach (var raw in rawLines)
+                        {
+                            if (string.IsNullOrWhiteSpace(raw)) continue;
+                            completeLines.Add(raw.Trim());
+                        }
+                    }
+                }
+
+                if (completeLines != null && completeLines.Count > 0)
+                {
+                    try
+                    {
+                        LinesReceived?.Invoke(this, new LinesEventArgs(completeLines.ToArray()));
+                    }
+                    catch { /* subscriber exceptions should not crash serial thread */ }
+                }
+            }
+            catch { /* ignore read errors */ }
+        }
+    }
+
+    public class LinesEventArgs : EventArgs
+    {
+        public string[] Lines { get; }
+        public LinesEventArgs(string[] lines) { Lines = lines ?? Array.Empty<string>(); }
     }
 }
