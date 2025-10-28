@@ -5,36 +5,39 @@ using System.Collections.Generic;
 
 namespace NewGUI
 {
+    // Třída SerialManager je „správce“ fyzické komunikace po sériovém portu (COM port).
+    // Postará se o otevření, čtení, zápis a rozdělování dat na celé řádky.
     public sealed class SerialManager
     {
-        private static readonly SerialManager _instance = new SerialManager();
-        public static SerialManager Instance => _instance;
+        private static readonly SerialManager _instance = new SerialManager();  //Singleton pattern – jen jedna jediná instance v celé aplikaci.
+        public static SerialManager Instance => _instance; // Přístup k té jediné instanci
 
-        private readonly SerialPort _port = new SerialPort();
-        private readonly object _ioLock = new object();
-        private SerialDataReceivedEventHandler _attachedHandler;
+        private readonly SerialPort _port = new SerialPort();  // Objekt SerialPort z .NET knihovny – skutečná komunikace s COM portem.
+        private readonly object _ioLock = new object(); // Zámek pro bezpečný přístup při čtení/zápisu z více vláken.
+        private SerialDataReceivedEventHandler _attachedHandler; // Pokud je připojen externí handler (uživatelem), uloží se sem.
 
         // internal line buffering
-        private readonly StringBuilder _lineBuffer = new StringBuilder();
-        private readonly object _bufLock = new object();
-        private readonly SerialDataReceivedEventHandler _internalDataReceivedHandler;
-        private bool _internalHandlerAttached = false;
+        private readonly StringBuilder _lineBuffer = new StringBuilder(); //Buffer pro neúplné textové řádky, které ještě nemají '\n'
+        private readonly object _bufLock = new object(); // zámek pro přístup k bufferu
+        private readonly SerialDataReceivedEventHandler _internalDataReceivedHandler;  // Interní handler, který zpracovává data (používáme vlastní, ne přímo port.DataReceived)
+        private bool _internalHandlerAttached = false; // hlídá, že se nepřipojí víckrát
 
-        public event EventHandler<LinesEventArgs> LinesReceived;
+        public event EventHandler<LinesEventArgs> LinesReceived; // Událost, kterou vyšleme, když máme k dispozici celé řádky textu
 
+        // Konstruktor
         public SerialManager()
         {
-            _internalDataReceivedHandler = InternalDataReceived;
-            _port.ReadTimeout = 500;
+            _internalDataReceivedHandler = InternalDataReceived; // Uložíme si odkaz na metodu, která bude zpracovávat příchozí data
+            _port.ReadTimeout = 500;  // Nastaví se základní časové limity čtení/zápisu (v milisekundách)
             _port.WriteTimeout = 500;
-            _port.NewLine = "\r\n";
+            _port.NewLine = "\r\n"; // Výchozí znak pro konec řádku
         }
 
-        public bool IsOpen => _port.IsOpen;
-        public string PortName => _port.PortName;
-        public int BaudRate => _port.BaudRate;
+        public bool IsOpen => _port.IsOpen; //Jen pro čtení: zda je port otevřený
+        public string PortName => _port.PortName; //Aktuální jméno portu
+        public int BaudRate => _port.BaudRate; // Aktuální rychlost
 
-        public void ConfigurePort(
+        public void ConfigurePort( // Nastaví parametry portu (název, rychlost, paritu, stop bity, handshake…)
             string portName,
             int baudRate = 115200,
             Parity parity = Parity.None,
@@ -43,8 +46,10 @@ namespace NewGUI
             Handshake handshake = Handshake.None,
             string newLine = "\n")
         {
+            // Změnu nelze provést, pokud je port otevřený
             if (IsOpen) throw new InvalidOperationException("Nejdřív zavři port (Close), pak měň konfiguraci.");
 
+            // Uložení všech nastavení do objektu SerialPort
             _port.PortName = portName;
             _port.BaudRate = baudRate;
             _port.Parity = parity;
@@ -54,125 +59,145 @@ namespace NewGUI
             _port.NewLine = newLine;
         }
 
+        // Otevře port a připojí náš interní handler (pokud ještě není připojen)
         public void Open()
         {
-            if (!IsOpen) _port.Open();
+            if (!IsOpen) _port.Open(); // Fyzicky otevře COM port
 
             // ensure our internal handler is attached once
-            if (!_internalHandlerAttached)
+            if (!_internalHandlerAttached) // Připojíme interní handler jen jednou
             {
-                _port.DataReceived += _internalDataReceivedHandler;
+                _port.DataReceived += _internalDataReceivedHandler; // Když přijdou data, volá se naše metoda
                 _internalHandlerAttached = true;
             }
         }
 
-        public void Close()
+        public void Close() //Zavře port, odpojí všechny handlery a uklidí
         {
             try
             {
-                DetachReceiver();
-                if (_internalHandlerAttached)
+                DetachReceiver(); // Odpojíme případného externího „receivera“
+                if (_internalHandlerAttached) // Odpojíme i náš interní handler
                 {
                     try { _port.DataReceived -= _internalDataReceivedHandler; } catch { }
                     _internalHandlerAttached = false;
                 }
 
-                if (IsOpen) _port.Close();
+                if (IsOpen) _port.Close(); // Zavřeme samotný port
             }
             catch { /* log/ignore */ }
         }
 
+        // Připojí externího posluchače přímo na DataReceived (nahrazuje interní)
         public void AttachExclusiveReceiver(SerialDataReceivedEventHandler handler)
         {
-            DetachReceiver();
-            if (handler != null)
+            DetachReceiver();  // Nejdřív se odpojí všechno předchozí
+
+            if (handler != null) // A pokud máme nový handler, připojíme ho
             {
                 _port.DataReceived += handler;
                 _attachedHandler = handler;
             }
         }
 
-        public void DetachReceiver()
+        // Odpojí jakéhokoliv dříve připojeného externího posluchače
+        public void DetachReceiver() 
         {
             if (_attachedHandler != null)
             {
                 try { _port.DataReceived -= _attachedHandler; } catch { }
-                _attachedHandler = null;
+                _attachedHandler = null; // Vyčistíme referenci
             }
         }
 
+        // Pošle řádek textu (automaticky přidá konec řádku)
         public void WriteLine(string line)
         {
             if (!IsOpen) throw new InvalidOperationException("Port není otevřen.");
-            lock (_ioLock) _port.WriteLine(line);
+            lock (_ioLock) _port.WriteLine(line);  // Zámek pro bezpečné paralelní použití
         }
 
+        
+        // Pošle text beze změny (bez přidání konce řádku)
         public void Write(string text)
         {
             if (!IsOpen) throw new InvalidOperationException("Port není otevřen.");
-            lock (_ioLock) _port.Write(text);
+            lock (_ioLock) _port.Write(text); // Zámek pro bezpečné paralelní použití
         }
 
+        // Vyčistí vstupní a výstupní buffery portu
         public void DiscardInOut()
         {
             try
             {
                 if (!_port.IsOpen) return;
-                _port.DiscardInBuffer();
-                _port.DiscardOutBuffer();
+                _port.DiscardInBuffer(); // Zruší nevyčtená data
+                _port.DiscardOutBuffer(); // Zruší neodeslaná data
             }
             catch { /* ignore */ }
         }
 
+        // Interní metoda, která se volá, když přijdou nová data z portu
         private void InternalDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             try
             {
-                string data = _port.ReadExisting();
+                string data = _port.ReadExisting(); // Přečte všechno, co je právě dostupné
                 if (string.IsNullOrEmpty(data)) return;
 
-                List<string> completeLines = null;
+                List<string> completeLines = null; // Seznam celých řádků, které se detekovali
 
+
+                // Uzamkne se buffer, protože může být přístupný i z jiného vlákna
                 lock (_bufLock)
                 {
-                    _lineBuffer.Append(data);
+                    _lineBuffer.Append(data); // Přidané nově přečtená data k předchozímu zbytku
                     var buf = _lineBuffer.ToString();
+                    // Najde se poslední znak '\n' (znamená konec řádku)
                     int lastNewline = buf.LastIndexOf('\n');
                     if (lastNewline >= 0)
                     {
+                        // Všechno do posledního '\n' je kompletní text
                         string complete = buf.Substring(0, lastNewline + 1);
+                        // Co zbylo po posledním '\n', zůstává v bufferu pro příště
                         string remaining = buf.Substring(lastNewline + 1);
                         _lineBuffer.Clear();
                         if (!string.IsNullOrEmpty(remaining)) _lineBuffer.Append(remaining);
 
-                        // normalize and split lines
+                        // Vyčistí se a rozdělí se text na jednotlivé řádky
                         complete = complete.Replace("\r", "");
                         var rawLines = complete.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        // Připravíme list řádků
                         completeLines = new List<string>(rawLines.Length);
                         foreach (var raw in rawLines)
                         {
-                            if (string.IsNullOrWhiteSpace(raw)) continue;
-                            completeLines.Add(raw.Trim());
+                            if (string.IsNullOrWhiteSpace(raw)) continue; // prázdné přeskočíme
+                            completeLines.Add(raw.Trim()); // přidáme očištěný řádek
                         }
                     }
                 }
 
+                // Pokud se poskládali nějaké celé řádky, vyšle se událost
                 if (completeLines != null && completeLines.Count > 0)
                 {
                     try
                     {
+                        // Vyvolá se událost LinesReceived – předají se všechny celé řádky
                         LinesReceived?.Invoke(this, new LinesEventArgs(completeLines.ToArray()));
                     }
                     catch { /* subscriber exceptions should not crash serial thread */ }
+                    // Když si posluchač udělá chybu, neshodí nám to celé vlákno
                 }
             }
             catch { /* ignore read errors */ }
+            // Pokud dojde k chybě při čtení, prostě ji ignorujeme (port zůstává živý)
         }
     }
 
+    // Pomocná třída pro předávání pole řádků jako argument události
     public class LinesEventArgs : EventArgs
     {
-        public string[] Lines { get; }
-        public LinesEventArgs(string[] lines) { Lines = lines ?? Array.Empty<string>(); }
+        public string[] Lines { get; } // Pole všech kompletních řádků, co dorazily
+        public LinesEventArgs(string[] lines) { Lines = lines ?? Array.Empty<string>(); } // Uložíme řádky, pokud null, použijeme prázdné pole
     }
 }

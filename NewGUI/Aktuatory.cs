@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
 
 namespace NewGUI
 {
@@ -30,10 +26,16 @@ namespace NewGUI
         // Serial controller
         private SerialController _serialController;
 
+        // Image manager for actuator pictures
+        private ImageManager _imageManager;
+
         public Aktuatory(Form1 rodic)
         {
             InitializeComponent();
             LoadJsonData();                                        // ⟵ místo LoadCsvData()
+
+            // Initialize image manager (pictureBox1 is created by InitializeComponent)
+            _imageManager = new ImageManager(pictureBox1);
 
             // Inicializace SerialController
             _serialController = new SerialController();
@@ -136,16 +138,11 @@ namespace NewGUI
                 MessageBox.Show($"Chyba při načítání JSON: {ex.Message}");
             }
         }
-
-
-
         // Získá „zobrazovací alias“ – priorita: Alias (type) → Alias → Znackeni
         private static string GetDisplayAlias(Komponenty a)
         {
             return (a.Alias ?? string.Empty).Trim();
         }
-
-
         // Najde položku v JSONu podle jména zvoleného v AktBox (porovnává display alias)
         private Komponenty FindByDisplayAlias(string alias)
         {
@@ -155,29 +152,20 @@ namespace NewGUI
             return aktuatoryData.FirstOrDefault(a =>
                 string.Equals(a.Alias, alias, StringComparison.OrdinalIgnoreCase));
         }
-
-
-
-
         // ---------- OBRÁZEK PODLE VÝBĚRU ----------
         private void AktBox_UpdateImage(object sender, EventArgs e)
         {
-            var path = Path.Combine(BasePath, "Aktuátory", $"{AktBox.Text}.png");
-
-            if (!File.Exists(path))
-            {
-                pictureBox1.Image?.Dispose();
-                pictureBox1.Image = null;
-                return;
-            }
-
             try
             {
-                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                using (var img = Image.FromStream(fs, useEmbeddedColorManagement: true, validateImageData: true))
+                string label = AktBox.Text;
+                if (string.IsNullOrWhiteSpace(label))
                 {
-                    pictureBox1.Image = new Bitmap(img);
+                    pictureBox1.Image?.Dispose();
+                    pictureBox1.Image = null;
+                    return;
                 }
+
+                _imageManager.UpdateImageForLabel(label, "Aktuátory", BasePath);
             }
             catch
             {
@@ -291,8 +279,6 @@ namespace NewGUI
             }
             UpdateStartEnabled_Actuators();
         }
-
-
         // ---------- Dosazení hodnot z textboxů do requestu ----------
         private string UpdateRequestWithTextBoxValues(string originalRequest)
         {
@@ -319,7 +305,6 @@ namespace NewGUI
 
             return basePart + typeAndId + (newParams.Any() ? "&" + string.Join("&", newParams) : "");
         }
-
         // ---------- START / STOP ----------
         private void btnStart_Click(object sender, EventArgs e)
         {
@@ -368,7 +353,6 @@ namespace NewGUI
                         return;
                     }
 
-
                     var pinQuery = BuildPinQueryActuator4(item);
                     if (string.IsNullOrWhiteSpace(pinQuery))
                     {
@@ -378,7 +362,6 @@ namespace NewGUI
 
                     // POZOR: formát s čárkami mezi pinX=... částmi (přesně jak požaduješ)
                     string request = $"?type={selectedMod.ToUpperInvariant()}&id=A{idTwoDigits}&{pinQuery}";
-
 
                     try
                     {
@@ -390,13 +373,9 @@ namespace NewGUI
                     {
                         MessageBox.Show($"Chyba při odesílání: {ex.Message}");
                     }
-
                     // one-shot: NEpřepínáme tlačítko na „Zastavit"
                     return;
                 }
-
-
-
                 // CONFIG/UPDATE apod.
                 if (string.IsNullOrEmpty(selectedAlias))
                 {
@@ -433,13 +412,6 @@ namespace NewGUI
                     MessageBox.Show($"Chyba při odesílání: {ex.Message}");
                 }
 
-                //btnStart.Text = "Zastavit";
-                //btnStart.ForeColor = Color.White;
-                //toolTip1.SetToolTip(this.btnStart, "Okamžitě zastaví běžící akci");
-                //btnStart.FlatAppearance.MouseDownBackColor = Color.FromArgb(183, 28, 28);
-                //btnStart.FlatAppearance.MouseOverBackColor = Color.FromArgb(153, 0, 0);
-                //btnStart.BackColor = Color.FromArgb(211, 47, 47);
-                //btnStart.FlatAppearance.BorderColor = Color.FromArgb(211, 47, 47);
             }
             else
             {
@@ -458,7 +430,6 @@ namespace NewGUI
             UpdateStartEnabled_Actuators();
 
         }
-
 
         // ---------- ODLOŽENÉ ODESLÁNÍ ----------
         private void DelayedSendTimer_Tick(object sender, EventArgs e)
@@ -498,7 +469,6 @@ namespace NewGUI
                 MainTextBox.AppendText($"Chyba při odesílání: {ex.Message}{Environment.NewLine}");
             }
         }
-
         private void ModBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             // reset viditelnosti – přepneme dle módu
@@ -554,11 +524,6 @@ namespace NewGUI
             return string.IsNullOrEmpty(digits) ? input : digits;
         }
 
-
-
-
-        // Sestaví "pin1=...,pin2=...,pin3=...,pin4=..." podle JSONu a textboxů.
-        // Vrací null, pokud je vyžadovaný pin nevyplněn.
         private string BuildPinQueryActuator4(Komponenty item)
         {
             if (item == null) return null;
@@ -595,7 +560,6 @@ namespace NewGUI
             // 2–4 piny -> "pins=V1,V2[,V3,V4]"
             return $"pins={string.Join(",", pins)}";
         }
-
 
         // Přepíná UI pro CONNECT/DISCONNECT (zobrazení až 4 pinů podle JSONu)
         private void UpdatePinInputsUi_Actuators()
@@ -700,10 +664,5 @@ namespace NewGUI
             if (string.IsNullOrEmpty(digitsOnly)) return null;
             return digitsOnly.PadLeft(2, '0');
         }
-
-
-        private void label5_Click(object sender, EventArgs e)
-        {
-                    }
     }
 }

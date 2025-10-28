@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NewGUI
@@ -25,7 +21,7 @@ namespace NewGUI
         private bool simulationRunning = false;
         private List<Komponenty> SenzoryList;
         private string BasePath = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
-        private readonly Dictionary<string, string> sensorIdMap // Mapa „Znackeni“ -> „Id“ (string)
+        private readonly Dictionary<string, string> sensorIdMap // Mapa „Znackeni“ -> „Id" (string)
             = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         // NEW: režim podle TypeBox (true = Senzory, false = Aktuátory)
@@ -33,6 +29,9 @@ namespace NewGUI
 
         // Serial controller (encapsulates SerialManager + SerialParser)
         private SerialController _serialController;
+
+        // Image manager for preview
+        private ImageManager _imageManager;
 
         public Simulator(Form1 rodic)
         {
@@ -45,6 +44,14 @@ namespace NewGUI
 
             // Inicializovat SerialController
             _serialController = new SerialController();
+
+            // initialize image manager and picture box mode
+            try
+            {
+                component_pic.SizeMode = PictureBoxSizeMode.Zoom;
+                _imageManager = new ImageManager(component_pic);
+            }
+            catch { _imageManager = null; }
 
             // Timer pro simulaci
             simulationTimer = new Timer();
@@ -133,7 +140,7 @@ namespace NewGUI
 
                 foreach (var k in SenzoryList)                                 // Projdi všechny prvky z JSONu (každý „senzor“)
                 {                                                                 // Začátek foreach
-                    string label = (k.Znaceni ?? string.Empty).Trim();           // Vytáhni text „Znackeni“ (název/štítek do UI), ošetři null a ořízni
+                    string label = (k.Znaceni ?? string.Empty).Trim();           // Vytáhni text „Znackeni" (název/štítek do UI), ošetři null a ořízni
                     if (string.IsNullOrWhiteSpace(label))                         // Když je prázdný/whitespace,
                         continue;                                                 // ...tuhle položku přeskoč
 
@@ -153,8 +160,6 @@ namespace NewGUI
                 MessageBox.Show("Chyba při načítání Senzory.json: " + ex.Message);// Ukaž chybovou hlášku s důvodem
             }                                                                     // Konec catch
         }
-
-
 
         // === Generování hodnot =================================================
         private string VygenerujHodnotu(string type)
@@ -237,8 +242,6 @@ namespace NewGUI
             string responseToSend = VytvorResponse(sensorObj);
 
             AppendLineToTextBox(responseToSend);
-
-
             // ⤵ posíláme přes SerialManager
             if (_serialController.IsOpen)
             {
@@ -252,11 +255,10 @@ namespace NewGUI
                 }
             }
         }
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Globálně zavře (a odpojí případné handlery, i když v Simulatoru RX nepoužíváme)
-            SerialManager.Instance.Close();
+            _serialController.Close();
         }
 
         private void ComPortWatcherTimer_Tick(object sender, EventArgs e)
@@ -282,7 +284,6 @@ namespace NewGUI
                 lastKnownPorts = currentPorts;
             }
         }
-
         private void btnConnect_Click(object sender, EventArgs e)
         {
             if (_serialController.IsOpen == false)
@@ -296,7 +297,7 @@ namespace NewGUI
                 try
                 {
                     // Nastavení a otevření sdíleného seriáku
-                    SerialManager.Instance.ConfigurePort(
+                    _serialController.ConfigurePort(
                         portName: comBox.SelectedItem.ToString(),
                         baudRate: 115200,
                         parity: Parity.None,
@@ -347,7 +348,6 @@ namespace NewGUI
                 }
             }
         }
-
         private void btnStartStop_Click(object sender, EventArgs e)
         {
             if (!simulationRunning)
@@ -395,14 +395,28 @@ namespace NewGUI
             textBox.ScrollToCaret();
         }
 
-
-
         // === Náhled obrázku podle režimu (Senzory/Aktuátory) ==================
         private void sensorBox_UpdateImage(object sender, EventArgs e)
         {
+            string label = sensorBox.Text;
             var folder = sensorsMode ? "Senzory" : "Aktuátory";
-            var path = Path.Combine(BasePath, folder, $"{sensorBox.Text}.png");
 
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                component_pic.Image?.Dispose();
+                component_pic.Image = null;
+                return;
+            }
+
+            if (_imageManager != null)
+            {
+                try { _imageManager.UpdateImageForLabel(label, folder, BasePath); }
+                catch { }
+                return;
+            }
+
+            // fallback: manual load
+            var path = Path.Combine(BasePath, folder, $"{label}.png");
             if (!File.Exists(path))
             {
                 component_pic.Image?.Dispose();
@@ -421,10 +435,8 @@ namespace NewGUI
             }
             catch
             {
-                // ticho – soubor mohl zmizet / nebýt validní obrázek
+                // silent
             }
         }
-
-     
     }
 }

@@ -18,7 +18,7 @@ namespace NewGUI
         private bool isSendingRequest = false;
         public string request;
         private string lastUsedID = null;
-        private Random rnd = new Random();
+
         private Timer comPortWatcherTimer;
         private List<string> lastKnownPorts = new List<string>();
         private readonly Dictionary<string, string> sensorIdMap
@@ -49,6 +49,7 @@ namespace NewGUI
         // UI managers
         private ValueDisplayManager _valueDisplayManager;
         private ChartManager _chartManager;
+        private ImageManager _imageManager; // NEW: replace old image-loading method
 
         public Senzory(Form1 rodic)
         {
@@ -79,6 +80,9 @@ namespace NewGUI
             comboBoxMode.SelectedIndex = -1;
 
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+
+            // initialize ImageManager to handle image updates
+            _imageManager = new ImageManager(pictureBox1);
 
             comboBoxSensor.SelectedIndexChanged += comboBoxSensor_SelectedIndexChanged;
             comboBoxSensor.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();
@@ -707,38 +711,21 @@ namespace NewGUI
 
         private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e)
         {
+            string baseDir = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
             try
             {
                 string label = comboBoxSensor.SelectedItem as string;
                 if (string.IsNullOrWhiteSpace(label)) return;
 
-                string baseDir = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
-                string sensorsDir = Path.Combine(baseDir, "Senzory");
+                // Use ImageManager to update pictureBox
+                _imageManager.UpdateImageForLabel(label, "Senzory", baseDir);
 
-                string[] exts = new[] { ".png", ".jpg", ".jpeg", ".bmp", ".gif" };
-
-                string foundPath = null;
-                foreach (var ext in exts)
+                // If no image loaded, log like previous behavior
+                if (pictureBox1.Image == null)
                 {
-                    string p = Path.Combine(sensorsDir, label + ext);
-                    if (File.Exists(p))
-                    {
-                        foundPath = p;
-                        break;
-                    }
-                }
-
-                if (foundPath == null)
-                {
-                    pictureBox1.Image = null;
+                    
+                    string sensorsDir = Path.Combine(baseDir, "Senzory");
                     UiLog($"Nenalezen obrázek pro „{label}“ ve složce {sensorsDir}.");
-                    return;
-                }
-
-                using (var fs = new FileStream(foundPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    var img = Image.FromStream(fs);
-                    pictureBox1.Image = (Image)img.Clone();
                 }
             }
             catch (Exception ex)
