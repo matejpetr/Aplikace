@@ -293,6 +293,26 @@ namespace NewGUI.Properties {
         /// <summary>
         ///   Vyhledává lokalizovaný prostředek typu System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap reset_mini {
+            get {
+                object obj = ResourceManager.GetObject("reset_mini", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Vyhledává lokalizovaný prostředek typu System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap reset_mini_2 {
+            get {
+                object obj = ResourceManager.GetObject("reset_mini_2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Vyhledává lokalizovaný prostředek typu System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Senzory_mini {
             get {
                 object obj = ResourceManager.GetObject("Senzory_mini", resourceCulture);

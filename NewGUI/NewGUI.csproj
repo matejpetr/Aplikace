@@ -231,6 +231,8 @@
     <None Include="Resources\init_mini.png" />
     <None Include="Resources\pins_mini.png" />
     <None Include="Resources\ESP_mensi.png" />
+    <None Include="Resources\reset_mini.png" />
+    <None Include="Resources\reset_mini_2.png" />
     <Content Include="Senzory.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

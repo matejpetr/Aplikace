@@ -76,7 +76,7 @@
             this.init_btn = new System.Windows.Forms.Button();
             this.valueText = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.pins_btn = new System.Windows.Forms.Button();
+            this.reset_btn = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.panel1.SuspendLayout();
@@ -121,8 +121,6 @@
             this.comboBoxMode.Items.AddRange(new object[] {
             "UPDATE",
             "CONFIG",
-            "INIT",
-            "RESET",
             "CONNECT",
             "DISCONNECT"});
             this.comboBoxMode.Location = new System.Drawing.Point(516, 70);
@@ -252,7 +250,7 @@
             // 
             // ConnectBtn
             // 
-            this.ConnectBtn.BackColor = System.Drawing.Color.FromArgb(15, 108, 189);
+            this.ConnectBtn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(108)))), ((int)(((byte)(189)))));
             this.ConnectBtn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.ConnectBtn.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold);
             this.ConnectBtn.ForeColor = System.Drawing.Color.White;
@@ -268,7 +266,7 @@
             // badgeConn
             // 
             this.badgeConn.AutoSize = true;
-            this.badgeConn.BackColor = System.Drawing.Color.FromArgb(107, 114, 128);
+            this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
             this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.badgeConn.ForeColor = System.Drawing.Color.White;
             this.badgeConn.Location = new System.Drawing.Point(224, 20);
@@ -391,20 +389,21 @@
             // 
             // panel3
             // 
-            this.panel3.Controls.Add(this.pins_btn);
+            this.panel3.Controls.Add(this.reset_btn);
             this.panel3.Location = new System.Drawing.Point(80, 131);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(43, 45);
             this.panel3.TabIndex = 23;
             // 
-            // pins_btn
+            // reset_btn
             // 
-            this.pins_btn.Image = global::NewGUI.Properties.Resources.pins_mini;
-            this.pins_btn.Location = new System.Drawing.Point(-25, -25);
-            this.pins_btn.Name = "pins_btn";
-            this.pins_btn.Size = new System.Drawing.Size(94, 97);
-            this.pins_btn.TabIndex = 0;
-            this.pins_btn.UseVisualStyleBackColor = true;
+            this.reset_btn.Image = global::NewGUI.Properties.Resources.reset_mini_2;
+            this.reset_btn.Location = new System.Drawing.Point(-25, -25);
+            this.reset_btn.Name = "reset_btn";
+            this.reset_btn.Size = new System.Drawing.Size(94, 97);
+            this.reset_btn.TabIndex = 0;
+            this.reset_btn.UseVisualStyleBackColor = true;
+            this.reset_btn.Click += new System.EventHandler(this.reset_btn_Click);
             // 
             // pictureBox1
             // 
@@ -483,6 +482,6 @@
         private System.Windows.Forms.Label valueText;
         private System.Windows.Forms.ToolTip ToolTipS;
         private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.Button pins_btn;
+        private System.Windows.Forms.Button reset_btn;
     }
 }

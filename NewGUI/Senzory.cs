@@ -88,10 +88,15 @@ namespace NewGUI
             comboBoxSensor.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();
             comboBoxMode.SelectedIndexChanged += (s, e) => UpdateRequestFromUi();
 
+            // make comboBox non-editable and owner-drawn so we can detect hovered/selected item in dropdown and show image
+            comboBoxSensor.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxSensor.DrawMode = DrawMode.OwnerDrawFixed;
+            comboBoxSensor.DrawItem += ComboBoxSensor_DrawItem;
+            comboBoxSensor.DropDownClosed += ComboBoxSensor_DropDownClosed;
 
             // INIT stav reset při změně módu/senzoru
-            comboBoxSensor.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdateInitBtnEnabled(); UpdatePinInputsUi(); };
-            comboBoxMode.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdateInitBtnEnabled(); UpdatePinInputsUi(); };
+            comboBoxSensor.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdatePinInputsUi(); };
+            comboBoxMode.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdatePinInputsUi(); };
 
 
             textPIN1.TextChanged += (s, e) => UpdateRequestFromUi();
@@ -106,6 +111,52 @@ namespace NewGUI
             ApplyTimerIntervalFromUi();
 
             // Note: SerialController already wires to SerialManager internally
+        }
+
+        // DrawItem handler for comboBoxSensor: draw text and update image when item is highlighted
+        private void ComboBoxSensor_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+
+            // draw background/focus
+            e.DrawBackground();
+
+            string text = comboBoxSensor.Items[e.Index] as string ?? string.Empty;
+
+            // choose text color based on state
+            Color textColor = ((e.State & DrawItemState.Selected) == DrawItemState.Selected) ? SystemColors.HighlightText : comboBoxSensor.ForeColor;
+            using (var brush = new SolidBrush(textColor))
+            {
+                var textRect = new RectangleF(e.Bounds.Left + 2, e.Bounds.Top + 2, e.Bounds.Width - 4, e.Bounds.Height - 4);
+                e.Graphics.DrawString(text, e.Font, brush, textRect);
+            }
+
+            // when the item is highlighted (hover/selection in dropdown), update picture
+            bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            if (isSelected)
+            {
+                try
+                {
+                    // reuse same baseDir logic as comboBoxSensor_SelectedIndexChanged
+                    string baseDir = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                    _imageManager?.UpdateImageForLabel(text, "Senzory", baseDir);
+                }
+                catch
+                {
+                    // swallow exceptions to avoid interfering with drawing
+                }
+            }
+
+            e.DrawFocusRectangle();
+        }
+
+        private void ComboBoxSensor_DropDownClosed(object sender, EventArgs e)
+        {
+            // If no item is selected, clear picture
+            if (comboBoxSensor.SelectedIndex < 0)
+            {
+                ClearPictureBoxImage();
+            }
         }
 
         private void InitializeChart()
@@ -267,8 +318,6 @@ namespace NewGUI
                 ready = false;
 
             button1.Enabled = ready;
-
-            UpdateInitBtnEnabled();
             UpdateAcceptButton();
         }
 
@@ -301,7 +350,6 @@ namespace NewGUI
 
             UpdateRequestFromUi();
             if (!isConnected) { _initRequestSent = false; _lastInitPayload = null; }
-            UpdateInitBtnEnabled();
             UpdateAcceptButton();  
 
         }
@@ -568,7 +616,6 @@ namespace NewGUI
                     _awaitingInitResponse = true;
                     _lastInitPayload = null;
                     _initBuffer.Clear();
-                    UpdateInitBtnEnabled();
                 }
             }
             catch (Exception ex)
@@ -630,8 +677,7 @@ namespace NewGUI
         {
             _lastInitPayload = e.Payload;
             _awaitingInitResponse = false;
-            UpdateInitBtnEnabled();
-            LogInit(e.Payload);
+
         }
 
         private void Parser_DataFrameReceived(object sender, DataFrameEventArgs e)
@@ -656,6 +702,23 @@ namespace NewGUI
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             try { _serialController?.Close(); } catch { }
+        }
+
+        private void ClearPictureBoxImage()
+        {
+            try
+            {
+                if (pictureBox1.Image != null)
+                {
+                    var old = pictureBox1.Image;
+                    pictureBox1.Image = null;
+                    old.Dispose();
+                }
+            }
+            catch
+            {
+                // ignore dispose errors
+            }
         }
 
         private void LoadSensorsFromJson()
@@ -767,31 +830,7 @@ namespace NewGUI
 
         private void init_btn_Click(object sender, EventArgs e)
         {
-            if (_initForm == null || _initForm.IsDisposed)
-            {
-                _initForm = new SerialPopupForm("INIT výpis");
-                _initForm.FormClosed += (_, __) => _initForm = null;
-
-                // vždy nasyp aktuální INIT buffer:
-                if (_initBuffer.Length > 0)
-                    _initForm.SetText(_initBuffer.ToString());
-
-                PositionNextToHost(_initForm);
-                _initForm.Show();
-                _initForm.BringToFront();
-                return;
-            }
-
-            if (_initForm.Visible)
-                _initForm.Hide();
-            else
-            {
-                // dorovnat stav:
-                _initForm.SetText(_initBuffer.ToString());
-                PositionNextToHost(_initForm);
-                _initForm.Show();
-                _initForm.BringToFront();
-            }
+           
         }
 
 
@@ -807,11 +846,7 @@ namespace NewGUI
                 form.AcceptButton = null;
         }
 
-        private void UpdateInitBtnEnabled()
-        {
-            bool connected = _serialController?.IsOpen == true;
-            init_btn.Enabled = connected && !string.IsNullOrWhiteSpace(_lastInitPayload);
-        }
+
 
 
         private void PositionNextToHost(Form form, int offsetX = 10)
@@ -841,22 +876,11 @@ namespace NewGUI
             else Write();
         }
 
-        // Bezpečně přidá řádek do INIT bufferu a do otevřeného INIT popupu
-        private void LogInit(string line)
+
+
+        private void reset_btn_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(line)) return;
-            if (!line.EndsWith("\r\n")) line += "\r\n";
 
-            void Write()
-            {
-                _initBuffer.Append(line); // vždy do bufferu
-                if (_initForm != null && !_initForm.IsDisposed) // a když je okno otevřené, tak i do něj
-                    _initForm.AppendLine(line);
-            }
-
-            if (InvokeRequired) BeginInvoke((Action)Write);
-            else Write();
         }
-
     }
 }
