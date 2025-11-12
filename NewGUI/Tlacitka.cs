@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -6,7 +6,7 @@ namespace NewGUI
 {
     public partial class Tlacitka : UserControl
     {
-        // VeÅ™ejnÃ© vlastnosti pro nastavenÃ­ zvenÄÃ­
+        // Veøejné vlastnosti pro nastavení zvenèí
         public Image NormalImage { get; set; }
         public Image HoverImage { get; set; }
         public string Title
@@ -17,34 +17,41 @@ namespace NewGUI
         public string DetailText
         {
             get => detailLabel.Text;
-            set => detailLabel.Text = value;
+            set
+            {
+                detailLabel.Text = value ?? string.Empty;
+                RecalculateDetailHeight();
+            }
         }
 
-        // UdÃ¡lost, kdyÅ¾ uÅ¾ivatel "aktivuje" dlaÅ¾dici (klik)
+        // Událost, když uživatel "aktivuje" dlaždici (klik)
         public event EventHandler Activated;
 
-        // --- VnitÅ™ek ---
+        // --- Vnitøek ---
         private readonly Button headerButton = new Button();
         private readonly Panel detailPanel = new Panel();
         private readonly Label detailLabel = new Label();
         private readonly Timer anim = new Timer { Interval = 15 };
 
-        private int targetHeight = 0;   // cÃ­lovÃ¡ vÃ½Å¡ka detailPanelu (0 nebo ExpandedHeight)
-        private int currentHeight = 0;  // aktuÃ¡lnÃ­ vÃ½Å¡ka pro animaci
+        private int targetHeight = 0;   // cílová výška detailPanelu (0 nebo vypoètená)
+        private int currentHeight = 0;  // aktuální výška pro animaci
         private int speed = 15;         // pixely na tick
-        public int ExpandedHeight { get; set; } = 130;  // kolik se mÃ¡ vysunout
+        public int ExpandedHeight { get; set; } = 130;  // fallback, pokud nechceme dynamicky zvìtšit nad urèitou mez
         private readonly Color hoverOverlay = Color.FromArgb(243, 95, 0);
         private readonly Color textNormal = Color.White;
 
+        // dynamická vypoètená výška dle obsahu
+        private int _preferredDetailHeight = 0;
+
         public Tlacitka()
         {
-            // zÃ¡kladnÃ­ vzhled
+            // základní vzhled
             BackColor = Color.White;
             Margin = new Padding(0);
-            //BackColor = Color.FromArgb(220, 218, 215);
-            // HLAVIÄŒKA (tlaÄÃ­tko)
+
+            // HLAVIÈKA (tlaèítko)
             headerButton.Dock = DockStyle.Top;
-            headerButton.BackColor = Color.FromArgb(220, 218, 215); // Å¡edÃ© tlaÄÃ­tko
+            headerButton.BackColor = Color.FromArgb(220, 218, 215);
             headerButton.Height = 130;
             headerButton.TextAlign = ContentAlignment.TopCenter;
             headerButton.ImageAlign = ContentAlignment.MiddleLeft;
@@ -55,26 +62,30 @@ namespace NewGUI
 
             // DETAIL PANEL
             detailPanel.Dock = DockStyle.Top;
-            detailPanel.Height = 0; // start schovanÃ½
+            detailPanel.Height = 0; // start schovaný
             detailPanel.BackColor = Color.White;
 
-            // TEXT UVNITÅ˜
+            // TEXT UVNITØ
             detailLabel.Dock = DockStyle.Fill;
             detailLabel.Padding = new Padding(12);
             detailLabel.Font = new Font("Bahnschrift", 10);
-            detailLabel.AutoEllipsis = true;
+            detailLabel.AutoEllipsis = false; // nechceme tøi teèky, chceme celý text
+            detailLabel.AutoSize = false;
+            detailLabel.MaximumSize = new Size(0, 0); // budeme mìøit sami
+            detailLabel.Text = string.Empty;
+            detailLabel.UseCompatibleTextRendering = false; // TextRenderer.MeasureText používá GDI+
 
             detailPanel.Controls.Add(detailLabel);
             Controls.Add(detailPanel);
             Controls.Add(headerButton);
 
-            // Malba hlaviÄky s overlay + ikonou, velmi podobnÃ© tvÃ©mu kÃ³du
+            // Malba hlavièky s overlay + ikonou
             headerButton.Paint += (s, e) =>
             {
                 var g = e.Graphics;
                 var rect = headerButton.ClientRectangle;
 
-                // oranÅ¾ovÃ½ overlay odspodu podle currentHeight
+                // oranžový overlay odspodu podle currentHeight
                 if (currentHeight > 0)
                 {
                     int h = Math.Min(currentHeight, rect.Height);
@@ -83,7 +94,7 @@ namespace NewGUI
                     g.FillRectangle(b, overlayRect);
                 }
 
-                // 1) nejdÅ™Ã­v obrÃ¡zek vlevo
+                // 1) nejdøív obrázek vlevo
                 var img = (currentHeight > rect.Width / 5 && HoverImage != null) ? HoverImage : NormalImage;
                 if (img != null)
                 {
@@ -92,14 +103,14 @@ namespace NewGUI
                     g.DrawImage(img, x, y, img.Width, img.Height);
                 }
 
-                // 2) potom text (bude navrchu pÅ™es obrÃ¡zek)
+                // 2) potom text (bude navrchu pøes obrázek)
                 var textRect = new Rectangle(rect.Left, rect.Top + 4, rect.Width, rect.Height);
                 var tff = TextFormatFlags.Top | TextFormatFlags.HorizontalCenter | TextFormatFlags.EndEllipsis;
 
-                // text mimo overlay ÄernÄ›
+                // text mimo overlay èernì
                 TextRenderer.DrawText(g, headerButton.Text, headerButton.Font, textRect, Color.Black, tff);
 
-                // text uvnitÅ™ overlay bÃ­le
+                // text uvnitø overlay bíle
                 if (currentHeight > 0)
                 {
                     int h = Math.Min(currentHeight, rect.Height);
@@ -110,7 +121,7 @@ namespace NewGUI
                 }
             };
 
-            // Hover/leave pro CELÃ control (vÄetnÄ› dÄ›tÃ­)
+            // Hover/leave pro CELÝ control (vèetnì dìtí)
             WireHover(this);
             foreach (Control c in Controls) WireHover(c);
 
@@ -126,21 +137,63 @@ namespace NewGUI
 
                 if (currentHeight == targetHeight) anim.Stop();
             };
+
+            // reagovat na zmìnu velikosti controlu: pøepoèítat výšku obsahu
+            this.Resize += (s, e) =>
+            {
+                RecalculateDetailHeight();
+                // pokud je teï rozbaleno, uprav okamžitì výšku
+                if (targetHeight > 0)
+                {
+                    targetHeight = Math.Max(_preferredDetailHeight, 0);
+                    detailPanel.Height = targetHeight;
+                    currentHeight = targetHeight;
+                    headerButton.Invalidate();
+                }
+            };
         }
 
         private void WireHover(Control c)
         {
-            // v konstruktoru mÃ­sto WireHover(this) + foreach
             headerButton.MouseEnter += (_, __) => SetExpanded(true);
             headerButton.MouseLeave += (_, __) => SetExpanded(false);
-
         }
 
         public void SetExpanded(bool expanded)
         {
-            targetHeight = expanded ? ExpandedHeight : 0;
+            // Pøed rozbalením pøepoèítáme preferovanou výšku dle textu
+            RecalculateDetailHeight();
+
+            // pokud je preferovaná výška nulová (žádný text), použij fallback ExpandedHeight
+            int desired = Math.Max(_preferredDetailHeight, ExpandedHeight);
+            // pokud chceš vždy zobrazit celý text, nastav desired = _preferredDetailHeight;
+
+            targetHeight = expanded ? desired : 0;
             anim.Start();
-            // pÅ™epnutÃ­ obrÃ¡zku se Å™eÅ¡Ã­ v Paintu pÅ™es currentHeight
+        }
+
+        private void RecalculateDetailHeight()
+        {
+            // Bez textu - preferovaná výška 0
+            if (string.IsNullOrEmpty(detailLabel.Text))
+            {
+                _preferredDetailHeight = 0;
+                return;
+            }
+
+            // Šíøka dostupná pro text (odeèteme padding)
+            int availableWidth = Math.Max(10, this.Width - detailLabel.Padding.Left - detailLabel.Padding.Right - 8);
+
+            // Mìøení textu s lomem slov (wordbreak)
+            var size = TextRenderer.MeasureText(detailLabel.Text, detailLabel.Font, new Size(availableWidth, int.MaxValue),
+                TextFormatFlags.WordBreak);
+
+            // Pøidat vertikální padding
+            _preferredDetailHeight = size.Height + detailLabel.Padding.Top + detailLabel.Padding.Bottom;
+
+            // Nepøesáhnout pøimìøenou mez (pokud chceš omezit maximální rozbalení, uprav pole Max)
+            int maxAllowed = 800; // bezpeènostní limit, uprav dle potøeby
+            if (_preferredDetailHeight > maxAllowed) _preferredDetailHeight = maxAllowed;
         }
     }
 }

@@ -41,11 +41,11 @@ namespace NewGUI
                 title: "Simulator",
                 normal: Properties.Resources.half_brain_mini3,
                 hover:  Properties.Resources.half_brain_mini4,
-                detail: "Virtuální prostředí pro simulaci senzorů",
+                detail: "Virtuální prostředí pro simulaci senzorů.",
                 onActivate: (_, __) => _rodic.NahraditObsah(new Simulator(_rodic)));
         }
 
-        private static void AddTile(Panel host, string title, Image normal, Image hover, string detail, EventHandler onActivate)
+        public void AddTile(Panel host, string title, Image normal, Image hover, string detail, EventHandler onActivate)
         {
             host.Controls.Clear();
 

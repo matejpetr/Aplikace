@@ -178,9 +178,6 @@
     <Compile Include="Tlacitka.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Tlacitka.Designer.cs">
-      <DependentUpon>Tlacitka.cs</DependentUpon>
-    </Compile>
     <Compile Include="UiManagers.cs" />
     <EmbeddedResource Include="Aktuatory.resx">
       <DependentUpon>Aktuatory.cs</DependentUpon>

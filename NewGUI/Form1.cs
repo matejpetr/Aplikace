@@ -208,6 +208,7 @@ namespace NewGUI
 
 
 
+
         private void setting_button_Click(object sender, EventArgs e)
         {
             NahraditObsah(new settings());
