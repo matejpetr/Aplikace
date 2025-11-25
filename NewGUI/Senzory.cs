@@ -37,6 +37,9 @@ namespace NewGUI
         private SerialPopupForm _initForm;   // jen INIT odpověď
         private PinsSelect _pinsForm;         // výběr pinů
 
+        // Host form pro popup (používáme pro odhlašování handlerů)
+        private Form _popupHost;
+
         // INIT stav
         private bool _awaitingInitResponse = false; // čekám na odpověď INIT?
         private bool _initRequestSent = false;      // byl odeslán INIT request?
@@ -50,6 +53,10 @@ namespace NewGUI
         private ValueDisplayManager _valueDisplayManager;
         private ChartManager _chartManager;
         private ImageManager _imageManager; // NEW: replace old image-loading method
+
+        private const string ApiVersion = "1.0";
+        private Timer _resetHoldTimer;
+        private bool _suppressNextResetClick = false;
 
         public Senzory(Form1 rodic)
         {
@@ -111,6 +118,19 @@ namespace NewGUI
             ApplyTimerIntervalFromUi();
 
             // Note: SerialController already wires to SerialManager internally
+
+            // reset hold timer for long-press on reset_btn
+            _resetHoldTimer = new Timer { Interval = 3000 };
+            _resetHoldTimer.Tick += ResetHoldTimer_Tick;
+
+            // wire mouse events on reset button to detect long press
+            try
+            {
+                reset_btn.MouseDown += ResetBtn_MouseDown;
+                reset_btn.MouseUp += ResetBtn_MouseUp;
+                reset_btn.MouseLeave += ResetBtn_MouseLeave;
+            }
+            catch { }
         }
 
         // DrawItem handler for comboBoxSensor: draw text and update image when item is highlighted
@@ -150,6 +170,96 @@ namespace NewGUI
             e.DrawFocusRectangle();
         }
 
+        private void link_btn_Click(object sender, EventArgs e)
+        {
+            var host = this.FindForm();
+
+            if (_linkForm == null || _linkForm.IsDisposed)
+            {
+                _linkForm = new SerialPopupForm("Sériový výpis")
+                {
+                    Owner = host // nastavíme owner, aby popup byl "spojen" s hostem
+                };
+                _linkForm.FormClosed += LinkForm_FormClosed;
+
+                // vždy nasyp aktuální buffer:
+                if (_linkBuffer.Length > 0)
+                    _linkForm.SetText(_linkBuffer.ToString());
+
+                // umístění vedle hosta
+                PositionNextToHost(_linkForm);
+
+                // přihlásit se na pohyb/resize hosta, aby popup sledoval okno
+                AttachPopupHostHandlers(host);
+
+                _linkForm.Show();
+                _linkForm.BringToFront();
+                return;
+            }
+
+            if (_linkForm.Visible)
+            {
+                _linkForm.Hide();
+            }
+            else
+            {
+                // dorovnat stav (kdyby se v mezidobí buffer zvětšil):
+                _linkForm.SetText(_linkBuffer.ToString());
+                PositionNextToHost(_linkForm);
+                _linkForm.Show();
+                _linkForm.BringToFront();
+            }
+        }
+
+        private void LinkForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // odhlásíme handlery a uvolníme reference
+            DetachPopupHostHandlers();
+            try { _linkForm.FormClosed -= LinkForm_FormClosed; } catch { }
+            _linkForm = null;
+        }
+
+        private void AttachPopupHostHandlers(Form host)
+        {
+            if (host == null) return;
+
+            // odhlásit předchozí hosta, pokud nějaký je
+            DetachPopupHostHandlers();
+
+            _popupHost = host;
+            _popupHost.LocationChanged += PopupHost_PositionOrSizeChanged;
+            _popupHost.SizeChanged += PopupHost_PositionOrSizeChanged;
+            _popupHost.Move += PopupHost_PositionOrSizeChanged;
+        }
+
+        private void DetachPopupHostHandlers()
+        {
+            if (_popupHost == null) return;
+            try { _popupHost.LocationChanged -= PopupHost_PositionOrSizeChanged; } catch { }
+            try { _popupHost.SizeChanged -= PopupHost_PositionOrSizeChanged; } catch { }
+            try { _popupHost.Move -= PopupHost_PositionOrSizeChanged; } catch { }
+            _popupHost = null;
+        }
+
+        private void PopupHost_PositionOrSizeChanged(object sender, EventArgs e)
+        {
+            // pokud popup existuje a je zobrazené, posuňme ho vedle hosta
+            if (_linkForm != null && !_linkForm.IsDisposed)
+            {
+                // Při minimalizaci/nezobrazitelnosti hosta můžeme popup skrýt, ale necháme to na tobě.
+                PositionNextToHost(_linkForm);
+            }
+        }
+
+        private void PositionNextToHost(Form form, int offsetX = 10)
+        {
+            var host = this.FindForm();
+            if (host != null && form != null)
+            {
+                form.Left = host.Right + offsetX;
+                form.Top = host.Top;
+            }
+        }
         private void ComboBoxSensor_DropDownClosed(object sender, EventArgs e)
         {
             // If no item is selected, clear picture
@@ -786,7 +896,6 @@ namespace NewGUI
                 // If no image loaded, log like previous behavior
                 if (pictureBox1.Image == null)
                 {
-                    
                     string sensorsDir = Path.Combine(baseDir, "Senzory");
                     UiLog($"Nenalezen obrázek pro „{label}“ ve složce {sensorsDir}.");
                 }
@@ -797,66 +906,130 @@ namespace NewGUI
             }
         }
 
-        private void link_btn_Click(object sender, EventArgs e)
+        private void init_btn_Click(object sender, EventArgs e)
         {
-            if (_linkForm == null || _linkForm.IsDisposed)
+            // Literal request as requested by user
+            string req = "?type=INIT&api=API_VERSION";
+
+            try
             {
-                _linkForm = new SerialPopupForm("Sériový výpis");
-                _linkForm.FormClosed += (_, __) => _linkForm = null;
+                // Send over serial if port is open
+                if (_serialController?.IsOpen == true)
+                {
+                    _serialController.WriteLine(req);
+                    UiLog($"Odesláno:{Environment.NewLine}{req}");
+                }
+                else
+                {
+                    UiLog("Port není otevřen - INIT se neodeslal.");
+                }
+            }
+            catch (Exception ex)
+            {
+                UiLog($"Chyba při odeslání INIT: {ex.Message}");
+            }
 
-                // vždy nasyp aktuální buffer:
-                if (_linkBuffer.Length > 0)
-                    _linkForm.SetText(_linkBuffer.ToString());
+            // Always append the literal request to INIT buffer/popup (do not clear previous contents)
 
-                PositionNextToHost(_linkForm);
-                _linkForm.Show();
-                _linkForm.BringToFront();
+
+
+            
+    
+        
+
+        }
+
+        // Mouse handlers for reset long-press
+        private void ResetBtn_MouseDown(object sender, MouseEventArgs e)
+        {
+            _suppressNextResetClick = false;
+            try { _resetHoldTimer.Start(); } catch { }
+        }
+        private void ResetBtn_MouseLeave(object sender, EventArgs e)
+        {
+            try { _resetHoldTimer.Stop(); } catch { }
+        }
+        private void ResetBtn_MouseUp(object sender, MouseEventArgs e)
+        {
+            try { _resetHoldTimer.Stop(); } catch { }
+            // if long press already triggered, suppress Click action
+            // otherwise Click will run reset_btn_Click (wired in Designer)
+        }
+
+        private void ResetHoldTimer_Tick(object sender, EventArgs e)
+        {
+            try { _resetHoldTimer.Stop(); } catch { }
+            // send wildcard reset
+            string req = "?type=RESET&id=*";
+            try
+            {
+                if (_serialController?.IsOpen == true)
+                {
+                    _serialController.WriteLine(req);
+                    UiLog($"Odesláno dlouhým stiskem:{Environment.NewLine}{req}");
+                }
+                else
+                {
+                    UiLog("Port není otevřen - RESET(*) se neodeslal.");
+                }
+            }
+            catch (Exception ex)
+            {
+                UiLog($"Chyba při odeslání RESET(*): {ex.Message}");
+            }
+            _suppressNextResetClick = true;
+        }
+
+        private void reset_btn_Click(object sender, EventArgs e)
+        {
+            // if wildcard reset was sent by long-press, skip
+            if (_suppressNextResetClick)
+            {
+                _suppressNextResetClick = false;
                 return;
             }
 
-            if (_linkForm.Visible)
-                _linkForm.Hide();
-            else
+            // Normal reset for selected sensor
+            string label = comboBoxSensor.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(label))
             {
-                // dorovnat stav (kdyby se v mezidobí buffer zvětšil):
-                _linkForm.SetText(_linkBuffer.ToString());
-                PositionNextToHost(_linkForm);
-                _linkForm.Show();
-                _linkForm.BringToFront();
+                MessageBox.Show("Vyberte senzor před odesláním RESET.");
+                return;
             }
-        }
 
-
-
-        private void init_btn_Click(object sender, EventArgs e)
-        {
-           
-        }
-
-
-        private void UpdateAcceptButton()
-        {
-            var form = this.FindForm();
-            if (form == null) return;
-
-            // Enter bude spouštět jen když je tlačítko připravené a je ve stavu "Spustit"
-            if (button1.Enabled)
-                form.AcceptButton = button1;
-            else
-                form.AcceptButton = null;
-        }
-
-
-
-
-        private void PositionNextToHost(Form form, int offsetX = 10)
-        {
-            var host = this.FindForm();
-            if (host != null)
+            string req = RequestBuilder.BuildRequest("RESET", label, sensorIdMap, FindSelectedComponent(), null, null, null);
+            if (string.IsNullOrWhiteSpace(req))
             {
-                form.Left = host.Right + offsetX;
-                form.Top = host.Top;
+                UiLog("Nelze sestavit RESET požadavek - chybné ID senzoru.");
+                return;
             }
+
+            try
+            {
+                if (_serialController?.IsOpen == true)
+                {
+                    _serialController.WriteLine(req);
+                    UiLog($"Odesláno: {req}");
+                }
+                else
+                {
+                    UiLog("Port není otevřen - RESET se neodeslal.");
+                }
+            }
+            catch (Exception ex)
+            {
+                UiLog($"Chyba při odeslánía RESET: {ex.Message}");
+            }
+
+            // existing cleanup behavior
+            try
+            {
+                _initBuffer.Clear();
+                _linkBuffer.Clear();
+                ClearPictureBoxImage();
+                ResetChart();
+            }
+            catch { }
         }
 
         // Bezpečně přidá řádek do LINK bufferu a do otevřeného LINK popupu
@@ -867,8 +1040,8 @@ namespace NewGUI
 
             void Write()
             {
-                _linkBuffer.Append(line); // vždy do bufferu
-                if (_linkForm != null && !_linkForm.IsDisposed) // a když je okno otevřené, tak i do něj
+                _linkBuffer.Append(line);
+                if (_linkForm != null && !_linkForm.IsDisposed)
                     _linkForm.AppendLine(line);
             }
 
@@ -878,9 +1051,12 @@ namespace NewGUI
 
 
 
-        private void reset_btn_Click(object sender, EventArgs e)
+        private void UpdateAcceptButton()
         {
-
+            var form = this.FindForm();
+            if (form == null) return;
+            form.AcceptButton = button1.Enabled ? button1 : null;
         }
+
     }
 }

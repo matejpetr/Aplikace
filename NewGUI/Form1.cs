@@ -44,6 +44,20 @@ namespace NewGUI
 
         }
 
+
+        // Zavře OwnedForms typu SerialPopupForm (bez pádů)
+        public void CloseOwnedSerialPopups()
+        {
+            try
+            {
+                var owned = this.OwnedForms.OfType<SerialPopupForm>().ToArray();
+                foreach (var f in owned)
+                {
+                    try { f.Close(); } catch { }
+                }
+            }
+            catch { }
+        }
         private void menu_button_Click(object sender, EventArgs e)
         {
             sidebar_timer.Start();
@@ -83,6 +97,9 @@ namespace NewGUI
          */
         public void NahraditObsah(UserControl novyObsah)
         {
+            // Close any popups owned by this form (serial windows)
+            try { CloseOwnedSerialPopups(); } catch { }
+
             // Pojistka: vždy odpojit staré serial věci (přes SerialController)
             try { _serialController?.Close(); } catch { }
 
@@ -211,22 +228,26 @@ namespace NewGUI
 
         private void setting_button_Click(object sender, EventArgs e)
         {
+            try { CloseOwnedSerialPopups(); } catch { }
             NahraditObsah(new settings());
         }
 
         private void home_button_Click(object sender, EventArgs e)
         {
+            try { CloseOwnedSerialPopups(); } catch { }
             NahraditObsah(new Home(this));
 
         }
 
         private void help_button_Click(object sender, EventArgs e)
         {
+            try { CloseOwnedSerialPopups(); } catch { }
             NahraditObsah(new help(this));
         }
 
         private void info_button_Click(object sender, EventArgs e)
         {
+            try { CloseOwnedSerialPopups(); } catch { }
             //NahraditObsah(new Info());
             var psi = new System.Diagnostics.ProcessStartInfo
             {
