@@ -49,7 +49,7 @@
     "Notes": "Keyes KY-011",
     "PIN1": "PIN1",
     "PIN2": "PIN2",
-    "Request_CONFIG": "?type=CONFIG&id=A03&color=R&Brig=",
+    "Request_CONFIG": "?type=CONFIG&id=A03&color=&Brig=",
     "Keywords_configs": {
       "color": "char",
       "Brig": "int"

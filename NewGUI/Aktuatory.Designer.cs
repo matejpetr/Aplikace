@@ -47,12 +47,14 @@
             this.label3 = new System.Windows.Forms.Label();
             this.btnConnect = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.label6 = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.badgeConn = new System.Windows.Forms.Label();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.btnReset = new System.Windows.Forms.Panel();
+            this.reset_btn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.btnReset.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnStart
@@ -66,11 +68,11 @@
             this.btnStart.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnStart.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.btnStart.ForeColor = System.Drawing.Color.White;
-            this.btnStart.Location = new System.Drawing.Point(24, 81);
+            this.btnStart.Location = new System.Drawing.Point(28, 75);
             this.btnStart.Margin = new System.Windows.Forms.Padding(2);
             this.btnStart.Name = "btnStart";
             this.btnStart.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
-            this.btnStart.Size = new System.Drawing.Size(120, 40);
+            this.btnStart.Size = new System.Drawing.Size(147, 40);
             this.btnStart.TabIndex = 4;
             this.btnStart.Text = "Spustit";
             this.toolTip1.SetToolTip(this.btnStart, "Spustí akci ve zvoleném režimu");
@@ -90,52 +92,41 @@
             this.MainTextBox.Name = "MainTextBox";
             this.MainTextBox.ReadOnly = true;
             this.MainTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.MainTextBox.Size = new System.Drawing.Size(618, 66);
+            this.MainTextBox.Size = new System.Drawing.Size(621, 66);
             this.MainTextBox.TabIndex = 10;
             // 
             // AktBox
             // 
-            this.AktBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.AktBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.AktBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.AktBox.DropDownHeight = 280;
+            this.AktBox.AllowDrop = true;
             this.AktBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.AktBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.AktBox.Font = new System.Drawing.Font("Segoe UI Variable Text", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.AktBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
+            this.AktBox.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.AktBox.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.AktBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.AktBox.FormattingEnabled = true;
-            this.AktBox.IntegralHeight = false;
-            this.AktBox.Location = new System.Drawing.Point(452, 59);
-            this.AktBox.Margin = new System.Windows.Forms.Padding(2);
-            this.AktBox.MaxDropDownItems = 12;
+            this.AktBox.Location = new System.Drawing.Point(292, 120);
+            this.AktBox.MaxDropDownItems = 5;
             this.AktBox.Name = "AktBox";
-            this.AktBox.Size = new System.Drawing.Size(180, 34);
+            this.AktBox.Size = new System.Drawing.Size(129, 29);
             this.AktBox.TabIndex = 3;
             this.toolTip1.SetToolTip(this.AktBox, "Vybere aktuátor");
             this.AktBox.SelectedIndexChanged += new System.EventHandler(this.AktBox_SelectedIndexChanged);
             // 
             // ModBox
             // 
-            this.ModBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ModBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.ModBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.ModBox.DropDownHeight = 280;
+            this.ModBox.AllowDrop = true;
             this.ModBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ModBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.ModBox.Font = new System.Drawing.Font("Segoe UI Variable Text", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.ModBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
+            this.ModBox.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.ModBox.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.ModBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.ModBox.FormattingEnabled = true;
-            this.ModBox.IntegralHeight = false;
             this.ModBox.Items.AddRange(new object[] {
             "CONFIG",
-            "RESET",
             "CONNECT",
             "DISCONNECT"});
-            this.ModBox.Location = new System.Drawing.Point(452, 112);
-            this.ModBox.Margin = new System.Windows.Forms.Padding(2);
-            this.ModBox.MaxDropDownItems = 12;
+            this.ModBox.Location = new System.Drawing.Point(516, 75);
+            this.ModBox.MaxDropDownItems = 5;
             this.ModBox.Name = "ModBox";
-            this.ModBox.Size = new System.Drawing.Size(180, 34);
+            this.ModBox.Size = new System.Drawing.Size(129, 29);
             this.ModBox.TabIndex = 2;
             this.toolTip1.SetToolTip(this.ModBox, "Vyber režim práce aktuátoru");
             this.ModBox.SelectedIndexChanged += new System.EventHandler(this.ModBox_SelectedIndexChanged);
@@ -146,7 +137,7 @@
             this.SeznamAkt.AutoSize = true;
             this.SeznamAkt.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.SeznamAkt.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.SeznamAkt.Location = new System.Drawing.Point(378, 66);
+            this.SeznamAkt.Location = new System.Drawing.Point(224, 120);
             this.SeznamAkt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.SeznamAkt.Name = "SeznamAkt";
             this.SeznamAkt.Size = new System.Drawing.Size(70, 21);
@@ -159,7 +150,7 @@
             this.Mod.AutoSize = true;
             this.Mod.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Mod.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.Mod.Location = new System.Drawing.Point(380, 116);
+            this.Mod.Location = new System.Drawing.Point(442, 78);
             this.Mod.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Mod.Name = "Mod";
             this.Mod.Size = new System.Drawing.Size(53, 21);
@@ -168,20 +159,16 @@
             // 
             // ComBox
             // 
-            this.ComBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.ComBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.ComBox.DropDownHeight = 280;
+            this.ComBox.AllowDrop = true;
             this.ComBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ComBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.ComBox.Font = new System.Drawing.Font("Segoe UI Variable Text", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.ComBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
+            this.ComBox.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.ComBox.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.ComBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.ComBox.FormattingEnabled = true;
-            this.ComBox.IntegralHeight = false;
-            this.ComBox.Location = new System.Drawing.Point(219, 81);
-            this.ComBox.Margin = new System.Windows.Forms.Padding(2);
-            this.ComBox.MaxDropDownItems = 12;
+            this.ComBox.Location = new System.Drawing.Point(292, 75);
+            this.ComBox.MaxDropDownItems = 5;
             this.ComBox.Name = "ComBox";
-            this.ComBox.Size = new System.Drawing.Size(134, 34);
+            this.ComBox.Size = new System.Drawing.Size(129, 29);
             this.ComBox.TabIndex = 0;
             this.toolTip1.SetToolTip(this.ComBox, "Zvol odpovídají COM pro sériovou komunikaci");
             // 
@@ -190,7 +177,7 @@
             this.Port.AutoSize = true;
             this.Port.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Port.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.Port.Location = new System.Drawing.Point(174, 81);
+            this.Port.Location = new System.Drawing.Point(224, 78);
             this.Port.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Port.Name = "Port";
             this.Port.Size = new System.Drawing.Size(38, 21);
@@ -270,11 +257,11 @@
             this.btnConnect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnConnect.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.btnConnect.ForeColor = System.Drawing.Color.White;
-            this.btnConnect.Location = new System.Drawing.Point(24, 20);
+            this.btnConnect.Location = new System.Drawing.Point(28, 20);
             this.btnConnect.Margin = new System.Windows.Forms.Padding(2);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
-            this.btnConnect.Size = new System.Drawing.Size(120, 40);
+            this.btnConnect.Size = new System.Drawing.Size(147, 40);
             this.btnConnect.TabIndex = 1;
             this.btnConnect.Text = "Připojit";
             this.toolTip1.SetToolTip(this.btnConnect, "Naváže spojení s vybraným portem nebo ho odpojí");
@@ -283,24 +270,12 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(380, 182);
+            this.pictureBox1.Location = new System.Drawing.Point(505, 191);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(2);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(140, 140);
             this.pictureBox1.TabIndex = 8;
             this.pictureBox1.TabStop = false;
-            // 
-            // label6
-            // 
-            this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label6.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.label6.Location = new System.Drawing.Point(376, 13);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(89, 36);
-            this.label6.TabIndex = 11;
-            this.label6.Text = "Řízení";
             // 
             // badgeConn
             // 
@@ -308,7 +283,7 @@
             this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
             this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.badgeConn.ForeColor = System.Drawing.Color.White;
-            this.badgeConn.Location = new System.Drawing.Point(230, 20);
+            this.badgeConn.Location = new System.Drawing.Point(224, 20);
             this.badgeConn.Name = "badgeConn";
             this.badgeConn.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
             this.badgeConn.Size = new System.Drawing.Size(123, 29);
@@ -336,13 +311,31 @@
             this.label4.TabIndex = 7;
             this.label4.Text = "ctyri";
             // 
+            // btnReset
+            // 
+            this.btnReset.Controls.Add(this.reset_btn);
+            this.btnReset.Location = new System.Drawing.Point(24, 137);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(43, 45);
+            this.btnReset.TabIndex = 24;
+            // 
+            // reset_btn
+            // 
+            this.reset_btn.Image = global::NewGUI.Properties.Resources.reset_mini_2;
+            this.reset_btn.Location = new System.Drawing.Point(-25, -25);
+            this.reset_btn.Name = "reset_btn";
+            this.reset_btn.Size = new System.Drawing.Size(94, 97);
+            this.reset_btn.TabIndex = 0;
+            this.reset_btn.UseVisualStyleBackColor = true;
+            this.reset_btn.Click += new System.EventHandler(this.reset_btn_Click);
+            // 
             // Aktuatory
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(249)))), ((int)(((byte)(250)))), ((int)(((byte)(251)))));
+            this.Controls.Add(this.btnReset);
             this.Controls.Add(this.badgeConn);
-            this.Controls.Add(this.label6);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
@@ -367,6 +360,7 @@
             this.Name = "Aktuatory";
             this.Size = new System.Drawing.Size(666, 450);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.btnReset.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -390,11 +384,12 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label badgeConn;
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Panel btnReset;
+        private System.Windows.Forms.Button reset_btn;
     }
 }
 

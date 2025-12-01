@@ -431,12 +431,20 @@ namespace NewGUI
             UpdateAcceptButton();
         }
 
-        private void ApplyTimerIntervalFromUi()
+        private int GetTimerIntervalMs()
         {
             string txt = comboBoxTIMER.Text?.Trim();
-            int delay;
-            if (!int.TryParse(txt, out delay) || delay < 10)
-                delay = 100;
+            if (string.IsNullOrWhiteSpace(txt)) return 100;
+            // odstranit případné jednotky "ms"
+            txt = txt.ToLowerInvariant().Replace("ms", string.Empty).Trim();
+            int val;
+            if (!int.TryParse(txt, out val) || val < 1) val = 100;
+            return val;
+        }
+
+        private void ApplyTimerIntervalFromUi()
+        {
+            int delay = GetTimerIntervalMs();
             _chartManager?.SetInterval(delay);
         }
 
@@ -632,9 +640,8 @@ namespace NewGUI
 
                         _chartManager?.Start();
                         _serialController.WriteLine(request);
-                        // Zde do textBox2 nelogujeme request, necháme jen UI hlášky
                         _lastSentMode = null;
-                        UiLog("Měření spuštěno."); // UI hláška
+                        //UiLog("Měření spuštěno.");
                         return;
                     }
                     catch (Exception ex)
@@ -644,11 +651,9 @@ namespace NewGUI
                     return;
                 }
 
-                // ostatní módy (včetně INIT)
                 _lastSentMode = null;
                 StartSendingRequest();
 
-                // INIT speciál: UI hláška
                 if (currentType.Equals("INIT", StringComparison.OrdinalIgnoreCase))
                     UiLog("INIT odesláno.");
 
@@ -663,6 +668,15 @@ namespace NewGUI
                 button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(153, 0, 0);
                 button1.BackColor = Color.FromArgb(211, 47, 47);
                 button1.FlatAppearance.BorderColor = Color.FromArgb(211, 47, 47);
+
+                // Pokud běží UPDATE => zakázat INIT a RESET
+                bool isUpdateMode = currentType.Equals("UPDATE", StringComparison.OrdinalIgnoreCase);
+                init_btn.Enabled = !isUpdateMode;
+                reset_btn.Enabled = !isUpdateMode;
+                if (isUpdateMode)
+                {
+                    try { _resetHoldTimer.Stop(); } catch { }
+                }
             }
             else
             {
@@ -680,6 +694,10 @@ namespace NewGUI
                 button1.FlatAppearance.BorderColor = Color.FromArgb(15, 108, 189);
                 button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(17, 94, 163);
                 button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(12, 83, 146);
+
+                // opět povolit INIT/RESET po ukončení
+                init_btn.Enabled = true;
+                reset_btn.Enabled = true;
 
                 UpdateRequestFromUi();
             }
@@ -745,11 +763,7 @@ namespace NewGUI
                    _serialController.IsOpen &&
                    isSendingRequest)
             {
-                int delay = 100;
-                var txt = comboBoxTIMER?.Text?.Trim();
-                if (!int.TryParse(txt, out delay) || delay < 1)
-                    delay = 100;
-
+                int delay = GetTimerIntervalMs();
                 try
                 {
                     await Task.Delay(delay, ct);
@@ -909,7 +923,8 @@ namespace NewGUI
         private void init_btn_Click(object sender, EventArgs e)
         {
             // Literal request as requested by user
-            string req = "?type=INIT&api=API_VERSION";
+            string req = $"?type=INIT&api={ApiVersion}";
+
 
             try
             {
@@ -921,7 +936,7 @@ namespace NewGUI
                 }
                 else
                 {
-                    UiLog("Port není otevřen - INIT se neodeslal.");
+                    UiLog($"Port není otevřen -{Environment.NewLine} INIT se neodeslal.");
                 }
             }
             catch (Exception ex)
@@ -1028,6 +1043,24 @@ namespace NewGUI
                 _linkBuffer.Clear();
                 ClearPictureBoxImage();
                 ResetChart();
+                valueText.Text = string.Empty; // vynulovat text aktuálních dat
+
+                // UI reset: vyprázdnit výběry a schovat PINy
+                comboBoxSensor.SelectedIndex = -1;
+                comboBoxSensor.Text = string.Empty;
+                comboBoxMode.SelectedIndex = -1;
+
+                textPIN1.Text = string.Empty;
+                textPIN2.Text = string.Empty;
+                textPIN3.Text = string.Empty;
+
+                PIN1.Visible = false; textPIN1.Visible = false;
+                PIN2.Visible = false; textPIN2.Visible = false;
+                PIN3.Visible = false; textPIN3.Visible = false;
+
+                // přepočti request a Accept button
+                UpdateRequestFromUi();
+                UpdatePinInputsUi();
             }
             catch { }
         }

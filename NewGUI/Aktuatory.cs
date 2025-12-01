@@ -29,6 +29,9 @@ namespace NewGUI
         // Image manager for actuator pictures
         private ImageManager _imageManager;
 
+        private bool _suppressAfterReset = false;
+        private Timer _resetQuietTimer;
+
         public Aktuatory(Form1 rodic)
         {
             InitializeComponent();
@@ -36,6 +39,25 @@ namespace NewGUI
 
             // Initialize image manager (pictureBox1 is created by InitializeComponent)
             _imageManager = new ImageManager(pictureBox1);
+
+            // Aktivovat owner-draw pro ComboBox aktuátorů (pro náhled obrázku při hoveru)
+            try
+            {
+                AktBox.DropDownStyle = ComboBoxStyle.DropDownList; // jistota neměnitelnosti
+                AktBox.DrawMode = DrawMode.OwnerDrawFixed;
+                AktBox.DrawItem -= AktBox_DrawItem; // jistota nepřidání duplicit
+                AktBox.DrawItem += AktBox_DrawItem;
+                AktBox.DropDownClosed += (s, e) =>
+                {
+                    if (AktBox.SelectedIndex < 0)
+                    {
+                        // vyčištění obrázku pokud nic nevybráno
+                        pictureBox1.Image?.Dispose();
+                        pictureBox1.Image = null;
+                    }
+                };
+            }
+            catch { }
 
             // Inicializace SerialController
             _serialController = new SerialController();
@@ -69,10 +91,17 @@ namespace NewGUI
             textBox3.TextChanged += (s, e) => UpdateStartEnabled_Actuators();
             textBox4.TextChanged += (s, e) => UpdateStartEnabled_Actuators();
 
+            _serialController.RawLineReceived += (_, e) => AppendLineToMainTextBox(e.Line);
+            _serialController.DataFrameReceived += (_, e) => AppendLineToMainTextBox(e.Line); // pokud chceš i datové rámce
+            _serialController.InitReceived += (_, e) => AppendLineToMainTextBox(e.Payload);
+
+            _resetQuietTimer = new Timer { Interval = 3000 };
+            _resetQuietTimer.Tick += (s, e) => { _suppressAfterReset = false; _resetQuietTimer.Stop(); };
 
             UpdatePinInputsUi_Actuators();
             UpdateStartEnabled_Actuators();
 
+            // pokud nemáš v Designeru přiřazený event:
 
             // Default zobrazení
             SetControlButtonsEnabled(false);
@@ -98,6 +127,21 @@ namespace NewGUI
                 }
                 lastKnownPorts = currentPorts;
             }
+        }
+        private void AppendLineToMainTextBox(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line)) return;
+            if (!line.EndsWith("\r\n")) line += "\r\n";
+
+            void Write()
+            {
+                MainTextBox.AppendText(line);
+                MainTextBox.SelectionStart = MainTextBox.TextLength;
+                MainTextBox.ScrollToCaret();
+            }
+
+            if (InvokeRequired) BeginInvoke((Action)Write);
+            else Write();
         }
         // ---------- NOVĚ: NAČTENÍ JSON MÍSTO CSV ----------
         private void LoadJsonData()
@@ -143,14 +187,26 @@ namespace NewGUI
         {
             return (a.Alias ?? string.Empty).Trim();
         }
-        // Najde položku v JSONu podle jména zvoleného v AktBox (porovnává display alias)
+
+        // Pomocná metoda: robustně získá alias z ComboBoxu
+        private string GetSelectedAlias()
+        {
+            // preferuj Text (uživatel může psát / ComboBox není DropDownList)
+            var text = AktBox.Text?.Trim();
+            if (!string.IsNullOrWhiteSpace(text)) return text;
+
+            // fallback na SelectedItem
+            return AktBox.SelectedItem?.ToString();
+        }
+
+        // Najde položku v JSONu podle aliasu
         private Komponenty FindByDisplayAlias(string alias)
         {
             if (string.IsNullOrWhiteSpace(alias) || aktuatoryData == null)
                 return null;
 
             return aktuatoryData.FirstOrDefault(a =>
-                string.Equals(a.Alias, alias, StringComparison.OrdinalIgnoreCase));
+                string.Equals(a.Alias?.Trim(), alias.Trim(), StringComparison.OrdinalIgnoreCase));
         }
         // ---------- OBRÁZEK PODLE VÝBĚRU ----------
         private void AktBox_UpdateImage(object sender, EventArgs e)
@@ -663,6 +719,102 @@ namespace NewGUI
             string digitsOnly = new string(raw.Where(char.IsDigit).ToArray());
             if (string.IsNullOrEmpty(digitsOnly)) return null;
             return digitsOnly.PadLeft(2, '0');
+        }
+
+        private void reset_btn_Click(object sender, EventArgs e)
+        {
+            PerformResetActuator();
+        }
+        private void PerformResetActuator()
+        {
+            if (!_serialController.IsOpen)
+            {
+                MessageBox.Show("Nelze RESET – není připojen COM port.");
+                return;
+            }
+
+            // nutný vybraný aktuátor pro cílený reset (nebo můžeš poslat wildcard - uprav podle potřeby)
+
+
+            string alias = AktBox.SelectedItem?.ToString();
+            if (string.IsNullOrWhiteSpace(alias))
+            {
+                MessageBox.Show("Vyber aktuátor před RESET.");
+                return;
+            }
+
+            var item = FindByDisplayAlias(alias);
+            if (item == null)
+            {
+                MessageBox.Show("Aktuátor nenalezen v datech.");
+                return;
+            }
+
+            // Sestavení RESET requestu (analogicky k senzorům) – pokud máš Request_RESET v JSONu použij ho
+            string idRaw = item.Id.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string twoDigits = FormatTwoDigitId(idRaw);
+            if (string.IsNullOrWhiteSpace(twoDigits))
+            {
+                MessageBox.Show("Nelze zjistit ID aktuátoru.");
+                return;
+            }
+
+            string request = $"?type=RESET&id=A{twoDigits}";
+
+            try
+            {
+                _serialController.WriteLine(request);
+                MainTextBox.AppendText(request + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                MainTextBox.AppendText("Chyba při RESET: " + ex.Message + Environment.NewLine);
+            }
+
+            // UI cleanup
+            pictureBox1.Image?.Dispose();
+            pictureBox1.Image = null;
+
+            AktBox.SelectedIndex = -1;
+            ModBox.SelectedIndex = -1;
+
+            textBox1.Visible = textBox2.Visible = textBox3.Visible = textBox4.Visible = false;
+            label1.Visible = label2.Visible = label3.Visible = label4.Visible = false;
+            textBox1.Text = textBox2.Text = textBox3.Text = textBox4.Text = string.Empty;
+
+            btnStart.Enabled = false;
+
+            // vyčistit hlavní výpis (nebo ponechat – zde volíme nový začátek)
+            // pokud chceš zachovat historii, tento řádek vynech:
+            // MainTextBox.Clear();
+
+            _suppressAfterReset = true;
+            _resetQuietTimer.Stop();
+            _resetQuietTimer.Start();
+        }
+
+        // Owner-draw vykreslení položek aktuátorů s náhledem obrázku při hoveru
+        private void AktBox_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index < 0) return;
+            e.DrawBackground();
+            string text = AktBox.Items[e.Index] as string ?? string.Empty;
+            Color textColor = ((e.State & DrawItemState.Selected) == DrawItemState.Selected) ? SystemColors.HighlightText : AktBox.ForeColor;
+            using (var b = new SolidBrush(textColor))
+            {
+                e.Graphics.DrawString(text, e.Font, b, e.Bounds.Left + 2, e.Bounds.Top + 2);
+            }
+
+            bool isHovered = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            if (isHovered)
+            {
+                try
+                {
+                    _imageManager?.UpdateImageForLabel(text, "Aktuátory", BasePath);
+                }
+                catch { }
+            }
+            e.DrawFocusRectangle();
         }
     }
 }

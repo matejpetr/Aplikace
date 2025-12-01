@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnConnect = new System.Windows.Forms.Button();
             this.components = new System.ComponentModel.Container();
+            this.btnConnect = new System.Windows.Forms.Button();
             this.comBox = new System.Windows.Forms.ComboBox();
             this.lblComPort = new System.Windows.Forms.Label();
             this.lblSensor = new System.Windows.Forms.Label();
@@ -38,8 +38,6 @@
             this.component_pic = new System.Windows.Forms.PictureBox();
             this.textBox = new System.Windows.Forms.TextBox();
             this.ToolTipSim = new System.Windows.Forms.ToolTip(this.components);
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
             this.lblAktuator = new System.Windows.Forms.Label();
             this.lblType = new System.Windows.Forms.Label();
             this.badgeConn = new System.Windows.Forms.Label();
@@ -49,7 +47,7 @@
             // 
             // btnConnect
             // 
-            this.btnConnect.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(99)))), ((int)(((byte)(235)))));
+            this.btnConnect.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(108)))), ((int)(((byte)(189)))));
             this.btnConnect.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnConnect.FlatAppearance.BorderSize = 0;
             this.btnConnect.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(78)))), ((int)(((byte)(216)))));
@@ -57,16 +55,16 @@
             this.btnConnect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnConnect.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.btnConnect.ForeColor = System.Drawing.Color.White;
-            this.btnConnect.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnConnect.Location = new System.Drawing.Point(59, 128);
-            this.btnConnect.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnConnect.Location = new System.Drawing.Point(28, 20);
+            this.btnConnect.Margin = new System.Windows.Forms.Padding(2);
             this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new System.Drawing.Size(120, 40);
+            this.btnConnect.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
+            this.btnConnect.Size = new System.Drawing.Size(147, 40);
             this.btnConnect.TabIndex = 2;
             this.btnConnect.Text = "Připojit";
             this.btnConnect.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnConnect.UseVisualStyleBackColor = false;
             this.ToolTipSim.SetToolTip(this.btnConnect, "Naváže spojení se zadaným portem nebo ho odpojí");
+            this.btnConnect.UseVisualStyleBackColor = false;
             this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
             // comBox
@@ -75,23 +73,23 @@
             this.comBox.BackColor = System.Drawing.Color.White;
             this.comBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.comBox.Font = new System.Drawing.Font("Segoe UI Variable Display", 10.5F);
-            this.comBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
+            this.comBox.Font = new System.Drawing.Font("Segoe UI Variable Display", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.comBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.comBox.FormattingEnabled = true;
             this.comBox.IntegralHeight = false;
-            this.comBox.ItemHeight = 19;
-            this.comBox.Location = new System.Drawing.Point(59, 82);
+            this.comBox.ItemHeight = 21;
+            this.comBox.Location = new System.Drawing.Point(292, 75);
             this.comBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comBox.Name = "comBox";
-            this.ToolTipSim.SetToolTip(this.comBox, "Zvol odpovídají COM pro sériovou komunikaci");
-            this.comBox.Size = new System.Drawing.Size(160, 27);
+            this.comBox.Size = new System.Drawing.Size(130, 29);
             this.comBox.TabIndex = 4;
+            this.ToolTipSim.SetToolTip(this.comBox, "Zvol odpovídají COM pro sériovou komunikaci");
             // 
             // lblComPort
             // 
             this.lblComPort.AutoSize = true;
             this.lblComPort.Font = new System.Drawing.Font("Segoe UI Variable Display", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblComPort.Location = new System.Drawing.Point(16, 84);
+            this.lblComPort.Location = new System.Drawing.Point(224, 78);
             this.lblComPort.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblComPort.Name = "lblComPort";
             this.lblComPort.Size = new System.Drawing.Size(39, 21);
@@ -101,7 +99,7 @@
             // lblSensor
             // 
             this.lblSensor.AutoSize = true;
-            this.lblSensor.Location = new System.Drawing.Point(354, 146);
+            this.lblSensor.Location = new System.Drawing.Point(224, 120);
             this.lblSensor.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblSensor.Name = "lblSensor";
             this.lblSensor.Size = new System.Drawing.Size(53, 20);
@@ -115,22 +113,22 @@
             this.sensorBox.BackColor = System.Drawing.Color.White;
             this.sensorBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.sensorBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.sensorBox.Font = new System.Drawing.Font("Segoe UI Variable Display", 10.5F);
-            this.sensorBox.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
+            this.sensorBox.Font = new System.Drawing.Font("Segoe UI Variable Display", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.sensorBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.sensorBox.FormattingEnabled = true;
             this.sensorBox.IntegralHeight = false;
-            this.sensorBox.ItemHeight = 19;
-            this.sensorBox.Location = new System.Drawing.Point(455, 144);
+            this.sensorBox.ItemHeight = 21;
+            this.sensorBox.Location = new System.Drawing.Point(292, 120);
             this.sensorBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.sensorBox.Name = "sensorBox";
-            this.sensorBox.Size = new System.Drawing.Size(160, 27);
-            this.ToolTipSim.SetToolTip(sensorBox, "Vyber odpovídající senzor");
+            this.sensorBox.Size = new System.Drawing.Size(130, 29);
             this.sensorBox.TabIndex = 4;
+            this.ToolTipSim.SetToolTip(this.sensorBox, "Vyber odpovídající senzor");
             this.sensorBox.Visible = false;
             // 
             // btnStartStop
             // 
-            this.btnStartStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(99)))), ((int)(((byte)(235)))));
+            this.btnStartStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(15)))), ((int)(((byte)(108)))), ((int)(((byte)(189)))));
             this.btnStartStop.Enabled = false;
             this.btnStartStop.FlatAppearance.BorderSize = 0;
             this.btnStartStop.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(78)))), ((int)(((byte)(216)))));
@@ -138,19 +136,20 @@
             this.btnStartStop.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnStartStop.Font = new System.Drawing.Font("Segoe UI Variable Text Semibold", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.btnStartStop.ForeColor = System.Drawing.Color.White;
-            this.btnStartStop.Location = new System.Drawing.Point(59, 178);
-            this.btnStartStop.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.btnStartStop.Location = new System.Drawing.Point(28, 75);
+            this.btnStartStop.Margin = new System.Windows.Forms.Padding(2);
             this.btnStartStop.Name = "btnStartStop";
-            this.btnStartStop.Size = new System.Drawing.Size(120, 40);
-            this.btnStartStop.TabIndex = 6;
+            this.btnStartStop.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
+            this.btnStartStop.Size = new System.Drawing.Size(147, 40);
+            this.btnStartStop.TabIndex = 4;
             this.btnStartStop.Text = "Spustit ";
-            this.btnStartStop.UseVisualStyleBackColor = false;
             this.ToolTipSim.SetToolTip(this.btnStartStop, "Spustí/Zastaví akci simulace");
+            this.btnStartStop.UseVisualStyleBackColor = false;
             this.btnStartStop.Click += new System.EventHandler(this.btnStartStop_Click);
             // 
             // component_pic
             // 
-            this.component_pic.Location = new System.Drawing.Point(475, 181);
+            this.component_pic.Location = new System.Drawing.Point(505, 191);
             this.component_pic.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.component_pic.Name = "component_pic";
             this.component_pic.Size = new System.Drawing.Size(140, 140);
@@ -161,51 +160,31 @@
             // 
             this.textBox.BackColor = System.Drawing.Color.White;
             this.textBox.Font = new System.Drawing.Font("Consolas", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.textBox.Location = new System.Drawing.Point(0, 331);
+            this.textBox.Location = new System.Drawing.Point(0, 341);
             this.textBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.textBox.Multiline = true;
             this.textBox.Name = "textBox";
             this.textBox.ReadOnly = true;
-            this.ToolTipSim.SetToolTip(this.textBox, "Výpis náhodně simulovaných hodnot");
-            this.textBox.Size = new System.Drawing.Size(666, 119);
+            this.textBox.Size = new System.Drawing.Size(666, 109);
             this.textBox.TabIndex = 0;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label1.Location = new System.Drawing.Point(25, 22);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(123, 36);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Připojení";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label2.Location = new System.Drawing.Point(349, 20);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(126, 36);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "Simulace";
+            this.ToolTipSim.SetToolTip(this.textBox, "Výpis náhodně simulovaných hodnot");
             // 
             // lblAktuator
             // 
             this.lblAktuator.AutoSize = true;
             this.lblAktuator.Font = new System.Drawing.Font("Segoe UI Variable Display", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblAktuator.Location = new System.Drawing.Point(354, 146);
+            this.lblAktuator.Location = new System.Drawing.Point(224, 120);
             this.lblAktuator.Name = "lblAktuator";
-            this.lblAktuator.Size = new System.Drawing.Size(72, 21);
+            this.lblAktuator.Size = new System.Drawing.Size(66, 21);
             this.lblAktuator.TabIndex = 10;
-            this.lblAktuator.Text = "Aktuátor";
+            this.lblAktuator.Text = "Senzory";
             this.lblAktuator.Visible = false;
             // 
             // lblType
             // 
             this.lblType.AutoSize = true;
             this.lblType.Font = new System.Drawing.Font("Segoe UI Variable Display", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblType.Location = new System.Drawing.Point(354, 84);
+            this.lblType.Location = new System.Drawing.Point(437, 78);
             this.lblType.Name = "lblType";
             this.lblType.Size = new System.Drawing.Size(78, 21);
             this.lblType.TabIndex = 10;
@@ -217,7 +196,7 @@
             this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
             this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.badgeConn.ForeColor = System.Drawing.Color.White;
-            this.badgeConn.Location = new System.Drawing.Point(163, 27);
+            this.badgeConn.Location = new System.Drawing.Point(224, 20);
             this.badgeConn.Name = "badgeConn";
             this.badgeConn.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
             this.badgeConn.Size = new System.Drawing.Size(123, 29);
@@ -227,7 +206,7 @@
             // TypeBox
             // 
             this.TypeBox.Font = new System.Drawing.Font("Segoe UI Variable Display", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.TypeBox.Location = new System.Drawing.Point(475, 76);
+            this.TypeBox.Location = new System.Drawing.Point(516, 75);
             this.TypeBox.Name = "TypeBox";
             this.TypeBox.Size = new System.Drawing.Size(140, 33);
             this.TypeBox.TabIndex = 14;
@@ -243,8 +222,6 @@
             this.Controls.Add(this.badgeConn);
             this.Controls.Add(this.lblType);
             this.Controls.Add(this.lblAktuator);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.textBox);
             this.Controls.Add(this.btnStartStop);
             this.Controls.Add(this.btnConnect);
@@ -274,8 +251,6 @@
         private System.Windows.Forms.Button btnStartStop;
         private System.Windows.Forms.PictureBox component_pic;
         private System.Windows.Forms.TextBox textBox;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolTip ToolTipSim;
         private System.Windows.Forms.Label lblAktuator;
         private System.Windows.Forms.Label lblType;
