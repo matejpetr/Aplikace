@@ -42,7 +42,7 @@
             // Simulator_panel
             // 
             this.Simulator_panel.Controls.Add(this.Simulator_button);
-            this.Simulator_panel.Location = new System.Drawing.Point(452, 0);
+            this.Simulator_panel.Location = new System.Drawing.Point(450, 0);
             this.Simulator_panel.Name = "Simulator_panel";
             this.Simulator_panel.Size = new System.Drawing.Size(220, 444);
             this.Simulator_panel.TabIndex = 3;
@@ -90,7 +90,7 @@
             // Aktuatory_panel
             // 
             this.Aktuatory_panel.Controls.Add(this.Aktuatory_button);
-            this.Aktuatory_panel.Location = new System.Drawing.Point(227, 0);
+            this.Aktuatory_panel.Location = new System.Drawing.Point(226, 0);
             this.Aktuatory_panel.Name = "Aktuatory_panel";
             this.Aktuatory_panel.Size = new System.Drawing.Size(220, 444);
             this.Aktuatory_panel.TabIndex = 4;

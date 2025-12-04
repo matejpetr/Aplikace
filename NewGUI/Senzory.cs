@@ -54,7 +54,7 @@ namespace NewGUI
         private ChartManager _chartManager;
         private ImageManager _imageManager; // NEW: replace old image-loading method
 
-        private const string ApiVersion = "1.0";
+        private const string ApiVersion = "1.2";
         private Timer _resetHoldTimer;
         private bool _suppressNextResetClick = false;
 

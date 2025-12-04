@@ -16,7 +16,8 @@ namespace NewGUI
     public partial class help : UserControl
     {
         private Form1 _rodic;
-        private const string Dokumentace = "Dokumentace_senzory_EduBox.pdf";
+        private const string Dokumentace = "Dokumentace_senzory.pdf";
+        private const string Dokumentace2 = "Dokumentace_aktuatory.pdf";
         private const string Navod = "Dokumentace_Aplikace.pdf";
 
         public help(Form1 rodic)
@@ -28,14 +29,23 @@ namespace NewGUI
             try
             {
                 AddTile(Document_panel,
-                    title: "Dokumentace",
+                    title: "Dokumentace\n Senzory", // mírný posun druhé řádky doprava
                     normal: Properties.Resources.half_brain_mini3,
                     hover: Properties.Resources.half_brain_mini4,
-                    detail: "Dokumentace shrnuje podrobné informace o všech senzorech a aktuátorech systému Edubox – jejich zapojení, funkce, komunikační protokoly, konfiguraci i technické parametry.",
+                    detail: "Dokumentace shrnuje podrobné informace o všech senzorech systému Edubox – jejich zapojení, funkce, komunikační protokoly, konfiguraci i technické parametry.",
                     onActivate: (s, e) => Document_button_click(s,e));
 
+
+                AddTile(Document2_panel,
+                    title: "Dokumentace\nAktuátory",
+                    normal: Properties.Resources.half_brain_mini3,
+                    hover: Properties.Resources.half_brain_mini4,
+                    detail: "Dokumentace shrnuje podrobné informace o všech aktuátorech systému Edubox – jejich zapojení, funkce, komunikační protokoly, konfiguraci i technické parametry.",
+                    onActivate: (s, e) => Document2_button_Click(s, e));
+
+
                 AddTile(Popis_panel,
-                    title: "Návod k Aplikaci",
+                    title: "Manuál",
                     normal: Properties.Resources.half_brain_mini3,
                     hover: Properties.Resources.half_brain_mini4,
                     detail: "Dokumentace k aplikaci popisuje ovládací prvky, funkce jednotlivých tlačítek a postupy práce v uživatelském rozhraní systému.",
@@ -43,8 +53,7 @@ namespace NewGUI
             }
             catch (Exception ex)
             {
-                // Pokud něco selže (např. chybějící resource), při ladění zobraďte chybu:
-                // MessageBox.Show("Chyba při vytváření dlaždic: " + ex.Message);
+                // ladicí fallback
             }
         }
 
@@ -59,7 +68,7 @@ namespace NewGUI
                 NormalImage = normal,
                 HoverImage = hover,
                 DetailText = detail,
-                ExpandedHeight = 150 // výšku můžeš doladit
+                ExpandedHeight = 150
             };
             tile.Activated += onActivate;
 
@@ -69,8 +78,7 @@ namespace NewGUI
 
         private void Document_button_click(object sender, EventArgs e)
         {
-            _rodic.NahraditObsah(new Documentation(_rodic));
-            // Vypočítá cestu stejně jako dřív
+            // Zůstat v panelu help – neprovádět navigaci
             var pdfPath = ResolvePdfPath(Dokumentace);
 
             if (!File.Exists(pdfPath))
@@ -81,7 +89,6 @@ namespace NewGUI
 
             try
             {
-                // Otevře PDF ve výchozím programu (prohlížeč, Adobe, Edge, …)
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = pdfPath,
@@ -94,18 +101,15 @@ namespace NewGUI
             }
         }
 
-        // Tvoje původní cesta zachována
         private static string ResolvePdfPath(string Cesta)
         {
             var basePath = Directory.GetParent(Directory.GetParent(Directory.GetParent(Application.StartupPath).FullName).FullName).FullName;
-            // Pokud PDF neleží v "Docs", tu část můžeš odstranit
             return Path.Combine(basePath, Cesta);
         }
 
         private void Popis_button_Click(object sender, EventArgs e)
         {
-            _rodic.NahraditObsah(new Documentation(_rodic));
-            // Vypočítá cestu stejně jako dřív
+            // Zůstat v panelu help – neprovádět navigaci
             var pdfPath = ResolvePdfPath(Navod);
 
             if (!File.Exists(pdfPath))
@@ -116,7 +120,6 @@ namespace NewGUI
 
             try
             {
-                // Otevře PDF ve výchozím programu (prohlížeč, Adobe, Edge, …)
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = pdfPath,
@@ -127,6 +130,32 @@ namespace NewGUI
             {
                 MessageBox.Show("Nepodařilo se otevřít PDF: " + ex.Message);
             }
+        }
+
+        private void Document2_button_Click(object sender, EventArgs e)
+        {
+            // Zůstat v panelu help – neprovádět navigaci
+            var pdfPath = ResolvePdfPath(Dokumentace2);
+
+            if (!File.Exists(pdfPath))
+            {
+                MessageBox.Show("Soubor nebyl nalezen:\n" + pdfPath);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = pdfPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Nepodařilo se otevřít PDF: " + ex.Message);
+            }
+
         }
     }
 }

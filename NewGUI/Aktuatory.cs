@@ -40,25 +40,6 @@ namespace NewGUI
             // Initialize image manager (pictureBox1 is created by InitializeComponent)
             _imageManager = new ImageManager(pictureBox1);
 
-            // Aktivovat owner-draw pro ComboBox aktuátorů (pro náhled obrázku při hoveru)
-            try
-            {
-                AktBox.DropDownStyle = ComboBoxStyle.DropDownList; // jistota neměnitelnosti
-                AktBox.DrawMode = DrawMode.OwnerDrawFixed;
-                AktBox.DrawItem -= AktBox_DrawItem; // jistota nepřidání duplicit
-                AktBox.DrawItem += AktBox_DrawItem;
-                AktBox.DropDownClosed += (s, e) =>
-                {
-                    if (AktBox.SelectedIndex < 0)
-                    {
-                        // vyčištění obrázku pokud nic nevybráno
-                        pictureBox1.Image?.Dispose();
-                        pictureBox1.Image = null;
-                    }
-                };
-            }
-            catch { }
-
             // Inicializace SerialController
             _serialController = new SerialController();
 
@@ -791,30 +772,6 @@ namespace NewGUI
             _suppressAfterReset = true;
             _resetQuietTimer.Stop();
             _resetQuietTimer.Start();
-        }
-
-        // Owner-draw vykreslení položek aktuátorů s náhledem obrázku při hoveru
-        private void AktBox_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index < 0) return;
-            e.DrawBackground();
-            string text = AktBox.Items[e.Index] as string ?? string.Empty;
-            Color textColor = ((e.State & DrawItemState.Selected) == DrawItemState.Selected) ? SystemColors.HighlightText : AktBox.ForeColor;
-            using (var b = new SolidBrush(textColor))
-            {
-                e.Graphics.DrawString(text, e.Font, b, e.Bounds.Left + 2, e.Bounds.Top + 2);
-            }
-
-            bool isHovered = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-            if (isHovered)
-            {
-                try
-                {
-                    _imageManager?.UpdateImageForLabel(text, "Aktuátory", BasePath);
-                }
-                catch { }
-            }
-            e.DrawFocusRectangle();
         }
     }
 }

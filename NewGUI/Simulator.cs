@@ -42,24 +42,6 @@ namespace NewGUI
             sensorBox.TextChanged += sensorBox_UpdateImage;
             
 
-            // Aktivace owner-draw pro sensorBox (náhled obrázku při hoveru stejně jako u Senzory)
-            try
-            {
-                sensorBox.DropDownStyle = ComboBoxStyle.DropDownList;
-                sensorBox.DrawMode = DrawMode.OwnerDrawFixed;
-                sensorBox.DrawItem -= SensorBox_DrawItem;
-                sensorBox.DrawItem += SensorBox_DrawItem;
-                sensorBox.DropDownClosed += (s, e) =>
-                {
-                    if (sensorBox.SelectedIndex < 0)
-                    {
-                        component_pic.Image?.Dispose();
-                        component_pic.Image = null;
-                    }
-                };
-            }
-            catch { }
-
             // Inicializovat SerialController
             _serialController = new SerialController();
 
@@ -455,29 +437,6 @@ namespace NewGUI
             {
                 // silent
             }
-        }
-
-        private void SensorBox_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index < 0) return;
-            e.DrawBackground();
-            string text = sensorBox.Items[e.Index] as string ?? string.Empty;
-            Color textColor = ((e.State & DrawItemState.Selected) == DrawItemState.Selected) ? SystemColors.HighlightText : sensorBox.ForeColor;
-            using (var b = new SolidBrush(textColor))
-            {
-                e.Graphics.DrawString(text, e.Font, b, e.Bounds.Left + 2, e.Bounds.Top + 2);
-            }
-            bool isHovered = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-            if (isHovered)
-            {
-                try
-                {
-                    string folder = sensorsMode ? "Senzory" : "Aktuátory";
-                    _imageManager?.UpdateImageForLabel(text, folder, BasePath);
-                }
-                catch { }
-            }
-            e.DrawFocusRectangle();
         }
     }
 }
