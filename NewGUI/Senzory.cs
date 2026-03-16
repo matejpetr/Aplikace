@@ -1,5 +1,5 @@
 ﻿using System;                                                   // Základní typy a události
-using System.Collections.Generic;                               // Kolekce jako List<>, Dictionary<>
+using System.Collections.Generic;                               // Kolekce jako List<>, Dictionary<> 
 using System.Data;                                              // (aktuálně nepoužito)
 using System.Drawing;                                           // Barvy a grafické typy (pro graf/obrázky)
 using System.Linq;                                              // LINQ operace
@@ -10,6 +10,7 @@ using System.IO.Ports;                                          // Sériová kom
 using System.Windows.Forms.DataVisualization.Charting;          // Ovládací prvek Chart
 using System.IO;                                                // Práce se soubory a cestami
 using System.Text.Json;                                         // JSON serializace/deserializace
+
 
 namespace NewGUI
 {
@@ -57,6 +58,9 @@ namespace NewGUI
         private const string ApiVersion = "1.2";
         private Timer _resetHoldTimer;
         private bool _suppressNextResetClick = false;
+
+        // NEW: track if RESET can be performed (enabled only after user inputs params or after first data receipt)
+        private bool _canReset = false;
 
         public Senzory(Form1 rodic)
         {
@@ -106,15 +110,16 @@ namespace NewGUI
             comboBoxMode.SelectedIndexChanged += (s, e) => { _initRequestSent = false; _lastInitPayload = null; UpdatePinInputsUi(); };
 
 
-            textPIN1.TextChanged += (s, e) => UpdateRequestFromUi();
-            textPIN2.TextChanged += (s, e) => UpdateRequestFromUi();
-            textPIN3.TextChanged += (s, e) => UpdateRequestFromUi();
+            textPIN1.TextChanged += (s, e) => { UpdateRequestFromUi(); MarkResetAvailableFromParams(); };
+            textPIN2.TextChanged += (s, e) => { UpdateRequestFromUi(); MarkResetAvailableFromParams(); };
+            textPIN3.TextChanged += (s, e) => { UpdateRequestFromUi(); MarkResetAvailableFromParams(); };
 
             // value display manager (thread-safe updates)
             _valueDisplayManager = new ValueDisplayManager(valueText);
 
             // chart manager (will process frames and update chart on UI thread)
-            _chartManager = new ChartManager(chart1, _valueDisplayManager, LogLink, intervalMs: 100, maxPoints: 50);
+            _chartManager = new ChartManager(chart1, _valueDisplayManager, LogLink, intervalMs: 100, maxPoints: 50, maxSamples: 10000);
+            _chartManager.MaxSamplesReached += ChartManager_MaxSamplesReached;
             ApplyTimerIntervalFromUi();
 
             // Note: SerialController already wires to SerialManager internally
@@ -419,7 +424,7 @@ namespace NewGUI
             {
                 ready = ready && hasSensor;
             }
-            else if (!m.Equals("INIT", StringComparison.OrdinalIgnoreCase))
+            else if (!string.Equals(m, "INIT", StringComparison.OrdinalIgnoreCase))
             {
                 ready = ready && hasSensor;
             }
@@ -467,9 +472,15 @@ namespace NewGUI
                 : Color.FromArgb(107, 114, 128);
 
             UpdateRequestFromUi();
-            if (!isConnected) { _initRequestSent = false; _lastInitPayload = null; }
-            UpdateAcceptButton();  
+            if (!isConnected)
+            {
+                _initRequestSent = false;
+                _lastInitPayload = null;
+                _canReset = false;
+            }
 
+            UpdateResetEnabled();
+            UpdateAcceptButton();
         }
 
         private void ComPortWatcherTimer_Tick(object sender, EventArgs e)
@@ -730,7 +741,7 @@ namespace NewGUI
                 button1.Text = "Spustit";
                 UpdateAcceptButton();
                 StopSendingRequest();
-                UiLog("Měření pozastaveno.");
+                UiLog("Měření pozastavené.");
 
                 button1.BackColor = Color.FromArgb(15, 108, 189);
                 button1.FlatAppearance.BorderColor = Color.FromArgb(15, 108, 189);
@@ -850,6 +861,8 @@ namespace NewGUI
         {
             _chartManager.ParseAndEnqueue(e.Line);
             LogLink(e.Line);
+            // first frame -> allow reset
+            MarkResetAvailableFromData();
         }
 
         private void Parser_RawLineReceived(object sender, RawLineEventArgs e)
@@ -988,12 +1001,13 @@ namespace NewGUI
 
             // Always append the literal request to INIT buffer/popup (do not clear previous contents)
 
-
-
-            
-    
-        
-
+            try
+            {
+                _initBuffer.AppendLine(req);
+                if (_initForm != null && !_initForm.IsDisposed)
+                    _initForm.AppendLine(req);
+            }
+            catch { }
         }
 
         // Mouse handlers for reset long-press
@@ -1046,6 +1060,16 @@ namespace NewGUI
                 return;
             }
 
+            // potvrzení resetu
+            var confirm = MessageBox.Show(
+                "Opravdu chcete provést reset?",
+                "Potvrzení resetu",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
             // Normal reset for selected sensor
             string label = comboBoxSensor.Text?.Trim();
             if (string.IsNullOrWhiteSpace(label))
@@ -1083,6 +1107,22 @@ namespace NewGUI
             {
                 _initBuffer.Clear();
                 _linkBuffer.Clear();
+                _canReset = false;
+
+                // vyčistit i obsah otevřených popup oken (aby nezůstal žádný výpis)
+                try
+                {
+                    if (_linkForm != null && !_linkForm.IsDisposed)
+                        _linkForm.SetText(string.Empty);
+                }
+                catch { }
+                try
+                {
+                    if (_initForm != null && !_initForm.IsDisposed)
+                        _initForm.SetText(string.Empty);
+                }
+                catch { }
+
                 ClearPictureBoxImage();
                 ResetChart();
                 valueText.Text = string.Empty; // vynulovat text aktuálních dat
@@ -1103,6 +1143,7 @@ namespace NewGUI
                 // přepočti request a Accept button
                 UpdateRequestFromUi();
                 UpdatePinInputsUi();
+                UpdateResetEnabled();
             }
             catch { }
         }
@@ -1133,5 +1174,115 @@ namespace NewGUI
             form.AcceptButton = button1.Enabled ? button1 : null;
         }
 
+        private void MarkResetAvailableFromParams()
+        {
+            // enable reset when user entered any parameter in any of the modes
+            if (!string.IsNullOrWhiteSpace(textPIN1.Text) ||
+                !string.IsNullOrWhiteSpace(textPIN2.Text) ||
+                !string.IsNullOrWhiteSpace(textPIN3.Text))
+            {
+                _canReset = true;
+            }
+            UpdateResetEnabled();
+        }
+
+        private void MarkResetAvailableFromData()
+        {
+            _canReset = true;
+            UpdateResetEnabled();
+        }
+
+        private void UpdateResetEnabled()
+        {
+            // If UPDATE is running, RESET is blocked (existing behavior)
+            bool isUpdateRunning = string.Equals(comboBoxMode.Text?.Trim(), "UPDATE", StringComparison.OrdinalIgnoreCase)
+                                && string.Equals(button1.Text, "Zastavit", StringComparison.OrdinalIgnoreCase);
+
+            if (isUpdateRunning)
+            {
+                reset_btn.Enabled = false;
+                return;
+            }
+
+            bool connected = _serialController?.IsOpen == true;
+            reset_btn.Enabled = connected && _canReset;
+        }
+
+        private void ChartManager_MaxSamplesReached(object sender, EventArgs e)
+        {
+            void Do()
+            {
+                StopSendingRequest();
+
+                // UI do klidového stavu
+                comboBoxSensor.Enabled = true;
+                comboBoxMode.Enabled = true;
+                comboBoxCOM.Enabled = true;
+                comboBoxTIMER.Enabled = true;
+                ConnectBtn.Enabled = true;
+
+                button1.Text = "Spustit";
+                UpdateAcceptButton();
+
+                try
+                {
+                    button1.BackColor = Color.FromArgb(15, 108, 189);
+                    button1.FlatAppearance.BorderColor = Color.FromArgb(15, 108, 189);
+                    button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(17, 94, 163);
+                    button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(12, 83, 146);
+                }
+                catch { }
+
+                init_btn.Enabled = true;
+                UpdateResetEnabled();
+
+                MessageBox.Show("Překročet maximální počet vzorků", "Limit vzorků", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            if (InvokeRequired) BeginInvoke((Action)Do);
+            else Do();
+        }
+
+        private void savecsv_btn_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (_chartManager == null)
+                {
+                    MessageBox.Show("Není k dispozici graf pro export.", "CSV export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                string csv = _chartManager.ExportCsv(';', forceText: true, decimalComma: true);
+                if (string.IsNullOrWhiteSpace(csv))
+                {
+                    MessageBox.Show("Nejsou k dispozici žádná data k uložení.", "CSV export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                using (var sfd = new SaveFileDialog())
+                {
+                    sfd.Title = "Uložit naměřené hodnoty";
+                    sfd.Filter = "CSV (*.csv)|*.csv|Všechny soubory (*.*)|*.*";
+                    sfd.FileName = "mereni.csv";
+                    sfd.AddExtension = true;
+                    sfd.DefaultExt = "csv";
+                    sfd.OverwritePrompt = true;
+
+                    if (sfd.ShowDialog(this.FindForm()) != DialogResult.OK)
+                        return;
+
+                    // UTF-8 bez BOM
+                    var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+                    File.WriteAllText(sfd.FileName, csv, utf8NoBom);
+
+                    MessageBox.Show("CSV bylo uloženo.", "CSV export", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Chyba při ukládání CSV: " + ex.Message, "CSV export", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

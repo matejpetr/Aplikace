@@ -73,6 +73,16 @@ namespace NewGUI.Properties {
         /// <summary>
         ///   Vyhledává lokalizovaný prostředek typu System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap csv_mini {
+            get {
+                object obj = ResourceManager.GetObject("csv_mini", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Vyhledává lokalizovaný prostředek typu System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ESP_mensi {
             get {
                 object obj = ResourceManager.GetObject("ESP_mensi", resourceCulture);

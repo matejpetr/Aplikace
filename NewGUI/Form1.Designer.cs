@@ -191,14 +191,14 @@
             // 
             this.Main_panel.Location = new System.Drawing.Point(166, 0);
             this.Main_panel.Name = "Main_panel";
-            this.Main_panel.Size = new System.Drawing.Size(666, 450);
+            this.Main_panel.Size = new System.Drawing.Size(800, 450);
             this.Main_panel.TabIndex = 1;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(833, 450);
+            this.ClientSize = new System.Drawing.Size(965, 449);
             this.Controls.Add(this.sidebar);
             this.Controls.Add(this.Main_panel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;

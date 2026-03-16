@@ -10,11 +10,13 @@ namespace NewGUI
         {
             Multiline = true,
             ReadOnly = true,
-            ScrollBars = ScrollBars.Vertical,
+            ScrollBars = ScrollBars.Both,
             Dock = DockStyle.Fill,
             WordWrap = false,
-            TabStop = false,          // ať se do něj neskáče tabem (spolu s ReadOnly to eliminuje blikání caret)
-            BorderStyle = BorderStyle.None
+            TabStop = false,
+            BorderStyle = BorderStyle.None,
+            ShortcutsEnabled = true,
+            HideSelection = false
         };
 
         public SerialPopupForm(string title = "Sériový výpis")
@@ -23,14 +25,29 @@ namespace NewGUI
             Width = 300;
             Height = 400;
             StartPosition = FormStartPosition.Manual;
-            FormBorderStyle = FormBorderStyle.None;  // zruší titlebar (bez X, bez resize)
-            ControlBox = false;                      // jistota, že se nevykreslí systémové ovládání
+            FormBorderStyle = FormBorderStyle.None;
+            ControlBox = false;
             MinimizeBox = false;
             MaximizeBox = false;
             ShowIcon = false;
-            ShowInTaskbar = false;                   // popup se nebude zobrazovat v taskbaru
-            Text = string.Empty;                     // žádný titulek (i když není vidět)
+            ShowInTaskbar = false;
+            Text = string.Empty;
             Controls.Add(Output);
+
+            // Necháme textbox interaktivní (výběr + scroll), ale zakážeme editaci (ReadOnly)
+            // a minimalizujeme "caret" chování.
+            Output.GotFocus += (s, e) =>
+            {
+                try { Output.SelectionLength = 0; } catch { }
+            };
+            Output.MouseDown += (s, e) =>
+            {
+                // při prvním kliku zruš caret selection (uživatel pak může tahat myší pro výběr)
+                if (e.Button == MouseButtons.Left)
+                {
+                    // nic nedělej; necháme standardní select+drag
+                }
+            };
 
             KeyPreview = true;
             KeyDown += (s, e) =>
@@ -38,7 +55,7 @@ namespace NewGUI
                 if (e.KeyCode == Keys.Escape)
                 {
                     e.Handled = true;
-                    this.Hide();                          // nebo this.Close(); když chceš fakt ukončit
+                    this.Hide();
                 }
             };
 
@@ -82,8 +99,12 @@ namespace NewGUI
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
-            Output.SelectionLength = 0;
-            Output.SelectionStart = Output.TextLength;
+            try
+            {
+                Output.SelectionLength = 0;
+                Output.SelectionStart = Output.TextLength;
+            }
+            catch { }
         }
     }
 }
