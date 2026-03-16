@@ -382,7 +382,7 @@
             // valueText
             // 
             this.valueText.AutoSize = true;
-            this.valueText.Location = new System.Drawing.Point(313, 201);
+            this.valueText.Location = new System.Drawing.Point(250, 200);
             this.valueText.Name = "valueText";
             this.valueText.Size = new System.Drawing.Size(0, 21);
             this.valueText.TabIndex = 24;

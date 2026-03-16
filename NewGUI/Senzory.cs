@@ -317,7 +317,7 @@ namespace NewGUI
                 if (c.Visible != vis) c.Visible = vis;
             }
 
-            // NIC neschovávej hromadně. Nejdřív spočítej, co má být vidět:
+            // NIC neschovávejte hromadně. Nejdřív spočítejte, co má být vidět:
             bool show1 = false, show2 = false, show3 = false;
             string mode = comboBoxMode.Text?.Trim();
 
@@ -572,6 +572,46 @@ namespace NewGUI
 
             if (button1.Text == "Spustit")
             {
+                // CONFIG = one-shot (stejné chování jako v Aktuátory): odešli a zůstaň ve stavu "Spustit".
+                if (!string.IsNullOrWhiteSpace(currentType) && currentType.Equals("CONFIG", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrWhiteSpace(selectedPort))
+                    {
+                        MessageBox.Show("Prosím vyber COM port.");
+                        return;
+                    }
+                    if (_serialController == null || !_serialController.IsOpen)
+                    {
+                        MessageBox.Show("Nejprve se připoj k sériovému portu.");
+                        return;
+                    }
+                    if (string.IsNullOrWhiteSpace(currentID))
+                    {
+                        MessageBox.Show("Prosím zadej nebo vyber ID zařízení.");
+                        return;
+                    }
+
+                    try
+                    {
+                        if (string.IsNullOrWhiteSpace(request))
+                        {
+                            UiLog("Požadavek není sestaven.");
+                            return;
+                        }
+
+                        _serialController.WriteLine(request);
+                        UiLog($"Odesláno:{Environment.NewLine}{request}");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Chyba při odesílání: {ex.Message}");
+                    }
+
+                    // UI nechat beze změny
+                    UpdateRequestFromUi();
+                    return;
+                }
+
                 var intendedMode = comboBoxMode.Text?.Trim() ?? "";
                 bool wantsConn = intendedMode.Equals("CONNECT", StringComparison.OrdinalIgnoreCase)
                               || intendedMode.Equals("DISCONNECT", StringComparison.OrdinalIgnoreCase);
@@ -621,7 +661,9 @@ namespace NewGUI
 
                 if (currentID != lastUsedID)
                 {
-                    ResetChart();
+                    // Nový senzor = kompletně vynulovat graf/legendu i počítadlo vzorků a hodnoty
+                    try { _chartManager?.Reset(); } catch { }
+                    try { valueText.Text = string.Empty; } catch { }
                     lastUsedID = currentID;
                 }
 

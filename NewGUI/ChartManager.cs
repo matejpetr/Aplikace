@@ -48,6 +48,44 @@ namespace NewGUI
         public void Start() { if (!_disposed) _timer.Start(); }
         public void Stop() { if (!_disposed) _timer.Stop(); }
 
+        /// <summary>
+        /// Vynuluje graf pro nové měření: smaže pending data, řady (a tím i legendu), body a počítadlo vzorků.
+        /// </summary>
+        public void Reset()
+        {
+            if (_disposed) return;
+
+            // vyprázdnit čekající rámce
+            while (_queue.TryDequeue(out _)) { }
+
+            // vynulovat počítadlo vzorků
+            System.Threading.Interlocked.Exchange(ref _sampleCount, 0);
+
+            // vyčistit zobrazení hodnot
+            try { _valueMgr?.UpdateValueText(string.Empty); } catch { }
+
+            // vyčistit graf (řady/bodové série) -> zmizí i legenda
+            try
+            {
+                if (_chart.InvokeRequired)
+                {
+                    _chart.BeginInvoke((Action)(() =>
+                    {
+                        _chart.Series.Clear();
+                        _chart.Invalidate();
+                    }));
+                }
+                else
+                {
+                    _chart.Series.Clear();
+                    _chart.Invalidate();
+                }
+            }
+            catch
+            {
+                // ignore reset errors
+            }
+        }
 
         // Přidání rámce (už naparsovaných čísel) do fronty pro vykreslení
         public void Enqueue(FrameData frame)
@@ -170,9 +208,10 @@ namespace NewGUI
 
                 var ca = _chart.ChartAreas[0];
 
-                // Posun X osy tak, aby ukazovala „okno“ kolem posledních vzorků
-                ca.AxisX.Minimum = Math.Max(0, _sampleCount - 10);
-                ca.AxisX.Maximum = _sampleCount;
+                // Osa X: používej poslední index rámce (po Reset() začne zase od 1)
+                int lastIndex = (last != null) ? last.Index : _sampleCount;
+                ca.AxisX.Minimum = Math.Max(0, lastIndex - 10);
+                ca.AxisX.Maximum = lastIndex;
                 ca.RecalculateAxesScale(); // přepočti měřítko (zejména Y)
 
                 // Do UI panelu s hodnotami pošli text posledního rámce (pokud existuje ValueDisplayManager)
