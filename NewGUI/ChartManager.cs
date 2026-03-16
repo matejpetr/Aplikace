@@ -337,9 +337,8 @@ namespace NewGUI
 
         private static string ToExcelText(string value)
         {
-            if (value == null) value = string.Empty;
-            value = value.Replace("\"", "\"");
-            return "=\"" + value + "\"";
+            // ForceText mode disabled: return raw value (caller still formats decimal comma if requested).
+            return value ?? string.Empty;
         }
 
         private static string EscapeCsv(string value, char separator)
@@ -347,7 +346,8 @@ namespace NewGUI
             if (value == null) return string.Empty;
             bool mustQuote = value.IndexOf(separator) >= 0 || value.IndexOf('"') >= 0 || value.IndexOf('\n') >= 0 || value.IndexOf('\r') >= 0;
             if (!mustQuote) return value;
-            return "\"" + value.Replace("\"", "\"") + "\"";
+            // CSV escaping: double inner quotes
+            return "\"" + value.Replace("\"", "\"\"") + "\"";
         }
     }
 }
