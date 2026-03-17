@@ -202,7 +202,7 @@ namespace NewGUI
                     return;
                 }
 
-                _imageManager.UpdateImageForLabel(label, "Aktuátory", BasePath);
+                _imageManager.UpdateImageForLabel(label, "Aktuátory_ikony", BasePath);
             }
             catch
             {

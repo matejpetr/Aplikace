@@ -163,8 +163,8 @@ namespace NewGUI
                 try
                 {
                     // reuse same baseDir logic as comboBoxSensor_SelectedIndexChanged
-                    string baseDir = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
-                    _imageManager?.UpdateImageForLabel(text, "Senzory", baseDir);
+                    string baseDir = Directory.GetParent(Application.StartupPath).Parent.FullName;
+                    _imageManager?.UpdateImageForLabel(text, "Senzory_ikony", baseDir);
                 }
                 catch
                 {
@@ -953,19 +953,19 @@ namespace NewGUI
 
         private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string baseDir = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+            string baseDir = Directory.GetParent(Application.StartupPath).Parent.FullName;
             try
             {
                 string label = comboBoxSensor.SelectedItem as string;
                 if (string.IsNullOrWhiteSpace(label)) return;
 
                 // Use ImageManager to update pictureBox
-                _imageManager.UpdateImageForLabel(label, "Senzory", baseDir);
+                _imageManager.UpdateImageForLabel(label, "Senzory_ikony", baseDir);
 
                 // If no image loaded, log like previous behavior
                 if (pictureBox1.Image == null)
                 {
-                    string sensorsDir = Path.Combine(baseDir, "Senzory");
+                    string sensorsDir = Path.Combine(baseDir, "Senzory_ikony");
                     UiLog($"Nenalezen obrázek pro „{label}“ ve složce {sensorsDir}.");
                 }
             }
@@ -1253,7 +1253,7 @@ namespace NewGUI
                     return;
                 }
 
-                string csv = _chartManager.ExportCsv(';', forceText: true, decimalComma: true);
+                string csv = _chartManager.ExportCsv(';',decimalComma: true);
                 if (string.IsNullOrWhiteSpace(csv))
                 {
                     MessageBox.Show("Nejsou k dispozici žádná data k uložení.", "CSV export", MessageBoxButtons.OK, MessageBoxIcon.Information);

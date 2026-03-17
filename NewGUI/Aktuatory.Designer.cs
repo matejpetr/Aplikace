@@ -72,7 +72,7 @@
             this.btnStart.Margin = new System.Windows.Forms.Padding(2);
             this.btnStart.Name = "btnStart";
             this.btnStart.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
-            this.btnStart.Size = new System.Drawing.Size(147, 40);
+            this.btnStart.Size = new System.Drawing.Size(184, 40);
             this.btnStart.TabIndex = 4;
             this.btnStart.Text = "Spustit";
             this.toolTip1.SetToolTip(this.btnStart, "Spustí akci ve zvoleném režimu");
@@ -92,7 +92,7 @@
             this.MainTextBox.Name = "MainTextBox";
             this.MainTextBox.ReadOnly = true;
             this.MainTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.MainTextBox.Size = new System.Drawing.Size(621, 66);
+            this.MainTextBox.Size = new System.Drawing.Size(755, 66);
             this.MainTextBox.TabIndex = 10;
             // 
             // AktBox
@@ -103,10 +103,10 @@
             this.AktBox.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.AktBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.AktBox.FormattingEnabled = true;
-            this.AktBox.Location = new System.Drawing.Point(292, 120);
+            this.AktBox.Location = new System.Drawing.Point(347, 115);
             this.AktBox.MaxDropDownItems = 5;
             this.AktBox.Name = "AktBox";
-            this.AktBox.Size = new System.Drawing.Size(129, 29);
+            this.AktBox.Size = new System.Drawing.Size(161, 29);
             this.AktBox.TabIndex = 3;
             this.toolTip1.SetToolTip(this.AktBox, "Vybere aktuátor");
             this.AktBox.SelectedIndexChanged += new System.EventHandler(this.AktBox_SelectedIndexChanged);
@@ -123,10 +123,10 @@
             "CONFIG",
             "CONNECT",
             "DISCONNECT"});
-            this.ModBox.Location = new System.Drawing.Point(516, 75);
+            this.ModBox.Location = new System.Drawing.Point(622, 72);
             this.ModBox.MaxDropDownItems = 5;
             this.ModBox.Name = "ModBox";
-            this.ModBox.Size = new System.Drawing.Size(129, 29);
+            this.ModBox.Size = new System.Drawing.Size(140, 29);
             this.ModBox.TabIndex = 2;
             this.toolTip1.SetToolTip(this.ModBox, "Vyber režim práce aktuátoru");
             this.ModBox.SelectedIndexChanged += new System.EventHandler(this.ModBox_SelectedIndexChanged);
@@ -137,7 +137,7 @@
             this.SeznamAkt.AutoSize = true;
             this.SeznamAkt.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.SeznamAkt.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.SeznamAkt.Location = new System.Drawing.Point(224, 120);
+            this.SeznamAkt.Location = new System.Drawing.Point(256, 123);
             this.SeznamAkt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.SeznamAkt.Name = "SeznamAkt";
             this.SeznamAkt.Size = new System.Drawing.Size(70, 21);
@@ -150,7 +150,7 @@
             this.Mod.AutoSize = true;
             this.Mod.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Mod.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.Mod.Location = new System.Drawing.Point(442, 78);
+            this.Mod.Location = new System.Drawing.Point(538, 75);
             this.Mod.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Mod.Name = "Mod";
             this.Mod.Size = new System.Drawing.Size(53, 21);
@@ -165,10 +165,10 @@
             this.ComBox.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.ComBox.ForeColor = System.Drawing.SystemColors.WindowText;
             this.ComBox.FormattingEnabled = true;
-            this.ComBox.Location = new System.Drawing.Point(292, 75);
+            this.ComBox.Location = new System.Drawing.Point(347, 72);
             this.ComBox.MaxDropDownItems = 5;
             this.ComBox.Name = "ComBox";
-            this.ComBox.Size = new System.Drawing.Size(129, 29);
+            this.ComBox.Size = new System.Drawing.Size(161, 29);
             this.ComBox.TabIndex = 0;
             this.toolTip1.SetToolTip(this.ComBox, "Zvol odpovídají COM pro sériovou komunikaci");
             // 
@@ -177,7 +177,7 @@
             this.Port.AutoSize = true;
             this.Port.Font = new System.Drawing.Font("Segoe UI Variable Text", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Port.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
-            this.Port.Location = new System.Drawing.Point(224, 78);
+            this.Port.Location = new System.Drawing.Point(256, 75);
             this.Port.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.Port.Name = "Port";
             this.Port.Size = new System.Drawing.Size(38, 21);
@@ -261,7 +261,7 @@
             this.btnConnect.Margin = new System.Windows.Forms.Padding(2);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
-            this.btnConnect.Size = new System.Drawing.Size(147, 40);
+            this.btnConnect.Size = new System.Drawing.Size(184, 40);
             this.btnConnect.TabIndex = 1;
             this.btnConnect.Text = "Připojit";
             this.toolTip1.SetToolTip(this.btnConnect, "Naváže spojení s vybraným portem nebo ho odpojí");
@@ -270,7 +270,7 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(505, 191);
+            this.pictureBox1.Location = new System.Drawing.Point(622, 198);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(2);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(140, 140);
@@ -283,7 +283,7 @@
             this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
             this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.badgeConn.ForeColor = System.Drawing.Color.White;
-            this.badgeConn.Location = new System.Drawing.Point(224, 20);
+            this.badgeConn.Location = new System.Drawing.Point(256, 20);
             this.badgeConn.Name = "badgeConn";
             this.badgeConn.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
             this.badgeConn.Size = new System.Drawing.Size(123, 29);
@@ -358,7 +358,7 @@
             this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(17)))), ((int)(((byte)(24)))), ((int)(((byte)(39)))));
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Aktuatory";
-            this.Size = new System.Drawing.Size(666, 450);
+            this.Size = new System.Drawing.Size(800, 450);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.btnReset.ResumeLayout(false);
             this.ResumeLayout(false);

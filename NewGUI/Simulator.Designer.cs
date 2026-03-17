@@ -59,7 +59,7 @@
             this.btnConnect.Margin = new System.Windows.Forms.Padding(2);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
-            this.btnConnect.Size = new System.Drawing.Size(147, 40);
+            this.btnConnect.Size = new System.Drawing.Size(190, 40);
             this.btnConnect.TabIndex = 2;
             this.btnConnect.Text = "Připojit";
             this.btnConnect.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
@@ -78,10 +78,10 @@
             this.comBox.FormattingEnabled = true;
             this.comBox.IntegralHeight = false;
             this.comBox.ItemHeight = 21;
-            this.comBox.Location = new System.Drawing.Point(292, 75);
+            this.comBox.Location = new System.Drawing.Point(327, 75);
             this.comBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.comBox.Name = "comBox";
-            this.comBox.Size = new System.Drawing.Size(130, 29);
+            this.comBox.Size = new System.Drawing.Size(186, 29);
             this.comBox.TabIndex = 4;
             this.ToolTipSim.SetToolTip(this.comBox, "Zvol odpovídají COM pro sériovou komunikaci");
             // 
@@ -89,7 +89,7 @@
             // 
             this.lblComPort.AutoSize = true;
             this.lblComPort.Font = new System.Drawing.Font("Segoe UI Variable Display", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblComPort.Location = new System.Drawing.Point(224, 78);
+            this.lblComPort.Location = new System.Drawing.Point(259, 78);
             this.lblComPort.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblComPort.Name = "lblComPort";
             this.lblComPort.Size = new System.Drawing.Size(39, 21);
@@ -99,7 +99,7 @@
             // lblSensor
             // 
             this.lblSensor.AutoSize = true;
-            this.lblSensor.Location = new System.Drawing.Point(224, 120);
+            this.lblSensor.Location = new System.Drawing.Point(259, 120);
             this.lblSensor.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblSensor.Name = "lblSensor";
             this.lblSensor.Size = new System.Drawing.Size(53, 20);
@@ -118,10 +118,10 @@
             this.sensorBox.FormattingEnabled = true;
             this.sensorBox.IntegralHeight = false;
             this.sensorBox.ItemHeight = 21;
-            this.sensorBox.Location = new System.Drawing.Point(292, 120);
+            this.sensorBox.Location = new System.Drawing.Point(327, 120);
             this.sensorBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.sensorBox.Name = "sensorBox";
-            this.sensorBox.Size = new System.Drawing.Size(130, 29);
+            this.sensorBox.Size = new System.Drawing.Size(186, 29);
             this.sensorBox.TabIndex = 4;
             this.ToolTipSim.SetToolTip(this.sensorBox, "Vyber odpovídající senzor");
             this.sensorBox.Visible = false;
@@ -140,7 +140,7 @@
             this.btnStartStop.Margin = new System.Windows.Forms.Padding(2);
             this.btnStartStop.Name = "btnStartStop";
             this.btnStartStop.Padding = new System.Windows.Forms.Padding(12, 0, 12, 0);
-            this.btnStartStop.Size = new System.Drawing.Size(147, 40);
+            this.btnStartStop.Size = new System.Drawing.Size(190, 40);
             this.btnStartStop.TabIndex = 4;
             this.btnStartStop.Text = "Spustit ";
             this.ToolTipSim.SetToolTip(this.btnStartStop, "Spustí/Zastaví akci simulace");
@@ -149,7 +149,7 @@
             // 
             // component_pic
             // 
-            this.component_pic.Location = new System.Drawing.Point(505, 191);
+            this.component_pic.Location = new System.Drawing.Point(627, 191);
             this.component_pic.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.component_pic.Name = "component_pic";
             this.component_pic.Size = new System.Drawing.Size(140, 140);
@@ -165,7 +165,7 @@
             this.textBox.Multiline = true;
             this.textBox.Name = "textBox";
             this.textBox.ReadOnly = true;
-            this.textBox.Size = new System.Drawing.Size(666, 109);
+            this.textBox.Size = new System.Drawing.Size(800, 109);
             this.textBox.TabIndex = 0;
             this.ToolTipSim.SetToolTip(this.textBox, "Výpis náhodně simulovaných hodnot");
             // 
@@ -173,7 +173,7 @@
             // 
             this.lblAktuator.AutoSize = true;
             this.lblAktuator.Font = new System.Drawing.Font("Segoe UI Variable Display", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblAktuator.Location = new System.Drawing.Point(224, 120);
+            this.lblAktuator.Location = new System.Drawing.Point(259, 120);
             this.lblAktuator.Name = "lblAktuator";
             this.lblAktuator.Size = new System.Drawing.Size(66, 21);
             this.lblAktuator.TabIndex = 10;
@@ -184,7 +184,7 @@
             // 
             this.lblType.AutoSize = true;
             this.lblType.Font = new System.Drawing.Font("Segoe UI Variable Display", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.lblType.Location = new System.Drawing.Point(437, 78);
+            this.lblType.Location = new System.Drawing.Point(520, 78);
             this.lblType.Name = "lblType";
             this.lblType.Size = new System.Drawing.Size(78, 21);
             this.lblType.TabIndex = 10;
@@ -196,7 +196,7 @@
             this.badgeConn.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(107)))), ((int)(((byte)(114)))), ((int)(((byte)(128)))));
             this.badgeConn.Font = new System.Drawing.Font("Segoe UI Variable Display Semib", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.badgeConn.ForeColor = System.Drawing.Color.White;
-            this.badgeConn.Location = new System.Drawing.Point(224, 20);
+            this.badgeConn.Location = new System.Drawing.Point(259, 20);
             this.badgeConn.Name = "badgeConn";
             this.badgeConn.Padding = new System.Windows.Forms.Padding(10, 4, 10, 4);
             this.badgeConn.Size = new System.Drawing.Size(123, 29);
@@ -206,7 +206,7 @@
             // TypeBox
             // 
             this.TypeBox.Font = new System.Drawing.Font("Segoe UI Variable Display", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.TypeBox.Location = new System.Drawing.Point(516, 75);
+            this.TypeBox.Location = new System.Drawing.Point(627, 75);
             this.TypeBox.Name = "TypeBox";
             this.TypeBox.Size = new System.Drawing.Size(140, 33);
             this.TypeBox.TabIndex = 14;
@@ -235,7 +235,7 @@
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "Simulator";
             this.Padding = new System.Windows.Forms.Padding(12);
-            this.Size = new System.Drawing.Size(666, 450);
+            this.Size = new System.Drawing.Size(800, 450);
             ((System.ComponentModel.ISupportInitialize)(this.component_pic)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
