@@ -42,9 +42,9 @@
             // Document_panel
             // 
             this.Document_panel.Controls.Add(this.Document_button);
-            this.Document_panel.Location = new System.Drawing.Point(2, 0);
+            this.Document_panel.Location = new System.Drawing.Point(4, 0);
             this.Document_panel.Name = "Document_panel";
-            this.Document_panel.Size = new System.Drawing.Size(220, 444);
+            this.Document_panel.Size = new System.Drawing.Size(259, 444);
             this.Document_panel.TabIndex = 5;
             // 
             // Document_button
@@ -53,9 +53,9 @@
             this.Document_button.Font = new System.Drawing.Font("Bahnschrift", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.Document_button.Image = global::NewGUI.Properties.Resources.half_brain_mini3;
             this.Document_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.Document_button.Location = new System.Drawing.Point(0, 0);
+            this.Document_button.Location = new System.Drawing.Point(-1, 0);
             this.Document_button.Name = "Document_button";
-            this.Document_button.Size = new System.Drawing.Size(225, 180);
+            this.Document_button.Size = new System.Drawing.Size(266, 180);
             this.Document_button.TabIndex = 1;
             this.Document_button.Text = "Dokumentace Senzory";
             this.Document_button.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -66,9 +66,9 @@
             // Popis_panel
             // 
             this.Popis_panel.Controls.Add(this.Popis_button);
-            this.Popis_panel.Location = new System.Drawing.Point(450, 0);
+            this.Popis_panel.Location = new System.Drawing.Point(528, 0);
             this.Popis_panel.Name = "Popis_panel";
-            this.Popis_panel.Size = new System.Drawing.Size(220, 444);
+            this.Popis_panel.Size = new System.Drawing.Size(273, 444);
             this.Popis_panel.TabIndex = 6;
             // 
             // Popis_button
@@ -79,7 +79,7 @@
             this.Popis_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Popis_button.Location = new System.Drawing.Point(0, 0);
             this.Popis_button.Name = "Popis_button";
-            this.Popis_button.Size = new System.Drawing.Size(225, 180);
+            this.Popis_button.Size = new System.Drawing.Size(266, 180);
             this.Popis_button.TabIndex = 1;
             this.Popis_button.Text = "Návod k Aplikace";
             this.Popis_button.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -90,9 +90,9 @@
             // Document2_panel
             // 
             this.Document2_panel.Controls.Add(this.Document2_button);
-            this.Document2_panel.Location = new System.Drawing.Point(226, 0);
+            this.Document2_panel.Location = new System.Drawing.Point(263, 0);
             this.Document2_panel.Name = "Document2_panel";
-            this.Document2_panel.Size = new System.Drawing.Size(220, 444);
+            this.Document2_panel.Size = new System.Drawing.Size(265, 444);
             this.Document2_panel.TabIndex = 6;
             // 
             // Document2_button
@@ -103,7 +103,7 @@
             this.Document2_button.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.Document2_button.Location = new System.Drawing.Point(0, 0);
             this.Document2_button.Name = "Document2_button";
-            this.Document2_button.Size = new System.Drawing.Size(225, 180);
+            this.Document2_button.Size = new System.Drawing.Size(266, 180);
             this.Document2_button.TabIndex = 1;
             this.Document2_button.Text = "Dokumentace Aktuátory";
             this.Document2_button.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -120,7 +120,7 @@
             this.Controls.Add(this.Popis_panel);
             this.Controls.Add(this.Document_panel);
             this.Name = "help";
-            this.Size = new System.Drawing.Size(666, 450);
+            this.Size = new System.Drawing.Size(794, 450);
             this.Document_panel.ResumeLayout(false);
             this.Popis_panel.ResumeLayout(false);
             this.Document2_panel.ResumeLayout(false);

@@ -228,9 +228,15 @@
     <EmbeddedResource Include="Simulator.resx">
       <DependentUpon>Simulator.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="Manualy\Dokumentace_aktuatory.pdf" />
-    <None Include="Manualy\Dokumentace_Aplikace.pdf" />
-    <None Include="Manualy\Dokumentace_senzory.pdf" />
+    <Content Include="Manualy\Dokumentace_aktuatory.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Manualy\Dokumentace_Aplikace.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Manualy\Dokumentace_senzory.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Resources\link.png" />
     <None Include="Resources\link_mini.png" />
     <None Include="Resources\init.png" />
@@ -240,54 +246,150 @@
     <None Include="Resources\reset_mini.png" />
     <None Include="Resources\reset_mini_2.png" />
     <None Include="Resources\csv_mini.png" />
-    <None Include="Aktuatory_ikony\7color.png" />
-    <None Include="Aktuatory_ikony\BuzzA.png" />
-    <None Include="Aktuatory_ikony\BuzzP.png" />
-    <None Include="Aktuatory_ikony\DC.png" />
-    <None Include="Aktuatory_ikony\IR.png" />
-    <None Include="Aktuatory_ikony\Laser.png" />
-    <None Include="Aktuatory_ikony\RGB.png" />
-    <None Include="Aktuatory_ikony\RGBsmd.png" />
-    <None Include="Aktuatory_ikony\SG90.png" />
-    <None Include="Aktuatory_ikony\Stepper.png" />
-    <None Include="Aktuatory_ikony\TwoColor.png" />
-    <None Include="Aktuatory_ikony\TwoColorMini.png" />
-    <None Include="Senzory_ikony\Ahall.png" />
-    <None Include="Senzory_ikony\Antc.png" />
-    <None Include="Senzory_ikony\BMP180.png" />
-    <None Include="Senzory_ikony\BMP280.png" />
-    <None Include="Senzory_ikony\Btn.png" />
-    <None Include="Senzory_ikony\Dhall.png" />
-    <None Include="Senzory_ikony\DHT11.png" />
-    <None Include="Senzory_ikony\DMoisture.png" />
-    <None Include="Senzory_ikony\Dntc.png" />
-    <None Include="Senzory_ikony\DS18B20.png" />
-    <None Include="Senzory_ikony\Dvibration.png" />
-    <None Include="Senzory_ikony\Encoder.png" />
-    <None Include="Senzory_ikony\FC51.png" />
-    <None Include="Senzory_ikony\GP2Y0A21YK0F.png" />
-    <None Include="Senzory_ikony\HallLin.png" />
-    <None Include="Senzory_ikony\HCSR04.png" />
-    <None Include="Senzory_ikony\HCSR501.png" />
-    <None Include="Senzory_ikony\Heartbeat.png" />
-    <None Include="Senzory_ikony\HGswitch.png" />
-    <None Include="Senzory_ikony\HS0038DB.png" />
-    <None Include="Senzory_ikony\IRflame.png" />
-    <None Include="Senzory_ikony\IRrx.png" />
-    <None Include="Senzory_ikony\Joystick.png" />
-    <None Include="Senzory_ikony\KW113Z.png" />
-    <None Include="Senzory_ikony\MetalTouch.png" />
-    <None Include="Senzory_ikony\MicBig.png" />
-    <None Include="Senzory_ikony\MicSmall.png" />
-    <None Include="Senzory_ikony\MQ135.png" />
-    <None Include="Senzory_ikony\PHresistance.png" />
-    <None Include="Senzory_ikony\PInterrupt.png" />
-    <None Include="Senzory_ikony\REED.png" />
-    <None Include="Senzory_ikony\Tap.png" />
-    <None Include="Senzory_ikony\TCRT5000.png" />
-    <None Include="Senzory_ikony\TCS34725.png" />
-    <None Include="Senzory_ikony\TiltSwitch.png" />
-    <None Include="Senzory_ikony\TTP223.png" />
+    <Content Include="Aktuatory_ikony\7color.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\BuzzA.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\BuzzP.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\DC.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\IR.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\Laser.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\RGB.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\RGBsmd.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\SG90.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\Stepper.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\TwoColor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Aktuatory_ikony\TwoColorMini.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Ahall.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Antc.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\BMP180.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\BMP280.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Btn.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Dhall.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\DHT11.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\DMoisture.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Dntc.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\DS18B20.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Dvibration.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Encoder.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\FC51.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\GP2Y0A21YK0F.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\HallLin.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\HCSR04.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\HCSR501.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Heartbeat.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\HGswitch.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\HS0038DB.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\IRflame.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\IRrx.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Joystick.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\KW113Z.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\MetalTouch.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\MicBig.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\MicSmall.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\MQ135.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\PHresistance.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\PInterrupt.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\REED.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\Tap.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\TCRT5000.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\TCS34725.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\TiltSwitch.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Senzory_ikony\TTP223.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Senzory.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

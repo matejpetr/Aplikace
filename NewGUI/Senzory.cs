@@ -163,7 +163,7 @@ namespace NewGUI
                 try
                 {
                     // reuse same baseDir logic as comboBoxSensor_SelectedIndexChanged
-                    string baseDir = Directory.GetParent(Application.StartupPath).Parent.FullName;
+                    string baseDir = Application.StartupPath;
                     _imageManager?.UpdateImageForLabel(text, "Senzory_ikony", baseDir);
                 }
                 catch
@@ -953,16 +953,15 @@ namespace NewGUI
 
         private void comboBoxSensor_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string baseDir = Directory.GetParent(Application.StartupPath).Parent.FullName;
+            string baseDir = Application.StartupPath;
+
             try
             {
                 string label = comboBoxSensor.SelectedItem as string;
                 if (string.IsNullOrWhiteSpace(label)) return;
 
-                // Use ImageManager to update pictureBox
                 _imageManager.UpdateImageForLabel(label, "Senzory_ikony", baseDir);
 
-                // If no image loaded, log like previous behavior
                 if (pictureBox1.Image == null)
                 {
                     string sensorsDir = Path.Combine(baseDir, "Senzory_ikony");
